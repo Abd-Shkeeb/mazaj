@@ -74,16 +74,22 @@ export default function SaaSLandingPage() {
           email,
           password,
         })
-        if (res) {
-          await loginAction({ email, password })
-          setSuccessMsg(
-            isAr
-              ? `تم تسجيل مقهاك بنجاح! رابط الكشك الخاص بك هو: /${locale}/${res.cafe.slug}`
-              : `Registered successfully! Your kiosk URL is: /${locale}/${res.cafe.slug}`,
-          )
-          setTimeout(() => {
-            router.push('/dashboard')
-          }, 3000)
+        if (res.success && res.cafe) {
+          const loginRes = await loginAction({ email, password })
+          if (loginRes.success) {
+            setSuccessMsg(
+              isAr
+                ? `تم تسجيل مقهاك بنجاح! رابط الكشك الخاص بك هو: /${locale}/${res.cafe.slug}`
+                : `Registered successfully! Your kiosk URL is: /${locale}/${res.cafe.slug}`,
+            )
+            setTimeout(() => {
+              router.push('/dashboard')
+            }, 3000)
+          } else {
+            setErrorMsg(loginRes.error || (isAr ? 'حدث خطأ أثناء تسجيل الدخول' : 'Error occurred during login'))
+          }
+        } else {
+          setErrorMsg(res.error || (isAr ? 'حدث خطأ أثناء التسجيل' : 'Error occurred during registration'))
         }
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? err.message : String(err)
@@ -121,6 +127,8 @@ export default function SaaSLandingPage() {
               router.push('/dashboard')
             }
           }, 1500)
+        } else {
+          setErrorMsg(res.error || (isAr ? 'حدث خطأ أثناء تسجيل الدخول' : 'Error occurred during login'))
         }
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? err.message : String(err)

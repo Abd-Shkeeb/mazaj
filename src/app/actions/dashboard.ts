@@ -225,51 +225,56 @@ export async function registerCafeAction(data: {
   email: string
   password?: string
 }) {
-  const existingCafe = await db.cafe.findUnique({
-    where: { slug: data.slug.toLowerCase().trim() },
-  })
+  try {
+    const existingCafe = await db.cafe.findUnique({
+      where: { slug: data.slug.toLowerCase().trim() },
+    })
 
-  if (existingCafe) {
-    throw new Error('Cafe slug already exists / معرف المقهى مستخدم بالفعل')
+    if (existingCafe) {
+      return { success: false, error: 'Cafe slug already exists / معرف المقهى مستخدم بالفعل' }
+    }
+
+    const existingUser = await db.user.findUnique({
+      where: { email: data.email.toLowerCase().trim() },
+    })
+
+    if (existingUser) {
+      return { success: false, error: 'Email already registered / البريد الإلكتروني مسجل بالفعل' }
+    }
+
+    if (!data.password || data.password.trim() === '') {
+      return { success: false, error: 'Password is required / كلمة المرور مطلوبة' }
+    }
+
+    // Hash Password using bcryptjs before database storage
+    const hashedPassword = await bcrypt.hash(data.password, 10)
+
+    // Create Cafe and User
+    const newCafe = await db.cafe.create({
+      data: {
+        slug: data.slug.toLowerCase().trim(),
+        nameAr: data.nameAr,
+        nameEn: data.nameEn,
+        logo: '☕',
+        coverImage:
+          'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1200&auto=format&fit=crop',
+        trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days trial
+        subscriptionPlan: 'FREE_TRIAL',
+        subscriptionStatus: 'ACTIVE',
+      },
+    })
+
+    const newUser = await db.user.create({
+      data: {
+        name: `مدير ${data.nameAr}`,
+        email: data.email.toLowerCase().trim(),
+        password: hashedPassword,
+        cafeId: newCafe.id,
+      },
+    })
+    return { success: true, cafe: newCafe, user: newUser }
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error)
+    return { success: false, error: errMsg || 'Error occurred / حدث خطأ أثناء التسجيل' }
   }
-
-  const existingUser = await db.user.findUnique({
-    where: { email: data.email.toLowerCase().trim() },
-  })
-
-  if (existingUser) {
-    throw new Error('Email already registered / البريد الإلكتروني مسجل بالفعل')
-  }
-
-  if (!data.password || data.password.trim() === '') {
-    throw new Error('Password is required / كلمة المرور مطلوبة')
-  }
-
-  // Hash Password using bcryptjs before database storage
-  const hashedPassword = await bcrypt.hash(data.password, 10)
-
-  // Create Cafe and User
-  const newCafe = await db.cafe.create({
-    data: {
-      slug: data.slug.toLowerCase().trim(),
-      nameAr: data.nameAr,
-      nameEn: data.nameEn,
-      logo: '☕',
-      coverImage:
-        'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1200&auto=format&fit=crop',
-      trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days trial
-      subscriptionPlan: 'FREE_TRIAL',
-      subscriptionStatus: 'ACTIVE',
-    },
-  })
-
-  const newUser = await db.user.create({
-    data: {
-      name: `مدير ${data.nameAr}`,
-      email: data.email.toLowerCase().trim(),
-      password: hashedPassword,
-      cafeId: newCafe.id,
-    },
-  })
-  return { cafe: newCafe, user: newUser }
 }
