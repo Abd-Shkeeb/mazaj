@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 import bcrypt from 'bcryptjs'
 import { getSessionAction } from '@/app/actions/auth'
 import { assertActiveSubscription, assertCanAddDrink, assertCanAddUser } from '@/lib/subscription'
+import { clearDrinkCache } from '@/lib/drinkCache'
 
 // Helper to verify cafe owner session
 export async function verifyOwnerSession(targetCafeId: string) {
@@ -100,6 +101,7 @@ export async function addDrinkAction(data: {
   })
 
   revalidatePath('/[locale]/dashboard', 'page')
+  clearDrinkCache(data.cafeId)
 }
 
 export async function updateDrinkAction(
@@ -159,13 +161,14 @@ export async function updateDrinkAction(
 
 export async function deleteDrinkAction(id: string) {
   // Authorization Check
-  await verifyDrinkOwnership(id)
+  const drink = await verifyDrinkOwnership(id)
 
   await db.drink.delete({
     where: { id },
   })
 
   revalidatePath('/[locale]/dashboard', 'page')
+  clearDrinkCache(drink.cafeId)
 }
 
 // Cafe Settings operations
