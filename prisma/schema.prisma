@@ -1,0 +1,149 @@
+datasource db {
+  provider = "postgresql"
+  // url is provided via prisma.config.ts
+}
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Cafe {
+  id             String     @id @default(cuid())
+  slug           String     @unique
+  nameAr         String
+  nameEn         String
+  logo           String?
+  coverImage     String?
+  phone          String?
+  addressAr      String?
+  addressEn      String?
+  workingHoursAr String?
+  workingHoursEn String?
+  instagram      String?
+  facebook       String?
+  createdAt      DateTime   @default(now())
+
+  // Subscription / Trial properties
+  trialEndsAt        DateTime @default(now())
+  subscriptionEndsAt DateTime?
+  subscriptionPlan   String   @default("FREE_TRIAL") // FREE_TRIAL, LITE, STANDARD, PRO, ENTERPRISE
+  subscriptionStatus String   @default("ACTIVE")     // ACTIVE, EXPIRED, SUSPENDED, CANCELLED
+
+  users      User[]
+  drinks     Drink[]
+  orders     Order[]
+  analyses   Analysis[]
+  events     Event[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String
+  role      String   @default("USER") // USER, ADMIN, SUPER_ADMIN
+  image     String?
+  cafeId    String?
+  createdAt DateTime @default(now())
+
+  cafe     Cafe?      @relation(fields: [cafeId], references: [id])
+  analyses Analysis[]
+
+  @@index([cafeId])
+  @@index([id])
+}
+
+model Mood {
+  id       String     @id @default(cuid())
+  nameAr   String
+  nameEn   String
+  analyses Analysis[]
+
+  // For fast mood deduplication lookups in analyzeMood()
+  @@index([nameEn])
+  @@index([nameAr])
+}
+
+model Drink {
+  id          String   @id @default(cuid())
+  nameAr      String
+  nameEn      String
+  description String
+  price       Float    @default(0)
+  isAvailable Boolean    @default(true)
+  image       String?
+  category    String     @default("Hot")
+  
+  caffeine    Int        @default(5) // 1-10
+  energy      Int        @default(5) // 1-10
+  sweetness   Int        @default(5) // 1-10
+  isHot       Boolean    @default(true)
+
+  cafeId      String
+  createdAt   DateTime   @default(now())
+
+  cafe        Cafe       @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+  analyses    Analysis[]
+
+  @@index([cafeId])
+  // Composite for menu page: fetch available drinks per cafe fast
+  @@index([cafeId, isAvailable])
+  @@index([nameEn])
+  @@index([nameAr])
+  @@index([createdAt])
+}
+
+model Order {
+  id        Int      @id @default(autoincrement())
+  drinkId   String
+  drinkName String
+  price     Float
+  status    String   @default("PENDING") // PENDING, COMPLETED, CANCELLED
+  cafeId    String
+  createdAt DateTime @default(now())
+
+  cafe      Cafe     @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+
+  @@index([cafeId, status])
+  @@index([cafeId, createdAt])
+  @@index([createdAt])
+  @@index([drinkId])
+}
+
+model Analysis {
+  id        String   @id @default(cuid())
+  userId    String?
+  moodId    String?
+  drinkId   String?
+  cafeId    String
+  userMood    String
+  aiResult    String // Store as JSON string
+  feedbackVal Boolean?
+  createdAt   DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id])
+  mood      Mood?    @relation(fields: [moodId], references: [id])
+  drink     Drink?   @relation(fields: [drinkId], references: [id])
+  cafe      Cafe     @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+
+  @@index([cafeId])
+  @@index([cafeId, createdAt])
+  @@index([createdAt])
+  @@index([cafeId, moodId])
+  @@index([cafeId, drinkId])
+  @@index([cafeId, userId])
+}
+
+model Event {
+  id        String   @id @default(cuid())
+  cafeId    String
+  name      String   // SCAN_QR, START_ANALYSIS, COMPLETE_ANALYSIS, CREATE_ORDER, COMPLETE_ORDER
+  createdAt DateTime @default(now())
+
+  cafe      Cafe     @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+
+  @@index([cafeId])
+  @@index([cafeId, createdAt])
+  // For funnel analytics: count events by type per cafe
+  @@index([cafeId, name])
+  @@index([name, createdAt])
+}

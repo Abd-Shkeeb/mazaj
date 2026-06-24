@@ -1,0 +1,253 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@import 'tailwindcss';
+
+:root {
+  --primary: #5d4037;
+  --primary-light: #8d6e63;
+  --primary-dark: #3e2723;
+  --secondary: #f5e6d3;
+  --secondary-light: #fff8e7;
+  --background: #faf8f5;
+  --card: #ffffff;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --text: #2d2d2d;
+  --text-muted: #6d6d6d;
+  --border: #e5e0da;
+}
+
+@theme {
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-primary-dark: var(--primary-dark);
+  --color-secondary: var(--secondary);
+  --color-secondary-light: var(--secondary-light);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-border-custom: var(--border);
+
+  --font-cairo: 'Cairo', sans-serif;
+  --font-outfit: 'Outfit', sans-serif;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text);
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  overflow-x: hidden;
+}
+
+/* Custom styling for a coffee house experience */
+.coffee-glass {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(93, 64, 55, 0.1);
+}
+
+.coffee-glass-dark {
+  background: rgba(62, 39, 35, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(245, 230, 211, 0.15);
+}
+
+.coffee-gradient {
+  background: linear-gradient(135deg, #5d4037 0%, #3e2723 100%);
+}
+
+.coffee-gradient-light {
+  background: linear-gradient(135deg, #f5e6d3 0%, #faf8f5 100%);
+}
+
+/* Smooth custom transitions */
+.hover-scale {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-scale:hover {
+  transform: translateY(-4px) scale(1.01);
+}
+
+/* Arabic/English Font adaptation classes */
+.lang-ar {
+  font-family: var(--font-cairo);
+}
+
+.lang-en {
+  font-family: var(--font-outfit);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Advanced keyframe animations */
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(3deg);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+@keyframes float-delayed {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(12px) rotate(-4deg);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+@keyframes scan {
+  0% {
+    top: 0%;
+    opacity: 0.8;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 15px rgba(245, 230, 211, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 30px rgba(245, 230, 211, 0.4);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 8s ease-in-out infinite;
+}
+
+.animate-scan {
+  animation: scan 2s linear infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s infinite ease-in-out;
+}
+
+/* Navbar Custom Transitions & Animations */
+.nav-transition {
+  transition:
+    background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    backdrop-filter 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes navEntrance {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-nav-entrance {
+  animation: navEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Hover effects */
+.hover-lift {
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(93, 64, 55, 0.08);
+}
+
+.hover-lift:active {
+  transform: translateY(0);
+}
+
+/* Steam float animation for logo on hover */
+@keyframes steamFloat {
+
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: translateY(-3px) scale(1.05);
+    opacity: 1;
+  }
+}
+
+.animate-logo-hover:hover svg {
+  animation: steamFloat 1.5s ease-in-out infinite;
+}
+
+@keyframes gradient-bg {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient-bg {
+  background: linear-gradient(270deg, #faf9f6, #f2eae4, #faf8f5, #ead9cb);
+  background-size: 400% 400%;
+  animation: gradient-bg 15s ease infinite;
+}
