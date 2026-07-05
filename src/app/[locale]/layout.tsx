@@ -14,6 +14,9 @@ export const metadata = {
     statusBarStyle: 'default',
     title: 'Mazaj',
   },
+  other: {
+    google: 'notranslate',
+  },
 }
 
 export default async function LocaleLayout({
