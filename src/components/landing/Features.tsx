@@ -274,7 +274,7 @@ export default function Features() {
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="w-full max-w-[480px] bg-[#3E2723] rounded-3xl p-6 border-4 border-[#5D4037] shadow-2xl relative overflow-hidden flex flex-col justify-between min-h-[480px] animate-pulse-glow">
+          <div className="w-full max-w-[480px] bg-[#3E2723] rounded-3xl px-6 pb-6 pt-9 border-4 border-[#5D4037] shadow-2xl relative overflow-hidden flex flex-col justify-between min-h-[480px] animate-pulse-glow">
             <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-[#3E2723]/90 text-amber-300 border border-amber-300/20 text-[8px] font-black px-2.5 py-0.5 rounded-full z-30 uppercase tracking-widest shadow-sm">
               {isAr ? '⚠️ بيانات تجريبية - Demo Data' : '⚠️ Demo Data'}
             </div>

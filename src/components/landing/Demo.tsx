@@ -101,7 +101,7 @@ export default function Demo() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         {/* LEFT: CASHIER DASHBOARD MOCKUP */}
         <motion.div
-          className="lg:col-span-7 bg-[#3E2723] rounded-3xl p-6 border border-[#5D4037]/20 shadow-2xl flex flex-col justify-between relative overflow-hidden min-h-[520px]"
+          className="lg:col-span-7 bg-[#3E2723] rounded-3xl px-6 pb-6 pt-9 border border-[#5D4037]/20 shadow-2xl flex flex-col justify-between relative overflow-hidden min-h-[520px]"
           initial={{ opacity: 0, x: isAr ? 40 : -40 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, margin: '-100px' }}
@@ -228,7 +228,7 @@ export default function Demo() {
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="w-full max-w-[380px] bg-white rounded-3xl p-4 border border-[#3E2723]/10 shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[520px]">
+          <div className="w-full max-w-[380px] bg-white rounded-3xl px-4 pb-4 pt-9 border border-[#3E2723]/10 shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[520px]">
             <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-amber-500 text-[#3E2723] text-[8px] font-black px-2.5 py-0.5 rounded-full z-30 uppercase tracking-widest shadow-sm">
               {isAr ? '⚠️ بيانات تجريبية - Demo Data' : '⚠️ Demo Data'}
             </div>
