@@ -596,6 +596,18 @@ export default function KioskClient({
     )
   }
 
+  // Circular timer values
+  const sessionDuration = (cafe.kioskSessionMinutes ?? 45) * 60
+  const timerRadius = 18
+  const timerCircumference = 2 * Math.PI * timerRadius
+  const timerProgress = sessionTimeLeft !== null ? (sessionTimeLeft / sessionDuration) : 1
+  const timerDashoffset = timerCircumference * (1 - timerProgress)
+
+  // Step indicator
+  const steps = isAr
+    ? ['اختيار المزاج', 'التحليل', 'النتيجة']
+    : ['Select Mood', 'Analysis', 'Result']
+
   return (
     <div className="flex-grow w-full relative flex flex-col min-h-screen bg-[#FAF8F5]">
       {/* Light decorative Rays */}
@@ -615,42 +627,121 @@ export default function KioskClient({
         />
       </div>
 
-      {/* Custom Clean Kiosk Header */}
-      <header className="w-full relative z-20 border-b border-[#3E2723]/10 bg-white/60 backdrop-blur-md px-6 py-4 flex flex-col md:flex-row items-center justify-between">
-        {/* Right side: Cafe branding */}
-        <div className="flex items-center gap-4">
-          {cafe.logo && (
-            <Image src={cafe.logo ?? ''} alt="Cafe Logo" width={40} height={40} className="rounded-full" unoptimized />
-          )}
-          <div className="text-sm font-black text-[#3E2723]">
-            <h1 className="text-lg">{isAr ? cafe.nameAr : cafe.nameEn}</h1>
+      {/* ═══ PREMIUM KIOSK HEADER ═══ */}
+      <header className="w-full relative z-20 bg-white/70 backdrop-blur-xl border-b border-[#3E2723]/8 shadow-[0_1px_12px_rgba(62,39,35,0.04)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+          {/* Cafe branding */}
+          <div className="flex items-center gap-3">
+            {cafe.logo && (
+              <div className="relative w-10 h-10 rounded-full ring-2 ring-amber-400/30 ring-offset-2 ring-offset-white overflow-hidden shadow-md">
+                <Image src={cafe.logo ?? ''} alt="Cafe Logo" fill sizes="40px" className="object-cover" unoptimized />
+              </div>
+            )}
+            <div>
+              <h1 className="text-base font-black text-[#3E2723] leading-tight tracking-tight">
+                {isAr ? cafe.nameAr : cafe.nameEn}
+              </h1>
+              <span className="text-[9px] font-bold text-amber-700/60 uppercase tracking-widest">
+                {isAr ? 'مستشار المزاج الذكي' : 'AI Mood Advisor'}
+              </span>
+            </div>
+          </div>
+
+          {/* Step indicator (desktop only) */}
+          <div className="hidden md:flex items-center gap-1">
+            {steps.map((step, i) => {
+              const stepNum = i + 1
+              const isActive = stepNum === activeStep
+              const isCompleted = stepNum < activeStep
+              return (
+                <div key={step} className="flex items-center gap-1">
+                  <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black transition-all duration-300 ${
+                    isActive
+                      ? 'bg-[#3E2723] text-white shadow-md'
+                      : isCompleted
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-gray-100 text-gray-400'
+                  }`}>
+                    {isCompleted ? (
+                      <Check className="h-3 w-3" />
+                    ) : (
+                      <span className="w-3.5 h-3.5 flex items-center justify-center text-[9px]">{stepNum}</span>
+                    )}
+                    <span className="hidden lg:inline">{step}</span>
+                  </div>
+                  {i < steps.length - 1 && (
+                    <div className={`w-4 h-[2px] rounded-full transition-colors duration-300 ${
+                      isCompleted ? 'bg-emerald-300' : 'bg-gray-200'
+                    }`} />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Timer + Language */}
+          <div className="flex items-center gap-2.5">
+            {/* Circular Timer */}
+            {sessionTimeLeft !== null && !isSessionExpired && (
+              <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-[#FAF8F5] border border-[#3E2723]/8">
+                <div className="relative w-9 h-9 flex items-center justify-center">
+                  <svg className="w-9 h-9 -rotate-90" viewBox="0 0 40 40">
+                    <circle cx="20" cy="20" r={timerRadius} fill="none" stroke="#E5E0DA" strokeWidth="3" />
+                    <circle
+                      cx="20" cy="20" r={timerRadius}
+                      fill="none"
+                      stroke={sessionTimeLeft < 120 ? '#EF4444' : sessionTimeLeft < 300 ? '#F59E0B' : '#22C55E'}
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeDasharray={timerCircumference}
+                      strokeDashoffset={timerDashoffset}
+                      className="transition-all duration-1000 ease-linear"
+                    />
+                  </svg>
+                  <span className="absolute text-[8px] font-black text-[#3E2723]">
+                    {Math.floor(sessionTimeLeft / 60)}:{(sessionTimeLeft % 60).toString().padStart(2, '0')}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Language switcher */}
+            <button
+              onClick={() => {
+                const nextLocale = locale === 'ar' ? 'en' : 'ar'
+                router.replace(pathname, { locale: nextLocale })
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 text-[11px] font-black text-[#3E2723] bg-white border border-[#3E2723]/10 rounded-xl hover:bg-[#3E2723]/5 hover:border-[#3E2723]/20 transition-all active:scale-95 cursor-pointer shadow-sm"
+            >
+              <Globe className="h-3.5 w-3.5" />
+              <span>{locale === 'ar' ? 'English' : 'العربية'}</span>
+            </button>
           </div>
         </div>
 
-        {/* Left side: Timer and Language switcher */}
-        <div className="flex items-center gap-3">
-          {sessionTimeLeft !== null && !isSessionExpired && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black bg-amber-50 text-amber-900 border border-amber-200 rounded-xl">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>
-                {isAr ? 'الوقت المتبقي: ' : 'Time Left: '}
-                {Math.floor(sessionTimeLeft / 60).toString().padStart(2, '0')}
-                :
-                {(sessionTimeLeft % 60).toString().padStart(2, '0')}
-              </span>
-            </div>
-          )}
-
-          <button
-            onClick={() => {
-              const nextLocale = locale === 'ar' ? 'en' : 'ar'
-              router.replace(pathname, { locale: nextLocale })
-            }}
-            className="flex items-center gap-1 px-3 py-1.5 text-xs font-black text-[#3E2723] border border-[#3E2723]/20 rounded-xl hover:bg-[#3E2723]/5 backdrop-blur-sm transition-all active:scale-95 cursor-pointer"
-          >
-            <Globe className="h-3.5 w-3.5" />
-            <span>{locale === 'ar' ? 'English' : 'العربية'}</span>
-          </button>
+        {/* Mobile step indicator */}
+        <div className="md:hidden flex items-center justify-center gap-1.5 pb-2.5">
+          {steps.map((step, i) => {
+            const stepNum = i + 1
+            const isActive = stepNum === activeStep
+            const isCompleted = stepNum < activeStep
+            return (
+              <div key={step} className="flex items-center gap-1">
+                <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  isActive
+                    ? 'bg-[#3E2723] scale-125 shadow-sm'
+                    : isCompleted
+                      ? 'bg-emerald-500'
+                      : 'bg-gray-300'
+                }`} />
+                {i < steps.length - 1 && (
+                  <div className={`w-5 h-[1.5px] rounded-full transition-colors duration-300 ${
+                    isCompleted ? 'bg-emerald-300' : 'bg-gray-200'
+                  }`} />
+                )}
+              </div>
+            )
+          })}
         </div>
       </header>
 
