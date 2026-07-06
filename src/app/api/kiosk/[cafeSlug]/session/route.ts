@@ -1,10 +1,11 @@
 import { isRateLimitedKey } from '@/lib/rateLimiter';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { addMinutes } from 'date-fns';
 
-export async function POST(request: Request, { params }: { params: { cafeSlug: string } }) {
-  const { cafeSlug } = params;
+export async function POST(request: NextRequest, { params }: { params: Promise<{ cafeSlug: string }> }) {
+  const { cafeSlug } = await params;
+
   const fingerprint = request.headers.get('x-device-fingerprint') ?? undefined;
   // Fetch cafe to get session duration
   const cafe = await db.cafe.findUnique({ where: { slug: cafeSlug } });

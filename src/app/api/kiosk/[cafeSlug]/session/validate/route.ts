@@ -1,8 +1,9 @@
 // src/app/api/kiosk/[cafeSlug]/session/validate/route.ts
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 
-export async function GET(request: Request, { params }: { params: { cafeSlug: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ cafeSlug: string }> }) {
+  const { cafeSlug } = await params;
   const url = new URL(request.url);
   const sessionId = url.searchParams.get('sessionId');
   const fingerprint = request.headers.get('x-device-fingerprint') ?? undefined;
@@ -17,7 +18,7 @@ export async function GET(request: Request, { params }: { params: { cafeSlug: st
   }
 
   // Verify cafe matches slug
-  const cafe = await db.cafe.findUnique({ where: { slug: params.cafeSlug } });
+  const cafe = await db.cafe.findUnique({ where: { slug: cafeSlug } });
   if (!cafe || session.cafeId !== cafe.id) {
     return NextResponse.json({ valid: false, error: 'Session cafe mismatch' }, { status: 401 });
   }

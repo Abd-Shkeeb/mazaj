@@ -15,3 +15,8 @@ export function isRateLimited(cafeId: string, limit: number = 5): boolean {
   const key = `kiosk-session:${cafeId}`;
   return ipRateLimited(key, limit);
 }
+
+// Alias export for compatibility
+export function isRateLimitedKey(cafeId: string, limit: number = 5): boolean {
+  return isRateLimited(cafeId, limit);
+}

@@ -1,11 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import db from '@/lib/db';
 import { getSessionAction } from '@/app/actions/auth';
 import { verifyActiveSubscription } from '@/lib/subscription';
 
-export async function GET(request: Request, { params }: { params: Promise<{ cafeId: string }> }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ cafeId: string }> }) {
   const { cafeId } = await params;
+
   try {
     const cafe = await db.cafe.findUnique({
       where: { id: cafeId },
