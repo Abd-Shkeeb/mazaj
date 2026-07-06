@@ -3,8 +3,6 @@ import db from '@/lib/db';
 import { getSessionAction } from '@/app/actions/auth';
 import { verifyActiveSubscription } from '@/lib/subscription';
 
-export const dynamic = 'force-dynamic';
-
 export async function GET(request: Request, { params }: { params: Promise<{ cafeId: string }> }) {
   const { cafeId } = await params;
   try {
