@@ -33,6 +33,8 @@ model Cafe {
   orders     Order[]
   analyses   Analysis[]
   events     Event[]
+  kioskSessionMinutes Int @default(45) // default session duration in minutes
+  sessions   KioskSession[]
 }
 
 model User {
@@ -147,4 +149,15 @@ model Event {
   // For funnel analytics: count events by type per cafe
   @@index([cafeId, name])
   @@index([name, createdAt])
+}
+
+model KioskSession {
+  id        String   @id @default(cuid())
+  cafeId    String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  cafe      Cafe     @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+
+  @@index([cafeId])
+  @@index([expiresAt])
 }
