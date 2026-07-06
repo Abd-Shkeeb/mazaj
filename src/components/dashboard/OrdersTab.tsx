@@ -32,6 +32,7 @@ interface Order {
   drinkName: string
   price: number
   status: string
+  tableNumber?: string | null
   createdAt: Date
 }
 
@@ -114,13 +115,19 @@ export default function OrdersTab({
                   <h4 className="font-extrabold text-sm text-[#3E2723]">
                     {order.drinkName}
                   </h4>
-                  <div className="flex items-center gap-1.5 text-[9.5px] text-gray-500">
+                  <div className="flex flex-wrap items-center gap-1.5 text-[9.5px] text-gray-500">
                     <span className="font-bold">
                       {isAr ? 'المزاج المكتشف:' : 'Detected Mood:'}
                     </span>
                     <span className="font-black text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded">
                       {getOrderMood(order)}
                     </span>
+                    {order.tableNumber && (
+                      <span className="font-black text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                        <span>📍</span>
+                        <span>{isAr ? `طاولة ${order.tableNumber}` : `Table ${order.tableNumber}`}</span>
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -183,13 +190,19 @@ export default function OrdersTab({
                   <h4 className="font-extrabold text-sm text-[#3E2723]">
                     {order.drinkName}
                   </h4>
-                  <div className="flex items-center gap-1.5 text-[9.5px] text-gray-500">
+                  <div className="flex flex-wrap items-center gap-1.5 text-[9.5px] text-gray-500">
                     <span className="font-bold">
                       {isAr ? 'المزاج المكتشف:' : 'Detected Mood:'}
                     </span>
                     <span className="font-black text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded">
                       {getOrderMood(order)}
                     </span>
+                    {order.tableNumber && (
+                      <span className="font-black text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                        <span>📍</span>
+                        <span>{isAr ? `طاولة ${order.tableNumber}` : `Table ${order.tableNumber}`}</span>
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -252,13 +265,19 @@ export default function OrdersTab({
                   <h4 className="font-extrabold text-sm text-[#3E2723]">
                     {order.drinkName}
                   </h4>
-                  <div className="flex items-center gap-1.5 text-[9.5px] text-gray-500">
+                  <div className="flex flex-wrap items-center gap-1.5 text-[9.5px] text-gray-500">
                     <span className="font-bold">
                       {isAr ? 'المزاج المكتشف:' : 'Detected Mood:'}
                     </span>
                     <span className="font-black text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded">
                       {getOrderMood(order)}
                     </span>
+                    {order.tableNumber && (
+                      <span className="font-black text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                        <span>📍</span>
+                        <span>{isAr ? `طاولة ${order.tableNumber}` : `Table ${order.tableNumber}`}</span>
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -334,7 +353,7 @@ export default function OrdersTab({
                           {order.drinkName}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold">
+                      <div className="flex flex-wrap items-center gap-2 text-[10px] text-gray-400 font-bold">
                         <span>{formatVal(order.price)}</span>
                         <span>•</span>
                         <span>
@@ -343,6 +362,14 @@ export default function OrdersTab({
                             { hour: '2-digit', minute: '2-digit' },
                           )}
                         </span>
+                        {order.tableNumber && (
+                          <>
+                            <span>•</span>
+                            <span className="text-blue-600 bg-blue-50 px-1.5 py-0.2 rounded font-black">
+                              {isAr ? `طاولة ${order.tableNumber}` : `Table ${order.tableNumber}`}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
 

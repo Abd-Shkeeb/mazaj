@@ -93,13 +93,14 @@ model Drink {
 }
 
 model Order {
-  id        Int      @id @default(autoincrement())
-  drinkId   String
-  drinkName String
-  price     Float
-  status    String   @default("PENDING") // PENDING, COMPLETED, CANCELLED
-  cafeId    String
-  createdAt DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  drinkId     String
+  drinkName   String
+  price       Float
+  status      String   @default("PENDING") // PENDING, COMPLETED, CANCELLED
+  cafeId      String
+  tableNumber String?
+  createdAt   DateTime @default(now())
 
   cafe      Cafe     @relation(fields: [cafeId], references: [id], onDelete: Cascade)
 

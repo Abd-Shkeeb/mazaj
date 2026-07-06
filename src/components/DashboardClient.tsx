@@ -67,6 +67,7 @@ interface Order {
   drinkName: string
   price: number
   status: string
+  tableNumber?: string | null
   createdAt: Date
 }
 

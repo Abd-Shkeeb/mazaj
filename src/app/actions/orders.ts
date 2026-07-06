@@ -37,6 +37,7 @@ export async function createOrderAction(data: {
   drinkName: string
   price: number
   cafeId: string
+  tableNumber?: string
 }) {
   // Assert active subscription first
   await assertActiveSubscription(data.cafeId)
@@ -55,6 +56,7 @@ export async function createOrderAction(data: {
       drinkName: data.drinkName,
       price: data.price,
       cafeId: data.cafeId,
+      tableNumber: data.tableNumber || null,
       status: 'PENDING',
     },
   })

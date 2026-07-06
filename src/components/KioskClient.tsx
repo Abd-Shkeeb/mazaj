@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter, usePathname } from '@/i18n/routing'
+import { useSearchParams } from 'next/navigation'
 import Navigation from '@/components/Navigation'
 import SideRays from '@/components/SideRays'
 import { analyzeMood, saveFeedbackAction, trackEventAction } from '@/app/actions/analyze'
@@ -85,6 +86,8 @@ export default function KioskClient({
   const isAr = locale === 'ar'
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const tableParam = searchParams ? searchParams.get('table') : null
 
   const [isPending, startTransition] = useTransition()
   const [selectedMood, setSelectedMood] = useState<string | null>(null)
@@ -393,6 +396,7 @@ export default function KioskClient({
         drinkName: isAr ? analysisResult.suitableDrinkAr : analysisResult.suitableDrinkEn,
         price: analysisResult.price || 0,
         cafeId: cafe.id,
+        tableNumber: tableParam || undefined,
       })
 
       if (order) {
