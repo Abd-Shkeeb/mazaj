@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { getSessionAction } from '@/app/actions/auth';
 import { verifyActiveSubscription } from '@/lib/subscription';
 
 export async function GET(request: Request, { params }: { params: Promise<{ cafeId: string }> }) {
@@ -12,8 +13,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ cafe
     if (!cafe) {
       return NextResponse.json({ status: 'NOT_FOUND' }, { status: 404 });
     }
-
-
 
     // Check subscription status
     const subStatus = await verifyActiveSubscription(cafeId);
