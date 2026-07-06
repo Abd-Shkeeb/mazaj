@@ -300,6 +300,7 @@ export default function DashboardClient({
   // Modals state
   const [showQrModal, setShowQrModal] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
+  const [qrTableNumber, setQrTableNumber] = useState('')
 
   // Sound and Ticking relative wait times state
   const [soundEnabled, setSoundEnabled] = useState(true)
@@ -340,6 +341,83 @@ export default function DashboardClient({
       setToasts(prev => prev.filter(t => t.id !== id))
     }, 3500)
   }, [])
+
+  const handlePrintQr = () => {
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(
+      `${window.location.origin}/${locale}/${settings.slug}${qrTableNumber ? `?table=${qrTableNumber}` : ''}`
+    )}`
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>${isAr ? 'طباعة رمز الاستجابة السريعة' : 'Print QR Code'}</title>
+            <style>
+              body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                margin: 0;
+                font-family: sans-serif;
+                color: #3E2723;
+                text-align: center;
+                direction: ${isAr ? 'rtl' : 'ltr'};
+              }
+              img {
+                width: 350px;
+                height: 350px;
+                margin-bottom: 20px;
+              }
+              h1 {
+                margin: 5px 0;
+                font-size: 28px;
+                font-weight: 900;
+              }
+              h2 {
+                margin: 5px 0;
+                font-size: 22px;
+                font-weight: 800;
+                color: #5D4037;
+              }
+              p {
+                margin: 10px 0 0 0;
+                font-size: 14px;
+                color: #888;
+                font-weight: bold;
+              }
+            </style>
+          </head>
+          <body>
+            <h1>${isAr ? settings.nameAr : settings.nameEn}</h1>
+            \${qrTableNumber ? \`<h2>\${isAr ? \`طاولة \${qrTableNumber}\` : \`Table \${qrTableNumber}\`}</h2>\` : ''}
+            <img src="\${qrUrl}" onload="window.print(); window.close();" />
+            <p>\${isAr ? 'امسح الرمز واكتشف مشروبك الذي يطابق مزاجك!' : 'Scan the code and discover the drink matching your mood!'}</p>
+          </body>
+        </html>
+      \`)
+      printWindow.document.close()
+    }
+  }
+
+  const handleDownloadQr = async () => {
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(
+      \`\${window.location.origin}/\${locale}/\${settings.slug}\${qrTableNumber ? \`?table=\${qrTableNumber}\` : ''}\`
+    )}`
+    try {
+      const res = await fetch(qrUrl)
+      const blob = await res.blob()
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = \`QR_\${settings.slug}\${qrTableNumber ? \`_table_\${qrTableNumber}\` : ''}.png\`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (err) {
+      window.open(qrUrl, '_blank')
+    }
+  }
 
   // Web Audio API POS-chime sound generator (runs completely locally and reliably without external audio files)
   const playChime = useCallback(() => {
@@ -1686,9 +1764,24 @@ export default function DashboardClient({
                 </p>
               </div>
 
-              <div className="flex justify-center py-2 bg-gray-50 rounded-2xl border border-gray-100">
+              <div className="space-y-1.5 text-right rtl:text-right ltr:text-left">
+                <label className="text-[10px] font-black text-[#3E2723]/60 block">
+                  {isAr ? 'رقم الطاولة (اختياري لتوليد QR مخصص لطاولة معينة):' : 'Table Number (Optional to generate table-specific QR):'}
+                </label>
+                <input
+                  type="text"
+                  placeholder={isAr ? 'مثال: 4' : 'e.g. 4'}
+                  value={qrTableNumber}
+                  onChange={(e) => setQrTableNumber(e.target.value)}
+                  className="w-full text-xs font-extrabold border border-[#3E2723]/10 rounded-xl px-3.5 py-2 bg-[#FAF8F5]/60 focus:outline-none focus:border-amber-600/30 text-[#3E2723]"
+                />
+              </div>
+
+              <div className="flex justify-center py-2 bg-[#FAF8F5] rounded-2xl border border-[#3E2723]/5">
                 <NextImage
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(window.location.origin + '/' + locale + '/' + settings.slug)}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
+                    `${window.location.origin}/${locale}/${settings.slug}${qrTableNumber ? `?table=${qrTableNumber}` : ''}`
+                  )}`}
                   alt="Cafe QR Code"
                   width={200}
                   height={200}
@@ -1697,20 +1790,37 @@ export default function DashboardClient({
               </div>
 
               <div className="space-y-2 text-center text-[10px] text-gray-400 font-semibold leading-normal">
-                <span className="block border border-dashed border-gray-250 p-2 rounded-lg truncate text-[#3E2723] bg-amber-500/5">
-                  {window.location.origin}/{locale}/{settings.slug}
+                <span className="block border border-dashed border-gray-250 p-2 rounded-lg truncate text-[#3E2723] bg-amber-500/5 select-all">
+                  {window.location.origin}/{locale}/{settings.slug}{qrTableNumber ? `?table=${qrTableNumber}` : ''}
                 </span>
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      `${window.location.origin}/${locale}/${settings.slug}`,
+                      `${window.location.origin}/${locale}/${settings.slug}${qrTableNumber ? `?table=${qrTableNumber}` : ''}`,
                     )
                     addToast(isAr ? 'تم نسخ الرابط للحافظة' : 'Link copied to clipboard', 'success')
                   }}
-                  className="text-xs text-amber-800 font-bold hover:underline cursor-pointer"
+                  className="text-xs text-amber-800 font-bold hover:underline cursor-pointer block mx-auto"
                 >
                   {isAr ? 'نسخ رابط الكشك' : 'Copy Kiosk Link'}
                 </button>
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    onClick={handlePrintQr}
+                    className="flex-1 py-2 px-3 bg-[#3E2723] hover:bg-[#2D1B18] text-white rounded-xl text-xs font-black shadow-sm transition-all flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <span>🖨️</span>
+                    <span>{isAr ? 'طباعة' : 'Print'}</span>
+                  </button>
+                  <button
+                    onClick={handleDownloadQr}
+                    className="flex-1 py-2 px-3 bg-amber-500/10 hover:bg-amber-500/15 text-[#3E2723] rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <span>📥</span>
+                    <span>{isAr ? 'تحميل' : 'Download'}</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>

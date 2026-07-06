@@ -445,10 +445,7 @@ export default function OrdersTab({
       </div>
 
       {/* BOTTOM OF PAGE: QUICK ACTIONS */}
-      {(pendingOrders.length > 0 ||
-        preparingOrders.length > 0 ||
-        readyOrders.length > 0) && (
-          <div className="bg-white border border-[#3E2723]/10 p-6 rounded-2xl shadow-sm space-y-4">
+      <div className="bg-white border border-[#3E2723]/10 p-6 rounded-2xl shadow-sm space-y-4">
             <h3 className="text-xs font-black text-[#3E2723] uppercase tracking-wider border-b border-gray-100 pb-3">
               {isAr ? 'الإجراءات السريعة للنظام' : 'System Quick Actions'}
             </h3>
@@ -505,7 +502,6 @@ export default function OrdersTab({
               </button>
             </div>
           </div>
-        )}
     </div>
   )
 }
