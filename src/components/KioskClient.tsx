@@ -59,6 +59,7 @@ interface Cafe {
   workingHoursEn: string | null
   instagram: string | null
   facebook: string | null
+  kioskSessionMinutes?: number | null
 }
 
 interface DrinkType {
@@ -95,6 +96,8 @@ export default function KioskClient({
 
   const [isKioskActive, setIsKioskActive] = useState(true)
   const [statusReason, setStatusReason] = useState<string | null>(null)
+  const [isSessionExpired, setIsSessionExpired] = useState(false)
+  const [sessionTimeLeft, setSessionTimeLeft] = useState<number | null>(null)
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -141,6 +144,100 @@ export default function KioskClient({
     const interval = setInterval(checkStatus, 5000)
     return () => clearInterval(interval)
   }, [cafe.id])
+
+  const getDeviceFingerprintLocal = () => {
+    try {
+      const storageKey = 'kioskDeviceFp';
+      let fp = localStorage.getItem(storageKey);
+      if (!fp) {
+        fp = crypto.randomUUID?.() ?? Math.random().toString(36).substring(2);
+        localStorage.setItem(storageKey, fp);
+      }
+      return `${navigator.userAgent}::${fp}`;
+    } catch (e) {
+      return navigator.userAgent;
+    }
+  }
+
+  const initializeSession = async () => {
+    try {
+      const fp = getDeviceFingerprintLocal()
+      const res = await fetch(`/api/kiosk/${cafe.slug}/session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-device-fingerprint': fp
+        }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        const expiry = new Date(data.expiresAt)
+        const secondsLeft = Math.max(0, Math.floor((expiry.getTime() - Date.now()) / 1000))
+        
+        document.cookie = `kiosk-session-id=${data.sessionId}; path=/; max-age=${secondsLeft}`
+        document.cookie = `kiosk-device-fp=${encodeURIComponent(fp)}; path=/; max-age=${secondsLeft}`
+        
+        setSessionTimeLeft(secondsLeft)
+        setIsSessionExpired(false)
+        console.log(`[Session] Created/Retrieved session ${data.sessionId}, expires in ${secondsLeft}s`)
+      } else {
+        console.error('[Session] Failed to initialize session')
+      }
+    } catch (err) {
+      console.error('[Session] Error initializing session:', err)
+    }
+  }
+
+  const checkAndInitSession = async () => {
+    const cookiesObj = document.cookie.split(';').reduce((acc, c) => {
+      const [k, v] = c.trim().split('=')
+      if (k) acc[k] = v
+      return acc
+    }, {} as Record<string, string>)
+    
+    const storedSessionId = cookiesObj['kiosk-session-id']
+    const fp = getDeviceFingerprintLocal()
+    
+    if (storedSessionId) {
+      try {
+        const res = await fetch(`/api/kiosk/${cafe.slug}/session/validate?sessionId=${storedSessionId}`, {
+          headers: {
+            'x-device-fingerprint': fp
+          }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (data.valid) {
+            const expiry = new Date(data.expiresAt)
+            const secondsLeft = Math.max(0, Math.floor((expiry.getTime() - Date.now()) / 1000))
+            setSessionTimeLeft(secondsLeft)
+            setIsSessionExpired(false)
+            return
+          }
+        }
+      } catch (e) {
+        console.warn('[Session] Stored session validation failed:', e)
+      }
+    }
+    
+    await initializeSession()
+  }
+
+  useEffect(() => {
+    checkAndInitSession()
+  }, [cafe.id])
+
+  useEffect(() => {
+    if (sessionTimeLeft === null) return
+    if (sessionTimeLeft <= 0) {
+      setIsSessionExpired(true)
+      return
+    }
+    const timer = setTimeout(() => {
+      setSessionTimeLeft(prev => (prev !== null ? prev - 1 : null))
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [sessionTimeLeft])
 
   const [analysisResult, setAnalysisResult] = useState<AIResult | null>(null);
   // Suggested drink state; initialize to true if no drinks available for the cafe
@@ -347,6 +444,10 @@ export default function KioskClient({
   ]
 
   const handleAnalyze = () => {
+    if (isSessionExpired) {
+      alert(isAr ? 'انتهت صلاحية الجلسة، يرجى مسح رمز QR مرة أخرى' : 'Session expired, please scan the QR code again')
+      return
+    }
     if (!selectedMood && !customText) return
 
     startTransition(async () => {
@@ -379,6 +480,10 @@ export default function KioskClient({
   }
 
   const handlePlaceOrder = async () => {
+    if (isSessionExpired) {
+      alert(isAr ? 'انتهت صلاحية الجلسة، يرجى مسح رمز QR مرة أخرى' : 'Session expired, please scan the QR code again')
+      return
+    }
     if (!analysisResult) return
     if (!analysisResult.drinkId) {
       alert(
@@ -522,17 +627,31 @@ export default function KioskClient({
           </div>
         </div>
 
-        {/* Left side: Language switcher */}
-        <button
-          onClick={() => {
-            const nextLocale = locale === 'ar' ? 'en' : 'ar'
-            router.replace(pathname, { locale: nextLocale })
-          }}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs font-black text-[#3E2723] border border-[#3E2723]/20 rounded-xl hover:bg-[#3E2723]/5 backdrop-blur-sm transition-all active:scale-95 cursor-pointer"
-        >
-          <Globe className="h-3.5 w-3.5" />
-          <span>{locale === 'ar' ? 'English' : 'العربية'}</span>
-        </button>
+        {/* Left side: Timer and Language switcher */}
+        <div className="flex items-center gap-3">
+          {sessionTimeLeft !== null && !isSessionExpired && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black bg-amber-50 text-amber-900 border border-amber-200 rounded-xl">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>
+                {isAr ? 'الوقت المتبقي: ' : 'Time Left: '}
+                {Math.floor(sessionTimeLeft / 60).toString().padStart(2, '0')}
+                :
+                {(sessionTimeLeft % 60).toString().padStart(2, '0')}
+              </span>
+            </div>
+          )}
+
+          <button
+            onClick={() => {
+              const nextLocale = locale === 'ar' ? 'en' : 'ar'
+              router.replace(pathname, { locale: nextLocale })
+            }}
+            className="flex items-center gap-1 px-3 py-1.5 text-xs font-black text-[#3E2723] border border-[#3E2723]/20 rounded-xl hover:bg-[#3E2723]/5 backdrop-blur-sm transition-all active:scale-95 cursor-pointer"
+          >
+            <Globe className="h-3.5 w-3.5" />
+            <span>{locale === 'ar' ? 'English' : 'العربية'}</span>
+          </button>
+        </div>
       </header>
 
       {/* FULLSCREEN AI BREWING LOADER */}
@@ -620,6 +739,57 @@ export default function KioskClient({
                 className="w-full py-3 bg-[#5D4037] text-white rounded-xl font-black text-xs transition-colors cursor-pointer shadow-sm hover:bg-[#3E2723]"
               >
                 {tr('close')}
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Kiosk Session Expired Modal */}
+      <AnimatePresence>
+        {isSessionExpired && (
+          <div className="fixed inset-0 z-[140] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-[#3E2723]/70 backdrop-blur-md"
+            />
+
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white w-full max-w-sm rounded-3xl p-6 text-center shadow-2xl relative z-10 border border-[#5D4037]/10 animate-in fade-in zoom-in-95 duration-250"
+            >
+              <div className="w-12 h-12 bg-red-150 text-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg
+                  className="h-6 w-6 stroke-[3]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+
+              <h2 className="text-xl font-black text-[#2D2D2D] mb-3">
+                {isAr ? 'انتهت صلاحية الجلسة' : 'Session Expired'}
+              </h2>
+
+              <p className="text-xs text-[#6D6D6D] font-semibold leading-relaxed mb-6">
+                {isAr ? 'انتهت صلاحية الجلسة، يرجى مسح رمز QR مرة أخرى' : 'Session expired, please scan the QR code again'}
+              </p>
+
+              <button
+                onClick={initializeSession}
+                className="w-full py-3 bg-[#5D4037] text-white rounded-xl font-black text-xs transition-colors cursor-pointer shadow-sm hover:bg-[#3E2723]"
+              >
+                {isAr ? 'إعادة مسح رمز QR' : 'Re-scan QR Code'}
               </button>
             </motion.div>
           </div>

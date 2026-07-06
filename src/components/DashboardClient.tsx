@@ -977,6 +977,11 @@ export default function DashboardClient({
     const coverImage = coverImageUrl || ''
     const instagram = fd.get('instagram') as string
     const facebook = fd.get('facebook') as string
+    const kioskSessionMinutesStr = fd.get('kioskSessionMinutes') as string
+    let kioskSessionMinutes = parseInt(kioskSessionMinutesStr, 10)
+    if (isNaN(kioskSessionMinutes) || kioskSessionMinutes < 1 || kioskSessionMinutes > 120) {
+      kioskSessionMinutes = 45
+    }
 
     if (!nameAr || !nameEn) return
 
@@ -994,6 +999,7 @@ export default function DashboardClient({
           coverImage,
           instagram,
           facebook,
+          kioskSessionMinutes,
         })
         addToast(isAr ? 'تم حفظ الإعدادات بنجاح!' : 'Settings saved successfully!', 'success')
         // Reset form fields and clear images after successful save

@@ -188,6 +188,7 @@ export async function updateCafeSettingsAction(
     coverImageUrl?: string
     instagram?: string
     facebook?: string
+    kioskSessionMinutes?: number
   },
 ) {
   // Authorization Check
@@ -208,6 +209,10 @@ export async function updateCafeSettingsAction(
   if (coverImageValue !== undefined) updateData.coverImage = coverImageValue || null
   if (data.instagram !== undefined) updateData.instagram = data.instagram || null
   if (data.facebook !== undefined) updateData.facebook = data.facebook || null
+  if (data.kioskSessionMinutes !== undefined) {
+    const minVal = data.kioskSessionMinutes;
+    (updateData as any).kioskSessionMinutes = typeof minVal === 'number' && minVal >= 1 && minVal <= 120 ? minVal : 45;
+  }
 
   await db.cafe.update({
     where: { id: cafeId },

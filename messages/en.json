@@ -136,6 +136,7 @@
     "phone": "Cafe Phone",
     "logo": "Cafe Logo URL",
     "addressAr": "Address (Arabic)",
-    "addressEn": "Address (English)"
+    "addressEn": "Address (English)",
+    "kioskSessionMinutes": "Kiosk Session Duration (minutes)"
   }
 }

@@ -24,6 +24,7 @@ interface Cafe {
   workingHoursEn: string | null
   instagram: string | null
   facebook: string | null
+  kioskSessionMinutes?: number | null
   trialEndsAt: Date | string
   subscriptionPlan: string
   subscriptionStatus: string
@@ -341,6 +342,20 @@ export default function SettingsTab({
             type="text"
             name="addressEn"
             defaultValue={settings.addressEn || ''}
+            className="w-full p-2.5 rounded-xl border border-[#3E2723]/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#3E2723] bg-transparent"
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-[10px] font-black text-[#2D2D2D] uppercase tracking-wider">
+            {t('kioskSessionMinutes')}
+          </label>
+          <input
+            type="number"
+            name="kioskSessionMinutes"
+            min={1}
+            max={120}
+            defaultValue={settings.kioskSessionMinutes ?? 45}
             className="w-full p-2.5 rounded-xl border border-[#3E2723]/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#3E2723] bg-transparent"
           />
         </div>

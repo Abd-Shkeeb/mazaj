@@ -154,6 +154,7 @@ model Event {
 model KioskSession {
   id        String   @id @default(cuid())
   cafeId    String
+  deviceFingerprint String? // optional device fingerprint
   createdAt DateTime @default(now())
   expiresAt DateTime
   cafe      Cafe     @relation(fields: [cafeId], references: [id], onDelete: Cascade)

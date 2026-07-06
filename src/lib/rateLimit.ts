@@ -30,3 +30,12 @@ export function isRateLimited(ip: string, limit: number): boolean {
 
   return false
 }
+
+/**
+ * Generic rate limiting based on an arbitrary string key.
+ * Useful for limiting actions per cafe, per session creation, etc.
+ */
+export function isRateLimitedKey(key: string, limit: number): boolean {
+  return isRateLimited(key, limit)
+}
+
