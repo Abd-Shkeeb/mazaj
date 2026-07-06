@@ -391,26 +391,26 @@ export default function DashboardClient({
           </head>
           <body>
             <h1>${isAr ? settings.nameAr : settings.nameEn}</h1>
-            \${qrTableNumber ? \`<h2>\${isAr ? \`طاولة \${qrTableNumber}\` : \`Table \${qrTableNumber}\`}</h2>\` : ''}
-            <img src="\${qrUrl}" onload="window.print(); window.close();" />
-            <p>\${isAr ? 'امسح الرمز واكتشف مشروبك الذي يطابق مزاجك!' : 'Scan the code and discover the drink matching your mood!'}</p>
+            ${qrTableNumber ? `<h2>${isAr ? `طاولة ${qrTableNumber}` : `Table ${qrTableNumber}`}</h2>` : ''}
+            <img src="${qrUrl}" onload="window.print(); window.close();" />
+            <p>${isAr ? 'امسح الرمز واكتشف مشروبك الذي يطابق مزاجك!' : 'Scan the code and discover the drink matching your mood!'}</p>
           </body>
         </html>
-      \`)
+      `)
       printWindow.document.close()
     }
   }
 
   const handleDownloadQr = async () => {
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(
-      \`\${window.location.origin}/\${locale}/\${settings.slug}\${qrTableNumber ? \`?table=\${qrTableNumber}\` : ''}\`
+      `${window.location.origin}/${locale}/${settings.slug}${qrTableNumber ? `?table=${qrTableNumber}` : ''}`
     )}`
     try {
       const res = await fetch(qrUrl)
       const blob = await res.blob()
       const link = document.createElement('a')
       link.href = URL.createObjectURL(blob)
-      link.download = \`QR_\${settings.slug}\${qrTableNumber ? \`_table_\${qrTableNumber}\` : ''}.png\`
+      link.download = `QR_${settings.slug}${qrTableNumber ? `_table_${qrTableNumber}` : ''}.png`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
