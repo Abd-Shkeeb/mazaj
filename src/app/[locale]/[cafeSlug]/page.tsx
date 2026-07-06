@@ -24,23 +24,10 @@ export default async function CafeKioskPage({
     notFound()
   }
 
-  // Check active session of the owner
-  const session = await getSessionAction()
-  let isOwnerValid = false
-  if (session && (session.cafeId === cafe.id || session.role === 'SUPER_ADMIN')) {
-    const user = await db.user.findUnique({
-      where: { id: session.userId },
-      select: { cafeId: true, role: true },
-    })
-    if (user && (user.cafeId === cafe.id || user.role === 'SUPER_ADMIN')) {
-      isOwnerValid = true
-    }
-  }
-
   const subStatus = await verifyActiveSubscription(cafe.id)
   const isExpired = subStatus === 'EXPIRED' || subStatus === 'SUSPENDED' || subStatus === 'CANCELLED'
 
-  if (isExpired || !isOwnerValid) {
+  if (isExpired) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5] px-4 py-12 relative overflow-hidden">
         {/* Background decorative blurry circles */}
@@ -70,9 +57,7 @@ export default async function CafeKioskPage({
               {isAr ? 'الكشك غير متاح حالياً' : 'Kiosk is currently unavailable'}
             </h1>
             <p className="text-xs sm:text-sm font-bold text-gray-500 leading-relaxed">
-              {!isOwnerValid
-                ? (isAr ? 'تم تسجيل خروج المالك. يرجى تسجيل الدخول مجدداً لتفعيل الكشك.' : 'Owner has logged out. Please log in again to activate the kiosk.')
-                : (isAr ? 'تم إيقاف الكشك مؤقتاً لانتهاء اشتراك المقهى.' : 'The kiosk has been temporarily deactivated due to the cafe\'s subscription expiration.')}
+              {isAr ? 'تم إيقاف الكشك مؤقتاً لانتهاء اشتراك المقهى.' : 'The kiosk has been temporarily deactivated due to the cafe\'s subscription expiration.'}
             </p>
           </div>
 
