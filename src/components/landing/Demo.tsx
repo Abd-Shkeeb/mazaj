@@ -148,24 +148,24 @@ export default function Demo() {
             )}
           </AnimatePresence>
 
-          <div className="grid grid-cols-3 gap-4 py-6 relative z-10">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
-              <span className="text-[9px] font-bold text-[#FAF8F5]/60 block mb-1">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 py-6 relative z-10">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-2 sm:p-4 text-center">
+              <span className="text-[8px] sm:text-[9px] font-bold text-[#FAF8F5]/60 block mb-1">
                 {isAr ? 'إجمالي عمليات المسح' : 'Total Scans'}
               </span>
-              <span className="text-xl font-black text-white">{dashScans}</span>
+              <span className="text-sm sm:text-base lg:text-xl font-black text-white whitespace-nowrap">{dashScans}</span>
             </div>
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center relative overflow-hidden">
-              <span className="text-[9px] font-bold text-[#FAF8F5]/60 block mb-1">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-2 sm:p-4 text-center relative overflow-hidden">
+              <span className="text-[8px] sm:text-[9px] font-bold text-[#FAF8F5]/60 block mb-1">
                 {isAr ? 'الطلبات المستلمة' : 'Mock Orders'}
               </span>
-              <span className="text-xl font-black text-amber-300">{dashOrdersCount}</span>
+              <span className="text-sm sm:text-base lg:text-xl font-black text-amber-300 whitespace-nowrap">{dashOrdersCount}</span>
             </div>
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
-              <span className="text-[9px] font-bold text-[#FAF8F5]/60 block mb-1">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-2 sm:p-4 text-center">
+              <span className="text-[8px] sm:text-[9px] font-bold text-[#FAF8F5]/60 block mb-1">
                 {isAr ? 'الأرباح المحاكاة' : 'Est. Revenue'}
               </span>
-              <span className="text-xl font-black text-emerald-400">
+              <span className="text-sm sm:text-base lg:text-xl font-black text-emerald-400 whitespace-nowrap">
                 {isAr
                   ? `${dashRevenue.toLocaleString('ar-IQ')} د.ع`
                   : `${dashRevenue.toLocaleString('en-US')} IQD`}
@@ -187,18 +187,18 @@ export default function Demo() {
                     animate={{ opacity: 1, x: 0, height: 'auto' }}
                     exit={{ opacity: 0, x: 30, height: 0 }}
                     transition={{ type: 'spring', stiffness: 100, damping: 15 }}
-                    className="bg-white/10 border border-white/5 rounded-xl p-3 flex justify-between items-center text-xs text-white"
+                    className="bg-white/10 border border-white/5 rounded-xl p-3 flex justify-between items-center text-xs text-white gap-2"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-base">{order.mood}</span>
-                      <div>
-                        <div className="font-black text-white">{order.drink}</div>
-                        <div className="text-[9px] text-[#F5E6D3]/60 font-semibold">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="text-base flex-shrink-0">{order.mood}</span>
+                      <div className="min-w-0">
+                        <div className="font-black text-white truncate">{order.drink}</div>
+                        <div className="text-[9px] text-[#F5E6D3]/60 font-semibold truncate">
                           {order.table} • {order.time}
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0 whitespace-nowrap">
                       <div className="font-black text-emerald-400">
                         {isAr
                           ? `${order.price.toLocaleString('ar-IQ')} د.ع`
