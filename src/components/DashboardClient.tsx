@@ -1831,78 +1831,108 @@ export default function DashboardClient({
       {
         showReportModal && (
           <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white p-6 rounded-3xl max-w-md w-full border border-gray-150 shadow-2xl relative space-y-5 animate-in zoom-in-95 duration-200">
-              <button
-                onClick={() => setShowReportModal(false)}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-
-              <div className="text-right rtl:text-right ltr:text-left space-y-1">
-                <div className="flex items-center gap-2">
-                  <ClipboardList className="h-5 w-5 text-purple-700" />
-                  <h3 className="text-sm font-black text-[#3E2723]">
-                    {isAr ? 'تقرير الأداء والنشاط لليوم' : "Today's Performance Report"}
-                  </h3>
-                </div>
-                <p className="text-[10px] text-gray-500 font-bold">
-                  {new Date().toLocaleDateString(isAr ? 'ar-IQ' : 'en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </p>
-              </div>
-
-              <div className="divide-y divide-gray-100 text-xs">
-                <div className="py-2.5 flex justify-between">
-                  <span className="text-gray-500 font-bold">
-                    {isAr ? 'إجمالي المبيعات المكتملة' : 'Total Revenue'}
-                  </span>
-                  <span className="font-black text-emerald-700">{formatVal(todayRevenue)}</span>
-                </div>
-                <div className="py-2.5 flex justify-between">
-                  <span className="text-gray-500 font-bold">
-                    {isAr ? 'الطلبات المنجزة' : 'Orders Completed'}
-                  </span>
-                  <span className="font-black text-gray-800">
-                    {todayOrders.filter(o => o.status === 'COMPLETED').length}
-                  </span>
-                </div>
-                <div className="py-2.5 flex justify-between">
-                  <span className="text-gray-500 font-bold">
-                    {isAr ? 'الطلبات بانتظار التحضير' : 'Pending Orders'}
-                  </span>
-                  <span className="font-black text-amber-700">{pendingOrders.length}</span>
-                </div>
-                <div className="py-2.5 flex justify-between">
-                  <span className="text-gray-500 font-bold">
-                    {isAr ? 'عمليات فحص ومسح المزاج' : 'Vibe checks performed'}
-                  </span>
-                  <span className="font-black text-purple-700">{todayAnalyses.length}</span>
-                </div>
-                <div className="py-2.5 flex justify-between">
-                  <span className="text-gray-500 font-bold">
-                    {isAr ? 'المزاج السائد اليوم' : 'Dominant customer mood'}
-                  </span>
-                  <span className="font-black text-[#3E2723]">{topMoodToday}</span>
+            <div className="bg-white rounded-3xl max-w-md w-full border border-[#3E2723]/10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
+              {/* Header Banner */}
+              <div className="bg-gradient-to-br from-[#3E2723] to-[#5D4037] text-[#F5E6D3] p-6 relative">
+                <button
+                  onClick={() => setShowReportModal(false)}
+                  className="absolute top-4 rtl:left-4 rtl:right-auto ltr:right-4 ltr:left-auto text-[#FAF8F5]/60 hover:text-[#FAF8F5] transition-colors cursor-pointer p-1.5 rounded-full hover:bg-white/10"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+                <div className="space-y-1.5 mt-2 text-right rtl:text-right ltr:text-left">
+                  <div className="flex items-center gap-2">
+                    <ClipboardList className="h-5 w-5 text-amber-400" />
+                    <h3 className="text-base font-black text-white">
+                      {isAr ? 'تقرير الأداء والنشاط لليوم' : "Today's Performance Report"}
+                    </h3>
+                  </div>
+                  <p className="text-[11px] text-[#FAF8F5]/80 font-bold">
+                    {new Date().toLocaleDateString(isAr ? 'ar-IQ' : 'en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </p>
                 </div>
               </div>
 
-              <button
-                onClick={() => {
-                  setShowReportModal(false)
-                  addToast(
-                    isAr ? 'تم إرسال التقرير لبريدك الإلكتروني' : 'Report sent to your email',
-                    'success',
-                  )
-                }}
-                className="w-full py-2.5 bg-[#3E2723] hover:bg-[#2D1B18] text-white rounded-xl text-xs font-black cursor-pointer shadow-sm text-center"
-              >
-                {isAr ? 'إرسال التقرير للبريد الإلكتروني' : 'Send Report to Email'}
-              </button>
+              {/* Stats List */}
+              <div className="p-6 space-y-4">
+                <div className="space-y-3">
+                  {/* Stat Card 1: Completed Sales */}
+                  <div className="flex justify-between items-center p-3.5 bg-emerald-50/30 rounded-2xl border border-emerald-600/10 hover:bg-emerald-50/50 transition-colors">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-base">💰</span>
+                      <span className="text-xs font-black text-gray-600">
+                        {isAr ? 'إجمالي المبيعات المكتملة' : 'Total Revenue'}
+                      </span>
+                    </div>
+                    <span className="text-sm font-black text-emerald-700">{formatVal(todayRevenue)}</span>
+                  </div>
+
+                  {/* Stat Card 2: Completed Orders */}
+                  <div className="flex justify-between items-center p-3.5 bg-[#FAF8F5] rounded-2xl border border-[#3E2723]/5 hover:bg-[#FAF8F5]/80 transition-colors">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-base">☕</span>
+                      <span className="text-xs font-black text-gray-600">
+                        {isAr ? 'الطلبات المنجزة' : 'Orders Completed'}
+                      </span>
+                    </div>
+                    <span className="text-sm font-black text-[#3E2723]">
+                      {todayOrders.filter(o => o.status === 'COMPLETED').length}
+                    </span>
+                  </div>
+
+                  {/* Stat Card 3: Pending Orders */}
+                  <div className="flex justify-between items-center p-3.5 bg-amber-50/30 rounded-2xl border border-amber-600/10 hover:bg-amber-50/50 transition-colors">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-base">⏳</span>
+                      <span className="text-xs font-black text-gray-600">
+                        {isAr ? 'الطلبات بانتظار التحضير' : 'Pending Orders'}
+                      </span>
+                    </div>
+                    <span className="text-sm font-black text-amber-700">{pendingOrders.length}</span>
+                  </div>
+
+                  {/* Stat Card 4: Vibe Checks */}
+                  <div className="flex justify-between items-center p-3.5 bg-purple-50/30 rounded-2xl border border-purple-600/10 hover:bg-purple-50/50 transition-colors">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-base">✨</span>
+                      <span className="text-xs font-black text-gray-600">
+                        {isAr ? 'عمليات فحص ومسح المزاج' : 'Vibe checks performed'}
+                      </span>
+                    </div>
+                    <span className="text-sm font-black text-purple-700">{todayAnalyses.length}</span>
+                  </div>
+
+                  {/* Stat Card 5: Dominant Mood */}
+                  <div className="flex justify-between items-center p-3.5 bg-[#FAF8F5] rounded-2xl border border-[#3E2723]/5 hover:bg-[#FAF8F5]/80 transition-colors">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-base">🧠</span>
+                      <span className="text-xs font-black text-gray-600">
+                        {isAr ? 'المزاج السائد اليوم' : 'Dominant customer mood'}
+                      </span>
+                    </div>
+                    <span className="text-sm font-black text-[#3E2723]">{topMoodToday}</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setShowReportModal(false)
+                    addToast(
+                      isAr ? 'تم إرسال التقرير لبريدك الإلكتروني' : 'Report sent to your email',
+                      'success',
+                    )
+                  }}
+                  className="w-full py-3 bg-[#3E2723] hover:bg-[#2D1B18] text-[#F5E6D3] rounded-2xl text-xs font-black cursor-pointer shadow-lg active:scale-98 transition-all text-center flex items-center justify-center gap-2 mt-2"
+                >
+                  <span>✉️</span>
+                  <span>{isAr ? 'إرسال التقرير للبريد الإلكتروني' : 'Send Report to Email'}</span>
+                </button>
+              </div>
             </div>
           </div>
         )
