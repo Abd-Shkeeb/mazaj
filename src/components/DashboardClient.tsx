@@ -466,27 +466,22 @@ export default function DashboardClient({
 
   // Subscription check
   const isTrial = settings.subscriptionPlan === 'FREE_TRIAL' || settings.subscriptionPlan === 'FREE'
-  const endDate = isTrial
-    ? new Date(settings.trialEndsAt)
-    : settings.subscriptionEndsAt
-      ? new Date(settings.subscriptionEndsAt)
-      : new Date()
-  
-  const [diffDays, setDiffDays] = useState<number>(30)
-  const [isExpired, setIsExpired] = useState<boolean>(false)
+  const endDate = useMemo(() => {
+    return isTrial
+      ? new Date(settings.trialEndsAt)
+      : settings.subscriptionEndsAt
+        ? new Date(settings.subscriptionEndsAt)
+        : new Date()
+  }, [isTrial, settings.trialEndsAt, settings.subscriptionEndsAt])
 
-  useEffect(() => {
-    const currentNow = new Date()
-    const expired =
-      settings.subscriptionStatus === 'EXPIRED' ||
-      (isTrial && currentNow > endDate) ||
-      (!isTrial && !!settings.subscriptionEndsAt && currentNow > endDate)
-    setIsExpired(expired)
+  const now = new Date()
+  const isExpired =
+    settings.subscriptionStatus === 'EXPIRED' ||
+    (isTrial && now > endDate) ||
+    (!isTrial && !!settings.subscriptionEndsAt && now > endDate)
 
-    const diffTime = endDate.getTime() - currentNow.getTime()
-    const calculatedDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)))
-    setDiffDays(calculatedDays)
-  }, [settings.trialEndsAt, settings.subscriptionEndsAt, settings.subscriptionPlan, settings.subscriptionStatus, isTrial])
+  const diffTime = endDate.getTime() - now.getTime()
+  const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)))
 
   // Edit Drink modal state
   const [editingDrink, setEditingDrink] = useState<Drink | null>(null)
