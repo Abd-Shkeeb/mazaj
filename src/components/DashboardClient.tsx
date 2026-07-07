@@ -474,14 +474,44 @@ export default function DashboardClient({
         : new Date()
   }, [isTrial, settings.trialEndsAt, settings.subscriptionEndsAt])
 
-  const now = new Date()
-  const isExpired =
-    settings.subscriptionStatus === 'EXPIRED' ||
-    (isTrial && now > endDate) ||
-    (!isTrial && !!settings.subscriptionEndsAt && now > endDate)
+  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
+    days: 30,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  })
+  const [isExpired, setIsExpired] = useState<boolean>(false)
 
-  const diffTime = endDate.getTime() - now.getTime()
-  const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)))
+  useEffect(() => {
+    const updateCountdown = () => {
+      const currentNow = new Date()
+      const expired =
+        settings.subscriptionStatus === 'EXPIRED' ||
+        (isTrial && currentNow > endDate) ||
+        (!isTrial && !!settings.subscriptionEndsAt && currentNow > endDate)
+      setIsExpired(expired)
+
+      const diffTime = endDate.getTime() - currentNow.getTime()
+      if (diffTime <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+        return
+      }
+
+      const days = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+      const hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+      const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60))
+      const seconds = Math.floor((diffTime % (1000 * 60)) / 1000)
+
+      setTimeLeft({ days, hours, minutes, seconds })
+    }
+
+    updateCountdown()
+    const timer = setInterval(updateCountdown, 1000)
+    return () => clearInterval(timer)
+  }, [endDate, isTrial, settings.subscriptionStatus, settings.subscriptionEndsAt])
+
+  // Computed display values
+  const diffDays = timeLeft.days
 
   // Edit Drink modal state
   const [editingDrink, setEditingDrink] = useState<Drink | null>(null)
