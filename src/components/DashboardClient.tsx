@@ -480,7 +480,7 @@ export default function DashboardClient({
     const expired =
       settings.subscriptionStatus === 'EXPIRED' ||
       (isTrial && currentNow > endDate) ||
-      (!isTrial && settings.subscriptionEndsAt && currentNow > endDate)
+      (!isTrial && !!settings.subscriptionEndsAt && currentNow > endDate)
     setIsExpired(expired)
 
     const diffTime = endDate.getTime() - currentNow.getTime()
