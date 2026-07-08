@@ -52,6 +52,7 @@ export async function analyzeMood(formData: {
   customText?: string
   cafeId: string
 }) {
+  const { cookies } = await import('next/headers')
   // Assert active subscription first (blocks Gemini API call if expired/suspended)
   await assertActiveSubscription(formData.cafeId)
   // Check Gemini vibe analysis quota limits by plan
@@ -68,6 +69,12 @@ export async function analyzeMood(formData: {
   const { moodKey, customText, cafeId } = formData
   const moodInputText = customText || moodKey || 'happy'
 
+  // Retrieve last recommended drink ID from session cookie to avoid repeats
+  const cookieStore = await cookies()
+  const lastDrinkId = cookieStore.get('last-recommended-drink-id')?.value
+
+  console.log(`[AI Kiosk Session Log] User Mood Input: "${moodInputText}" | Last Recommended Drink ID in Session Cookie: "${lastDrinkId || 'None'}"`)
+
   // 1. Fetch available drinks using cached helper (select only needed fields)
   const menuDrinks = await getMenuDrinks(cafeId)
 
@@ -82,6 +89,7 @@ export async function analyzeMood(formData: {
 
   // If there are no available drinks, return a result indicating none
   if (menuDrinks.length === 0) {
+    console.log('[AI Kiosk Session Log] No available drinks found in menu for Cafe ID:', cafeId)
     const noDrinkResult: AIResult = {
       moodNameAr: 'لا يوجد مشروب متاح',
       moodNameEn: 'No Drink Available',
@@ -117,8 +125,14 @@ export async function analyzeMood(formData: {
   }
 
   const apiKey = process.env.GEMINI_API_KEY
+  let geminiCalled = false
+  let rawGeminiTextResponse = ''
+
   if (apiKey && apiKey.trim() !== '') {
     try {
+      console.log('[AI Kiosk Session Log] Calling Gemini API (gemini-2.5-flash)...')
+      geminiCalled = true
+
       const genAI = new GoogleGenerativeAI(apiKey)
       const model = genAI.getGenerativeModel({
         model: 'gemini-2.5-flash',
@@ -129,45 +143,94 @@ export async function analyzeMood(formData: {
 
       const prompt = `
         You are an AI assistant installed in a cafe kiosk called "Mazaj".
-        Your task is to analyze the user's mood and recommend ONE drink that fits them from the cafe's actual menu list below.
+        Your task is to analyze the user's mood and recommend up to 3 suitable candidate drinks that fit them from the cafe's actual menu list below.
         
         Cafe's Available Menu:
         ${menuListString}
         
         Analyze the user's mood or description: "${moodInputText}".
-        Select the best matching drink from the menu. You MUST output its exact database ID, nameAr, nameEn, description, and custom matching reasoning.
+        
+        If possible, try to avoid suggesting the drink with ID "${lastDrinkId || ''}" as the top candidate if there are other good choices.
+        
+        Select up to 3 best matching candidate drinks from the menu, ordered from best match to alternative matches.
         
         Provide the result in JSON format only with the following structure:
         {
           "moodNameAr": "اسم المزاج المكتشف بالعربية",
           "moodNameEn": "Mood name in English",
-          "suitableDrinkAr": "اسم المشروب بالعربية",
-          "suitableDrinkEn": "Suitable Drink name in English",
-          "drinkId": "The exact ID of the drink selected from the menu",
-          "drinkDescriptionAr": "وصف المشروب بالعربية وتأثيره على المزاج",
-          "drinkDescriptionEn": "Description of the drink and its mood effect in English",
-          "energyLevel": 80,
-          "sweetnessLevel": 60,
-          "whyMatchesAr": "لماذا يناسب هذا المشروب المزاج المكتشف بالعربية",
-          "whyMatchesEn": "Why this drink matches the mood in English",
-          "foodPairingAr": "طعام مقترح مرافق للمشروب (مثل: دونات شوكولاتة، كوكيز)",
-          "foodPairingEn": "Food pairing recommendation in English"
+          "candidates": [
+            {
+              "drinkId": "The exact ID of the drink selected from the menu",
+              "suitableDrinkAr": "اسم المشروب بالعربية",
+              "suitableDrinkEn": "Suitable Drink name in English",
+              "drinkDescriptionAr": "وصف المشروب بالعربية وتأثيره على المزاج",
+              "drinkDescriptionEn": "Description of the drink and its mood effect in English",
+              "whyMatchesAr": "لماذا يناسب هذا المشروب المزاج المكتشف بالعربية",
+              "whyMatchesEn": "Why this drink matches the mood in English",
+              "foodPairingAr": "طعام مقترح مرافق للمشروب (مثل: دونات شوكولاتة، كوكيز)",
+              "foodPairingEn": "Food pairing recommendation in English",
+              "energyLevel": 80,
+              "sweetnessLevel": 60
+            }
+          ]
         }
       `
 
       const response = await model.generateContent(prompt)
-      const text = response.response.text()
-      aiResult = JSON.parse(text)
+      rawGeminiTextResponse = response.response.text()
+      console.log('[AI Kiosk Session Log] Raw Gemini API Response:', rawGeminiTextResponse)
+
+      const parsed = JSON.parse(rawGeminiTextResponse)
+      
+      // Determine final selected candidate
+      let candidatesList: any[] = []
+      if (parsed.candidates && Array.isArray(parsed.candidates) && parsed.candidates.length > 0) {
+        candidatesList = parsed.candidates
+      } else {
+        // Fallback if Gemini outputs single recommendation in old format
+        candidatesList = [parsed]
+      }
+
+      // Filter out last recommended drink to avoid repetitions if we have alternatives
+      let selectedCandidate = candidatesList[0]
+      if (candidatesList.length > 1 && lastDrinkId) {
+        const alternative = candidatesList.find(c => c.drinkId !== lastDrinkId)
+        if (alternative) {
+          selectedCandidate = alternative
+          console.log(`[AI Kiosk Session Log] Diversified recommendation! Filtered out consecutive ID "${lastDrinkId}" and picked alternative ID "${alternative.drinkId}"`)
+        }
+      } else if (candidatesList.length > 1) {
+        // Randomly select between the top 2 candidates to add natural variation
+        const randomIndex = Math.floor(Math.random() * Math.min(candidatesList.length, 2))
+        selectedCandidate = candidatesList[randomIndex]
+        console.log(`[AI Kiosk Session Log] Selected candidate index ${randomIndex} (ID: ${selectedCandidate.drinkId}) to diversify choice`)
+      }
+
+      aiResult = {
+        moodNameAr: parsed.moodNameAr || 'مزاج عام',
+        moodNameEn: parsed.moodNameEn || 'General Mood',
+        suitableDrinkAr: selectedCandidate.suitableDrinkAr,
+        suitableDrinkEn: selectedCandidate.suitableDrinkEn,
+        drinkId: selectedCandidate.drinkId,
+        drinkDescriptionAr: selectedCandidate.drinkDescriptionAr,
+        drinkDescriptionEn: selectedCandidate.drinkDescriptionEn,
+        whyMatchesAr: selectedCandidate.whyMatchesAr,
+        whyMatchesEn: selectedCandidate.whyMatchesEn,
+        foodPairingAr: selectedCandidate.foodPairingAr || 'كرواسون',
+        foodPairingEn: selectedCandidate.foodPairingEn || 'Croissant',
+        energyLevel: selectedCandidate.energyLevel ?? 50,
+        sweetnessLevel: selectedCandidate.sweetnessLevel ?? 50,
+      }
     } catch (error) {
-      console.error('Gemini API Error, falling back to database matching:', error)
+      console.error('[AI Kiosk Session Log] Gemini API Error, falling back to local fallback:', error)
       aiResult = getFallbackResult(moodInputText, menuDrinks)
     }
   } else {
+    console.log('[AI Kiosk Session Log] GEMINI_API_KEY not configured. Falling back to local fallback.')
     aiResult = getFallbackResult(moodInputText, menuDrinks)
   }
 
   // Find or create matching mood in Database
-  // Use indexed nameEn lookup first for speed, then fallback to nameAr
   let moodDb = await db.mood.findFirst({
     where: { nameEn: aiResult.moodNameEn },
   })
@@ -188,27 +251,41 @@ export async function analyzeMood(formData: {
   }
 
   // Fetch full details of the recommended drink to guarantee accurate ID, price and image
-  // Fetch full details of the recommended drink to guarantee accurate ID, price and image
   let finalDrink = menuDrinks.find(d => d.id === aiResult.drinkId)
+  
+  // If AI recommended drink ID is not found, try by name match
   if (!finalDrink && aiResult.suitableDrinkEn) {
     finalDrink = menuDrinks.find(
       d =>
-        (d.nameEn && d.nameEn.toLowerCase().includes(aiResult.suitableDrinkEn.toLowerCase())) ||
-        (d.nameAr && d.nameAr.includes(aiResult.suitableDrinkAr))
+        (d.nameEn && d.nameEn.toLowerCase().includes(aiResult.suitableDrinkEn!.toLowerCase())) ||
+        (d.nameAr && d.nameAr.includes(aiResult.suitableDrinkAr!))
     )
   }
-  // Fallback to first available drink if none matches
+
+  // If still not matched, avoid repeating last recommended drink if other options exist
   if (!finalDrink && menuDrinks.length > 0) {
-    finalDrink = menuDrinks[0]
+    const freshOptions = menuDrinks.filter(d => d.id !== lastDrinkId)
+    if (freshOptions.length > 0) {
+      finalDrink = freshOptions[Math.floor(Math.random() * freshOptions.length)]
+    } else {
+      finalDrink = menuDrinks[0]
+    }
   }
 
   if (finalDrink) {
     aiResult.drinkId = finalDrink.id
     aiResult.price = finalDrink.price
     aiResult.image = finalDrink.image || undefined
-    // sync names safely
     aiResult.suitableDrinkAr = finalDrink.nameAr ?? ''
     aiResult.suitableDrinkEn = finalDrink.nameEn ?? ''
+  }
+
+  // Log final choice method
+  console.log(`[AI Kiosk Session Log] Gemini Called: ${geminiCalled} | Final Drink Selected: "${aiResult.suitableDrinkEn}" (ID: ${aiResult.drinkId})`)
+
+  // Save the recommended drink ID in session cookies to prevent consecutive repeats
+  if (aiResult.drinkId) {
+    cookieStore.set('last-recommended-drink-id', aiResult.drinkId, { maxAge: 1800 }) // 30 minutes Kiosk Session limit
   }
 
   // Save analysis log
