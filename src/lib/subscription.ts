@@ -114,10 +114,15 @@ export async function verifyActiveSubscription(cafeId: string): Promise<Subscrip
   if (cafe.subscriptionPlan === 'FREE_TRIAL' || cafe.subscriptionPlan === 'FREE') {
     const trialEnds = new Date(cafe.trialEndsAt)
     if (now > trialEnds) {
-      await db.cafe.update({
-        where: { id: cafeId },
-        data: { subscriptionStatus: 'EXPIRED' },
-      })
+      try {
+        await db.cafe.update({
+          where: { id: cafeId },
+          data: { subscriptionStatus: 'EXPIRED' },
+        })
+      } catch (err: any) {
+        console.error('[Subscription] Failed to update expired trial status in DB:', err)
+        if (err.stack) console.error(err.stack)
+      }
       return 'EXPIRED'
     }
     return 'TRIAL'
@@ -127,10 +132,15 @@ export async function verifyActiveSubscription(cafeId: string): Promise<Subscrip
   if (cafe.subscriptionEndsAt) {
     const ends = new Date(cafe.subscriptionEndsAt)
     if (now > ends) {
-      await db.cafe.update({
-        where: { id: cafeId },
-        data: { subscriptionStatus: 'EXPIRED' },
-      })
+      try {
+        await db.cafe.update({
+          where: { id: cafeId },
+          data: { subscriptionStatus: 'EXPIRED' },
+        })
+      } catch (err: any) {
+        console.error('[Subscription] Failed to update expired plan status in DB:', err)
+        if (err.stack) console.error(err.stack)
+      }
       return 'EXPIRED'
     }
   }

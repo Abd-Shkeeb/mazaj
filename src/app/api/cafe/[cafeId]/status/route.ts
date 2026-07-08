@@ -23,8 +23,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     return NextResponse.json({ status: 'ACTIVE' });
-  } catch (error) {
-    console.error('Error fetching cafe status:', error);
-    return NextResponse.json({ status: 'ERROR' }, { status: 500 });
+  } catch (error: any) {
+    console.error('[KioskStatusCheck] Error fetching cafe status:', error);
+    if (error.stack) {
+      console.error('[KioskStatusCheck] STACK TRACE:', error.stack);
+    }
+    return NextResponse.json({ status: 'ERROR', message: error.message }, { status: 500 });
   }
 }
