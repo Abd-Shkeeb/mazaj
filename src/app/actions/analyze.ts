@@ -75,13 +75,35 @@ export async function analyzeMood(formData: {
 
   console.log(`[AI Kiosk Session Log] User Mood Input: "${moodInputText}" | Last Recommended Drink ID in Session Cookie: "${lastDrinkId || 'None'}"`)
 
-  // 1. Fetch available drinks using cached helper (select only needed fields)
-  const menuDrinks = await getMenuDrinks(cafeId)
+  // 1. Fetch available drinks and evaluate suitability/exclusions
+  const allDrinks = await db.drink.findMany({
+    where: { cafeId },
+  })
+
+  const suitableDrinks = allDrinks.filter(d => d.isAvailable && d.description && d.description.trim() !== '')
+  const excludedDrinks = allDrinks.filter(d => !d.isAvailable || !d.description || d.description.trim() === '')
+
+  console.log(`[AI Kiosk Session Log] --- Evaluating Drink Suitability for Cafe ID: ${cafeId} ---`)
+  console.log(`[AI Kiosk Session Log] Total Drinks in Database: ${allDrinks.length}`)
+  console.log(`[AI Kiosk Session Log] Suitable Drinks count: ${suitableDrinks.length}`)
+  suitableDrinks.forEach(d => {
+    console.log(`[AI Kiosk Session Log] Suitable Drink: "${d.nameEn} / ${d.nameAr}" (ID: ${d.id})`)
+  })
+
+  console.log(`[AI Kiosk Session Log] Excluded Drinks count: ${excludedDrinks.length}`)
+  excludedDrinks.forEach(d => {
+    const reasons: string[] = []
+    if (!d.isAvailable) reasons.push('Not available (isAvailable = false)')
+    if (!d.description || d.description.trim() === '') reasons.push('Missing description/keywords/mood tags')
+    console.log(`[AI Kiosk Session Log] Excluded Drink: "${d.nameEn} / ${d.nameAr}" (ID: ${d.id}) - Reason: ${reasons.join(', ')}`)
+  })
+
+  const menuDrinks = suitableDrinks
 
   const menuListString = menuDrinks
     .map(
       d =>
-        `- ${d.nameEn} / ${d.nameAr} (ID: ${d.id}, Caffeine: ${d.caffeine}, Sweetness: ${d.sweetness}, Energy: ${d.energy}, Temp: ${d.isHot ? 'Hot' : 'Cold'}, Category: ${d.category})`,
+        `- ${d.nameEn} / ${d.nameAr} (ID: ${d.id}, Description: ${d.description || ''}, Caffeine: ${d.caffeine}, Sweetness: ${d.sweetness}, Energy: ${d.energy}, Temp: ${d.isHot ? 'Hot' : 'Cold'}, Category: ${d.category})`,
     )
     .join('\n')
 
@@ -143,7 +165,7 @@ export async function analyzeMood(formData: {
 
       const prompt = `
         You are an AI assistant installed in a cafe kiosk called "Mazaj".
-        Your task is to analyze the user's mood and recommend up to 3 suitable candidate drinks that fit them from the cafe's actual menu list below.
+        Your task is to analyze the user's mood and recommend all suitable candidate drinks (up to 10) that fit them from the cafe's actual menu list below.
         
         Cafe's Available Menu:
         ${menuListString}
@@ -152,7 +174,7 @@ export async function analyzeMood(formData: {
         
         If possible, try to avoid suggesting the drink with ID "${lastDrinkId || ''}" as the top candidate if there are other good choices.
         
-        Select up to 3 best matching candidate drinks from the menu, ordered from best match to alternative matches.
+        Select all matching candidate drinks from the menu, ordered from best match to alternative matches.
         
         Provide the result in JSON format only with the following structure:
         {
@@ -191,20 +213,22 @@ export async function analyzeMood(formData: {
         candidatesList = [parsed]
       }
 
+      console.log(`[AI Kiosk Session Log] All Gemini Recommended Candidates:`, JSON.stringify(candidatesList, null, 2))
+
       // Filter out last recommended drink to avoid repetitions if we have alternatives
-      let selectedCandidate = candidatesList[0]
-      if (candidatesList.length > 1 && lastDrinkId) {
-        const alternative = candidatesList.find(c => c.drinkId !== lastDrinkId)
-        if (alternative) {
-          selectedCandidate = alternative
-          console.log(`[AI Kiosk Session Log] Diversified recommendation! Filtered out consecutive ID "${lastDrinkId}" and picked alternative ID "${alternative.drinkId}"`)
+      let availableCandidates = candidatesList
+      if (lastDrinkId && candidatesList.length > 1) {
+        const filtered = candidatesList.filter(c => c.drinkId !== lastDrinkId)
+        if (filtered.length > 0) {
+          availableCandidates = filtered
+          console.log(`[AI Kiosk Session Log] Filtered out last recommended drink ID "${lastDrinkId}". Remaining candidates: ${availableCandidates.length}`)
         }
-      } else if (candidatesList.length > 1) {
-        // Randomly select between the top 2 candidates to add natural variation
-        const randomIndex = Math.floor(Math.random() * Math.min(candidatesList.length, 2))
-        selectedCandidate = candidatesList[randomIndex]
-        console.log(`[AI Kiosk Session Log] Selected candidate index ${randomIndex} (ID: ${selectedCandidate.drinkId}) to diversify choice`)
       }
+
+      // Randomly select between the available candidates to add natural variation
+      const randomIndex = Math.floor(Math.random() * availableCandidates.length)
+      let selectedCandidate = availableCandidates[randomIndex]
+      console.log(`[AI Kiosk Session Log] Selected candidate index ${randomIndex} (ID: ${selectedCandidate.drinkId}, Name: "${selectedCandidate.suitableDrinkEn}") from ${availableCandidates.length} available options`)
 
       aiResult = {
         moodNameAr: parsed.moodNameAr || 'مزاج عام',
