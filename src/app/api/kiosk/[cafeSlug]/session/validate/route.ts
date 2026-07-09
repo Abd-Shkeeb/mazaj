@@ -17,29 +17,29 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const session = await db.kioskSession.findUnique({ where: { id: sessionId } });
     if (!session) {
       console.warn(`[Kiosk Session Validate API] Session not found: ${sessionId}`);
-      return NextResponse.json({ success: false, code: 'SESSION_INVALID', valid: false, error: 'Invalid session' }, { status: 401 });
+      return NextResponse.json({ success: false, code: 'SESSION_INVALID', valid: false, error: 'Invalid session' }, { status: 200 });
     }
 
     // Verify cafe matches slug
     const cafe = await db.cafe.findUnique({ where: { slug: cafeSlug } });
     if (!cafe || session.cafeId !== cafe.id) {
       console.warn(`[Kiosk Session Validate API] Cafe mismatch or cafe slug not found. Session Cafe: ${session.cafeId}, cafeSlug: ${cafeSlug}`);
-      return NextResponse.json({ success: false, code: 'SESSION_MISMATCH', valid: false, error: 'Session cafe mismatch' }, { status: 401 });
+      return NextResponse.json({ success: false, code: 'SESSION_MISMATCH', valid: false, error: 'Session cafe mismatch' }, { status: 200 });
     }
 
     if ((session as any).status === 'USED') {
       console.warn(`[Kiosk Session Validate API] Session already used: ${sessionId}`);
-      return NextResponse.json({ success: false, code: 'SESSION_USED', valid: false, error: 'Session already used' }, { status: 401 });
+      return NextResponse.json({ success: false, code: 'SESSION_USED', valid: false, error: 'Session already used' }, { status: 200 });
     }
 
     if (session.expiresAt < new Date()) {
       console.warn(`[Kiosk Session Validate API] Session expired: ${sessionId}`);
-      return NextResponse.json({ success: false, code: 'SESSION_EXPIRED', valid: false, error: 'Session expired' }, { status: 401 });
+      return NextResponse.json({ success: false, code: 'SESSION_EXPIRED', valid: false, error: 'Session expired' }, { status: 200 });
     }
 
     if (session.deviceFingerprint && session.deviceFingerprint !== fingerprint) {
       console.warn(`[Kiosk Session Validate API] Fingerprint mismatch. Expected: ${session.deviceFingerprint}, Got: ${fingerprint}`);
-      return NextResponse.json({ success: false, code: 'SESSION_MISMATCH', valid: false, error: 'Device fingerprint mismatch' }, { status: 401 });
+      return NextResponse.json({ success: false, code: 'SESSION_MISMATCH', valid: false, error: 'Device fingerprint mismatch' }, { status: 200 });
     }
 
     return NextResponse.json({ success: true, valid: true, expiresAt: session.expiresAt });

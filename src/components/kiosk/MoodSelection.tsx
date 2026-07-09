@@ -81,8 +81,8 @@ export default function MoodSelection({
       exit={{ opacity: 0 }}
       className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row items-stretch gap-6"
     >
-      {/* ═══ HERO CARD — Cafe branding area ═══ */}
-      <div className="w-full md:w-[35%] relative rounded-3xl overflow-hidden shadow-2xl border border-[#3E2723]/10 flex flex-col justify-end min-h-[280px] md:min-h-0 group">
+      {/* ═══ HERO CARD — Cafe branding area (Hidden on Mobile for professional UX) ═══ */}
+      <div className="hidden md:flex w-full md:w-[35%] relative rounded-3xl overflow-hidden shadow-2xl border border-[#3E2723]/10 flex-col justify-end min-h-[280px] md:min-h-0 group">
         {/* Background Cover Image */}
         {cafe.coverImage && (
           <Image
@@ -108,12 +108,12 @@ export default function MoodSelection({
           <motion.div
             animate={{ y: [-10, -60], opacity: [0, 0.4, 0] }}
             transition={{ repeat: Infinity, duration: 3.5, delay: 1.2, ease: 'easeOut' }}
-            className="absolute bottom-16 right-20 w-1 h-1 bg-amber-300/30 rounded-full"
+            className="absolute bottom-16 right-20 w-1.5 h-1.5 bg-amber-300/30 rounded-full"
           />
           <motion.div
             animate={{ y: [-15, -70], opacity: [0, 0.5, 0] }}
             transition={{ repeat: Infinity, duration: 5, delay: 2, ease: 'easeOut' }}
-            className="absolute bottom-24 left-12 w-1 h-1 bg-white/20 rounded-full"
+            className="absolute bottom-24 left-12 w-1.5 h-1.5 bg-white/20 rounded-full"
           />
         </div>
 
