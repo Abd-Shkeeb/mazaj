@@ -38,32 +38,24 @@ export default async function CafeKioskPage({
   const sessionId = cookieStore.get('kiosk-session-id')?.value
   console.log('[Page Render Log] kiosk-session-id cookie value:', sessionId)
 
-  // If this is a fresh scan from the physical QR (containing ?newSession=true)
-  if (newSession === 'true') {
-    console.log('[Page Render Log] Fresh QR scan detected via ?newSession=true. Clearing cookies for initialization...')
-    // We let KioskClient handle the creation of the new session in the browser
-  } else {
-    // Standard verification for returning users
-    if (!sessionId) {
-      console.log('[Page Render Log] No session cookie. Redirecting to scan-qr...')
-      const { redirect } = await import('next/navigation')
-      redirect(`/${locale}/scan-qr`)
-    } else {
-      console.log('[Page Render Log] Fetching kioskSession from DB for ID:', sessionId)
-      const session = await db.kioskSession.findUnique({
-        where: { id: sessionId },
-      })
-      console.log('[Page Render Log] Session entry retrieved:', session ? `status=${session.status}, expiresAt=${session.expiresAt}` : 'NULL')
-      const isSessionInvalid = !session || session.expiresAt < new Date() || session.cafeId !== cafe.id || (session as any).status === 'USED'
+  // If session cookie is invalid, used or expired, let's log it.
+  // We do NOT redirect from the server anymore to avoid locking out fresh/first-time QR scans.
+  // The KioskClient will examine the session client-side and initialize a new one if needed.
+  if (sessionId) {
+    console.log('[Page Render Log] Fetching kioskSession from DB for ID:', sessionId)
+    const session = await db.kioskSession.findUnique({
+      where: { id: sessionId },
+    })
+    console.log('[Page Render Log] Session entry retrieved:', session ? `status=${session.status}, expiresAt=${session.expiresAt}` : 'NULL')
+    const isSessionInvalid = !session || session.expiresAt < new Date() || session.cafeId !== cafe.id || (session as any).status === 'USED'
 
-      if (isSessionInvalid) {
-        console.log('[Page Render Log] Session is invalid/used. Redirecting to scan-qr...')
-        const { redirect } = await import('next/navigation')
-        redirect(`/${locale}/scan-qr`)
-      } else {
-        console.log('[Page Render Log] Session is valid.')
-      }
+    if (isSessionInvalid) {
+      console.log('[Page Render Log] Existing session is invalid/used/expired. KioskClient will clear it and request a fresh one.')
+    } else {
+      console.log('[Page Render Log] Existing session is valid.')
     }
+  } else {
+    console.log('[Page Render Log] No kiosk-session-id cookie present. KioskClient will initialize a new session.')
   }
 
   console.log('[Page Render Log] Verifying active subscription for cafeId:', cafe.id)
