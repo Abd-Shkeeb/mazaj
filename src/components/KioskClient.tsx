@@ -287,10 +287,12 @@ export default function KioskClient({
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false)
   const [analysisId, setAnalysisId] = useState<string | null>(null)
 
-  const handleReset = () => {
+  const handleReset = (forceClearMood: boolean = false) => {
     setAnalysisResult(null);
     setEmptyState(false);
-    // Keep selectedMood selected so it stays highlighted on returning back
+    if (forceClearMood) {
+      setSelectedMood(null);
+    }
     setCustomText('');
     setFeedbackSubmitted(false);
     setAnalysisId(null);
@@ -834,7 +836,7 @@ export default function KioskClient({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => { setPlacedOrder(null); handleReset(); }}
+              onClick={() => { setPlacedOrder(null); handleReset(true); }}
               className="absolute inset-0 bg-[#3E2723]/60 backdrop-blur-md"
             />
 
@@ -869,7 +871,7 @@ export default function KioskClient({
               </p>
 
               <button
-                onClick={() => { setPlacedOrder(null); handleReset(); }}
+                onClick={() => { setPlacedOrder(null); handleReset(true); }}
                 className="w-full py-3 bg-[#5D4037] text-white rounded-xl font-black text-xs transition-colors cursor-pointer shadow-sm hover:bg-[#3E2723]"
               >
                 {tr('close')}

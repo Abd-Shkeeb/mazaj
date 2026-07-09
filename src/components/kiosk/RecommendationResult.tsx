@@ -185,7 +185,7 @@ export default function RecommendationResult({
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="text-2xl font-black text-white leading-tight truncate"
+                  className="text-xl sm:text-2xl font-black text-white leading-tight break-words line-clamp-2 md:line-clamp-none"
                 >
                   {isAr ? analysisResult?.suitableDrinkAr : analysisResult?.suitableDrinkEn}
                 </motion.h2>

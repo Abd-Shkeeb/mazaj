@@ -332,19 +332,19 @@ export async function analyzeMood(formData: {
     }
 
     // ── Generate Suggestions Dynamic Logic ──
-    const recommendedId = aiResult.drinkId || ''
+    const recommendedId = finalDrink?.id || aiResult.drinkId || ''
     
     // Get candidates other than the chosen one from the Gemini candidates list
     const otherCandidates = candidatesList
       .filter((c: any) => c.drinkId !== recommendedId)
       .map((c: any) => suitableDrinks.find((d: Drink) => d.id === c.drinkId))
-      .filter((d): d is Drink => !!d)
+      .filter((d): d is Drink => !!d && d.id !== recommendedId)
 
     // Get all other suitable drinks
     const otherSuitable = suitableDrinks.filter(d => d.id !== recommendedId)
 
     // Combine them, placing other candidates first to prioritize Gemini recommendations
-    const suggestionPool = Array.from(new Set([...otherCandidates, ...otherSuitable]))
+    const suggestionPool = Array.from(new Set([...otherCandidates, ...otherSuitable])).filter(d => d.id !== recommendedId)
 
     // Read previously suggested IDs from cookies to avoid repetition
     const suggestedIdsStr = cookieStore.get('suggested-drink-ids')?.value || ''
