@@ -227,19 +227,16 @@ export default function KioskClient({
             setSessionTimeLeft(secondsLeft)
             setIsSessionExpired(false)
             return
-          } else {
-            handleRedirectToScanQr()
-            return
           }
-        } else if (res.status === 401) {
-          handleRedirectToScanQr()
-          return
         }
       } catch (e) {
         console.warn('[Session] Stored session validation failed:', e)
       }
     }
     
+    // Clear cookies first to request a fresh one
+    document.cookie = 'kiosk-session-id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
+    document.cookie = 'kiosk-device-fp=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
     await initializeSession()
   }
 
@@ -293,7 +290,7 @@ export default function KioskClient({
   const handleReset = () => {
     setAnalysisResult(null);
     setEmptyState(false);
-    setSelectedMood(null);
+    // Keep selectedMood selected so it stays highlighted on returning back
     setCustomText('');
     setFeedbackSubmitted(false);
     setAnalysisId(null);

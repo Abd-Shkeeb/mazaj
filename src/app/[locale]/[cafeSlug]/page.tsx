@@ -36,12 +36,9 @@ export default async function CafeKioskPage({
     const isSessionInvalid = !session || session.expiresAt < new Date() || session.cafeId !== cafe.id || (session as any).status === 'USED'
 
     if (isSessionInvalid) {
-      // Delete invalid session cookies
+      // Delete invalid session cookies and let KioskClient request a new one transparently
       cookieStore.delete('kiosk-session-id')
       cookieStore.delete('kiosk-device-fp')
-      
-      const { redirect } = await import('next/navigation')
-      redirect(`/${locale}/scan-qr`)
     }
   }
 
