@@ -234,10 +234,10 @@ export default function KioskClient({
       }
     }
     
-    // Clear cookies first to request a fresh one
-    document.cookie = 'kiosk-session-id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
-    document.cookie = 'kiosk-device-fp=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
-    await initializeSession()
+    // If we reach here, there was either no session or it was invalid/expired.
+    // We redirect to scan-qr to force scanning the physical QR code instead of auto-creating a session.
+    console.log('[KioskClient] No valid session found. Redirecting to scan-qr to enforce physical scanning...')
+    handleRedirectToScanQr()
   }
 
   useEffect(() => {
@@ -922,10 +922,10 @@ export default function KioskClient({
               </p>
 
               <button
-                onClick={checkAndInitSession}
+                onClick={handleRedirectToScanQr}
                 className="w-full py-3 bg-[#5D4037] text-white rounded-xl font-black text-xs transition-colors cursor-pointer shadow-sm hover:bg-[#3E2723]"
               >
-                {isAr ? 'بدء جلسة جديدة' : 'Start New Session'}
+                {isAr ? 'إعادة مسح رمز QR' : 'Re-scan QR Code'}
               </button>
             </motion.div>
           </div>
