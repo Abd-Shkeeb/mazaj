@@ -203,6 +203,24 @@ export default function KioskClient({
   }
 
   const checkAndInitSession = async () => {
+    const isFreshScan = typeof window !== 'undefined' && window.location.search.includes('newSession=true')
+    
+    if (isFreshScan) {
+      console.log('[KioskClient] Fresh QR scan url query detected. Initiating a new session...')
+      // Clear old session cookies
+      document.cookie = 'kiosk-session-id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
+      document.cookie = 'kiosk-device-fp=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
+      
+      // Clean query parameter from URL bar to prevent refresh loops
+      if (window.history && window.history.replaceState) {
+        const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname
+        window.history.replaceState({ path: cleanUrl }, '', cleanUrl)
+      }
+      
+      await initializeSession()
+      return
+    }
+
     const cookiesObj = document.cookie.split(';').reduce((acc, c) => {
       const [k, v] = c.trim().split('=')
       if (k) acc[k] = v
