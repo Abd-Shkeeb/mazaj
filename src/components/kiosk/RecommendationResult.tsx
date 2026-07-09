@@ -93,9 +93,8 @@ export default function RecommendationResult({
           </span>
           <div className="w-16 bg-gray-100 h-1.5 rounded-full overflow-hidden">
             <motion.div
-              className={`h-full rounded-full transition-colors duration-500 ${
-                timeLeft < 10 ? 'bg-red-400' : timeLeft < 20 ? 'bg-amber-400' : 'bg-emerald-400'
-              }`}
+              className={`h-full rounded-full transition-colors duration-500 ${timeLeft < 10 ? 'bg-red-400' : timeLeft < 20 ? 'bg-amber-400' : 'bg-emerald-400'
+                }`}
               initial={{ width: '100%' }}
               animate={{ width: `${(timeLeft / 60) * 100}%` }}
               transition={{ duration: 1, ease: 'linear' }}

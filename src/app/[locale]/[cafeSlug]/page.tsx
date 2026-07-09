@@ -35,7 +35,11 @@ export default async function CafeKioskPage({
   const sessionId = cookieStore.get('kiosk-session-id')?.value
   console.log('[Page Render Log] kiosk-session-id cookie value:', sessionId)
 
-  if (sessionId) {
+  if (!sessionId) {
+    console.log('[Page Render Log] No session cookie. Redirecting to scan-qr...')
+    const { redirect } = await import('next/navigation')
+    redirect(`/${locale}/scan-qr`)
+  } else {
     console.log('[Page Render Log] Fetching kioskSession from DB for ID:', sessionId)
     const session = await db.kioskSession.findUnique({
       where: { id: sessionId },
@@ -44,7 +48,12 @@ export default async function CafeKioskPage({
     const isSessionInvalid = !session || session.expiresAt < new Date() || session.cafeId !== cafe.id || (session as any).status === 'USED'
 
     if (isSessionInvalid) {
-      console.log('[Page Render Log] Session is invalid/used. Cookies will be cleaned by the KioskClient browser side.')
+      console.log('[Page Render Log] Session is invalid/used. Deleting cookies and redirecting to scan-qr...')
+      
+      // We cannot modify cookies during render on GET without throwing Next.js exception, 
+      // but we CAN redirect immediately. Next.js redirect halts render.
+      const { redirect } = await import('next/navigation')
+      redirect(`/${locale}/scan-qr`)
     } else {
       console.log('[Page Render Log] Session is valid.')
     }
