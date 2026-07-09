@@ -91,6 +91,7 @@ export async function createOrderAction(data: {
   cafeId: string
   tableNumber?: string
 }) {
+  try {
     console.log('[Order Action Log] Starting createOrderAction execution...')
     // Verify that the cafe has an active subscription
     console.log('[Order Action Log] Asserting active subscription for cafeId:', data.cafeId)
