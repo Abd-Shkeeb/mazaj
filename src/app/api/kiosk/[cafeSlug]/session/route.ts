@@ -12,6 +12,24 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!cafe) {
     return NextResponse.json({ error: 'Cafe not found' }, { status: 404 });
   }
+
+  // Check for active existing session
+  const sessionId = request.cookies.get('kiosk-session-id')?.value;
+  if (sessionId) {
+    const existingSession = await db.kioskSession.findUnique({
+      where: { id: sessionId },
+    });
+    if (
+      existingSession &&
+      existingSession.expiresAt > new Date() &&
+      (existingSession as any).status === 'ACTIVE' &&
+      existingSession.cafeId === cafe.id &&
+      (!existingSession.deviceFingerprint || existingSession.deviceFingerprint === fingerprint)
+    ) {
+      return NextResponse.json({ sessionId: existingSession.id, expiresAt: existingSession.expiresAt });
+    }
+  }
+
   // Rate limiting per cafe (max 5 creations per minute)
   if (isRateLimitedKey(cafe.id, 5)) {
     return NextResponse.json({ error: 'Too many session creations' }, { status: 429 });

@@ -440,6 +440,15 @@ function getKeywordFallbackResult(inputText: string, menuDrinks: Partial<Drink>[
 
 export async function saveFeedbackAction(analysisId: string, isAppropriate: boolean) {
   try {
+    const analysis = await db.analysis.findUnique({
+      where: { id: analysisId },
+      select: { cafeId: true },
+    })
+    if (!analysis) {
+      throw new Error('Analysis not found')
+    }
+    await validateKioskSession(analysis.cafeId)
+
     return await db.analysis.update({
       where: { id: analysisId },
       data: { feedbackVal: isAppropriate },
@@ -455,6 +464,8 @@ export async function saveFeedbackAction(analysisId: string, isAppropriate: bool
 
 export async function trackEventAction(cafeId: string, eventName: string) {
   try {
+    await validateKioskSession(cafeId)
+
     const validEvents = [
       'SCAN_QR',
       'START_ANALYSIS',

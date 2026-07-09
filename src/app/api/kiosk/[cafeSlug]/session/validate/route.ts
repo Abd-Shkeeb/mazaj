@@ -23,6 +23,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ valid: false, error: 'Session cafe mismatch' }, { status: 401 });
   }
 
+  if ((session as any).status === 'USED') {
+    return NextResponse.json({ valid: false, error: 'Session already used' }, { status: 401 });
+  }
+
   if (session.expiresAt < new Date()) {
     return NextResponse.json({ valid: false, error: 'Session expired' }, { status: 401 });
   }

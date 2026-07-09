@@ -56,6 +56,10 @@ export async function validateKioskSession(cafeId: string) {
     throw new Error('Invalid kiosk session')
   }
 
+  if (session.status === 'USED') {
+    throw new Error('Kiosk session already used')
+  }
+
   if (session.expiresAt < new Date()) {
     throw new Error('Kiosk session expired')
   }
@@ -95,7 +99,7 @@ export async function createOrderAction(data: {
   }
 
   // Validate kiosk session before proceeding
-  await validateKioskSession(data.cafeId)
+  const session = await validateKioskSession(data.cafeId)
 
   const order = await db.order.create({
     data: {
@@ -106,6 +110,12 @@ export async function createOrderAction(data: {
       tableNumber: data.tableNumber || null,
       status: 'PENDING',
     },
+  })
+
+  // Mark the kiosk session as USED to prevent further actions
+  await (db as any).kioskSession.update({
+    where: { id: session.id },
+    data: { status: 'USED' },
   })
 
   // Revalidate the dashboard page after creation

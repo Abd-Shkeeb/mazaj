@@ -157,6 +157,7 @@ model KioskSession {
   deviceFingerprint String? // optional device fingerprint
   createdAt DateTime @default(now())
   expiresAt DateTime
+  status    String   @default("ACTIVE") // ACTIVE or USED
   cafe      Cafe     @relation(fields: [cafeId], references: [id], onDelete: Cascade)
 
   @@index([cafeId])
