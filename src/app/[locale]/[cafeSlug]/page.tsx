@@ -24,6 +24,27 @@ export default async function CafeKioskPage({
     notFound()
   }
 
+  // Server-side Kiosk Session Verification
+  const { cookies: nextCookies } = await import('next/headers')
+  const cookieStore = await nextCookies()
+  const sessionId = cookieStore.get('kiosk-session-id')?.value
+
+  if (sessionId) {
+    const session = await db.kioskSession.findUnique({
+      where: { id: sessionId },
+    })
+    const isSessionInvalid = !session || session.expiresAt < new Date() || session.cafeId !== cafe.id
+
+    if (isSessionInvalid) {
+      // Delete invalid session cookies
+      cookieStore.delete('kiosk-session-id')
+      cookieStore.delete('kiosk-device-fp')
+      
+      const { redirect } = await import('next/navigation')
+      redirect(`/${locale}/scan-qr`)
+    }
+  }
+
   const subStatus = await verifyActiveSubscription(cafe.id)
   const isExpired = subStatus === 'EXPIRED' || subStatus === 'SUSPENDED' || subStatus === 'CANCELLED'
 

@@ -159,6 +159,18 @@ export default function KioskClient({
     }
   }
 
+  const handleRedirectToScanQr = () => {
+    // Clear cookies
+    document.cookie = 'kiosk-session-id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
+    document.cookie = 'kiosk-device-fp=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
+    // Clear localStorage
+    try {
+      localStorage.removeItem('kioskDeviceFp')
+    } catch (e) {}
+    // Redirect to scan-qr
+    router.replace('/scan-qr')
+  }
+
   const initializeSession = async () => {
     try {
       const fp = getDeviceFingerprintLocal()
@@ -182,9 +194,11 @@ export default function KioskClient({
         console.log(`[Session] Created/Retrieved session ${data.sessionId}, expires in ${secondsLeft}s`)
       } else {
         console.error('[Session] Failed to initialize session')
+        handleRedirectToScanQr()
       }
     } catch (err) {
       console.error('[Session] Error initializing session:', err)
+      handleRedirectToScanQr()
     }
   }
 
@@ -213,7 +227,13 @@ export default function KioskClient({
             setSessionTimeLeft(secondsLeft)
             setIsSessionExpired(false)
             return
+          } else {
+            handleRedirectToScanQr()
+            return
           }
+        } else if (res.status === 401) {
+          handleRedirectToScanQr()
+          return
         }
       } catch (e) {
         console.warn('[Session] Stored session validation failed:', e)
@@ -877,7 +897,7 @@ export default function KioskClient({
               </p>
 
               <button
-                onClick={initializeSession}
+                onClick={handleRedirectToScanQr}
                 className="w-full py-3 bg-[#5D4037] text-white rounded-xl font-black text-xs transition-colors cursor-pointer shadow-sm hover:bg-[#3E2723]"
               >
                 {isAr ? 'إعادة مسح رمز QR' : 'Re-scan QR Code'}

@@ -7,6 +7,7 @@ import { headers } from 'next/headers'
 import { isRateLimited } from '@/lib/rateLimit'
 import { assertActiveSubscription, assertCanAnalyzeMood } from '@/lib/subscription'
 import { getMenuDrinks } from '@/lib/drinkCache'
+import { validateKioskSession } from './orders'
 
 interface AIResult {
   moodNameAr: string
@@ -54,6 +55,8 @@ export async function analyzeMood(formData: {
 }) {
   try {
     const { cookies } = await import('next/headers')
+    // Validate kiosk session first (blocks requests if session is expired/invalid)
+    await validateKioskSession(formData.cafeId)
     // Assert active subscription first (blocks Gemini API call if expired/suspended)
     await assertActiveSubscription(formData.cafeId)
     // Check Gemini vibe analysis quota limits by plan

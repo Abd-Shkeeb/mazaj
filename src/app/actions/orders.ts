@@ -38,7 +38,7 @@ async function verifyOrderOwnership(orderId: number) {
  * Throws an error if the session is missing, invalid, expired, belongs to another device,
  * or does not match the target cafe.
  */
-async function validateKioskSession(cafeId: string) {
+export async function validateKioskSession(cafeId: string) {
   const headerList = await headers()
   const cookieStore = await cookies()
   const sessionId = headerList.get('x-kiosk-session-id') || cookieStore.get('kiosk-session-id')?.value
