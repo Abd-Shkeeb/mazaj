@@ -33,7 +33,7 @@ export default async function CafeKioskPage({
     const session = await db.kioskSession.findUnique({
       where: { id: sessionId },
     })
-    const isSessionInvalid = !session || session.expiresAt < new Date() || session.cafeId !== cafe.id
+    const isSessionInvalid = !session || session.expiresAt < new Date() || session.cafeId !== cafe.id || (session as any).status === 'USED'
 
     if (isSessionInvalid) {
       // Delete invalid session cookies

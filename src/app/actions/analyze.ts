@@ -25,10 +25,31 @@ interface AIResult {
   drinkId?: string
   price?: number
   image?: string | null
+  suggestions?: {
+    id: string
+    nameAr: string
+    nameEn: string
+    price: number
+    image: string | null
+    description: string
+  }[]
 }
 
 function getFallbackResult(moodInputText: string, menuDrinks: Partial<Drink>[]): AIResult {
   const drink = menuDrinks[Math.floor(Math.random() * menuDrinks.length)]
+  
+  // Generate suggestions for fallback
+  const otherDrinks = menuDrinks.filter(d => d.id !== drink.id)
+  const shuffled = [...otherDrinks].sort(() => 0.5 - Math.random())
+  const suggestions = shuffled.slice(0, 3).map(d => ({
+    id: d.id || '',
+    nameAr: d.nameAr || '',
+    nameEn: d.nameEn || '',
+    price: d.price || 0,
+    image: d.image || null,
+    description: d.description || '',
+  }))
+
   return {
     moodNameAr: 'مزاج عام',
     moodNameEn: 'General Mood',
@@ -45,6 +66,7 @@ function getFallbackResult(moodInputText: string, menuDrinks: Partial<Drink>[]):
     drinkId: drink.id,
     price: drink.price,
     image: drink.image,
+    suggestions,
   }
 }
 
@@ -112,6 +134,7 @@ export async function analyzeMood(formData: {
       .join('\n')
 
     let aiResult: AIResult
+    let candidatesList: any[] = []
 
     // If there are no available drinks, return a result indicating none
     if (menuDrinks.length === 0) {
@@ -209,7 +232,7 @@ export async function analyzeMood(formData: {
         const parsed = JSON.parse(rawGeminiTextResponse)
         
         // Determine final selected candidate
-        let candidatesList: any[] = []
+        candidatesList = []
         if (parsed.candidates && Array.isArray(parsed.candidates) && parsed.candidates.length > 0) {
           candidatesList = parsed.candidates
         } else {
@@ -307,6 +330,51 @@ export async function analyzeMood(formData: {
       aiResult.suitableDrinkAr = finalDrink.nameAr ?? ''
       aiResult.suitableDrinkEn = finalDrink.nameEn ?? ''
     }
+
+    // ── Generate Suggestions Dynamic Logic ──
+    const recommendedId = aiResult.drinkId || ''
+    
+    // Get candidates other than the chosen one from the Gemini candidates list
+    const otherCandidates = candidatesList
+      .filter((c: any) => c.drinkId !== recommendedId)
+      .map((c: any) => suitableDrinks.find((d: Drink) => d.id === c.drinkId))
+      .filter((d): d is Drink => !!d)
+
+    // Get all other suitable drinks
+    const otherSuitable = suitableDrinks.filter(d => d.id !== recommendedId)
+
+    // Combine them, placing other candidates first to prioritize Gemini recommendations
+    const suggestionPool = Array.from(new Set([...otherCandidates, ...otherSuitable]))
+
+    // Read previously suggested IDs from cookies to avoid repetition
+    const suggestedIdsStr = cookieStore.get('suggested-drink-ids')?.value || ''
+    let previouslySuggested = suggestedIdsStr.split(',').filter(Boolean)
+
+    // Filter pool to exclude already suggested ones
+    let freshSuggestions = suggestionPool.filter(d => !previouslySuggested.includes(d.id))
+
+    // If we don't have at least 3 fresh suggestions, we exhausted the options. Reset the history!
+    if (freshSuggestions.length < 3) {
+      previouslySuggested = []
+      freshSuggestions = suggestionPool
+    }
+
+    // Select 3 random different drinks from the fresh suggestions
+    const shuffled = [...freshSuggestions].sort(() => 0.5 - Math.random())
+    const selectedSuggestions = shuffled.slice(0, 3)
+
+    // Save the new suggestions in the session history cookie
+    const newSuggestedIds = Array.from(new Set([...previouslySuggested, ...selectedSuggestions.map(d => d.id)]))
+    cookieStore.set('suggested-drink-ids', newSuggestedIds.join(','), { maxAge: 1800 })
+
+    aiResult.suggestions = selectedSuggestions.map(d => ({
+      id: d.id,
+      nameAr: d.nameAr,
+      nameEn: d.nameEn,
+      price: d.price,
+      image: d.image,
+      description: d.description,
+    }))
 
     // Log final choice method
     console.log(`[AI Kiosk Session Log] Gemini Called: ${geminiCalled} | Final Drink Selected: "${aiResult.suitableDrinkEn}" (ID: ${aiResult.drinkId})`)

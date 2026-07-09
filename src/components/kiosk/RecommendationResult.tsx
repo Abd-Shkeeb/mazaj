@@ -21,6 +21,14 @@ interface AIResult {
   drinkId?: string
   price?: number
   image?: string
+  suggestions?: {
+    id: string
+    nameAr: string
+    nameEn: string
+    price: number
+    image: string | null
+    description: string
+  }[]
 }
 
 interface DrinkType {
@@ -365,53 +373,49 @@ export default function RecommendationResult({
       </div>
 
       {/* ── UPSELL: You might also like ── */}
-      {availableDrinks &&
-        availableDrinks.filter(d => d.id !== analysisResult.drinkId).length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="glass-card rounded-2xl p-4"
-          >
-            <h4 className="text-[10px] font-black text-[#3E2723] uppercase tracking-wider mb-3 flex items-center gap-1.5">
-              <span>🍪</span>
-              <span>{isAr ? 'قد يعجبك أيضاً:' : 'You might also like:'}</span>
-            </h4>
-            <div className="grid grid-cols-3 gap-2.5">
-              {availableDrinks
-                .filter(d => d.id !== analysisResult.drinkId)
-                .slice(0, 3)
-                .map((drink, i) => (
-                  <motion.div
-                    key={drink.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.75 + i * 0.08 }}
-                    className="border border-gray-100/80 rounded-xl p-2.5 text-center bg-white/50 flex flex-col items-center gap-2 hover:shadow-md hover:border-amber-200/50 transition-all cursor-default mood-card-glow"
-                  >
-                    {drink.image && drink.image.trim() !== '' && drink.image !== '☕' && !drink.image.startsWith('emoji:') && (
-                      <div className="w-12 h-12 relative rounded-full overflow-hidden border-2 border-gray-100 shadow-sm">
-                        <Image
-                          src={drink.image}
-                          alt={drink.nameAr}
-                          fill
-                          sizes="48px"
-                          className="object-cover"
-                          unoptimized={true}
-                        />
-                      </div>
-                    )}
-                    <p className="text-[10px] font-black text-[#3E2723] truncate w-full">
-                      {isAr ? drink.nameAr : drink.nameEn}
-                    </p>
-                    <p className="text-[9px] font-black text-amber-700">
-                      {formattedPrice(drink.price)}
-                    </p>
-                  </motion.div>
-                ))}
-            </div>
-          </motion.div>
-        )}
+      {analysisResult.suggestions && analysisResult.suggestions.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="glass-card rounded-2xl p-4"
+        >
+          <h4 className="text-[10px] font-black text-[#3E2723] uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <span>🍪</span>
+            <span>{isAr ? 'قد يعجبك أيضاً:' : 'You might also like:'}</span>
+          </h4>
+          <div className="grid grid-cols-3 gap-2.5">
+            {analysisResult.suggestions.map((drink: any, i: number) => (
+              <motion.div
+                key={drink.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.75 + i * 0.08 }}
+                className="border border-gray-100/80 rounded-xl p-2.5 text-center bg-white/50 flex flex-col items-center gap-2 hover:shadow-md hover:border-amber-200/50 transition-all cursor-default mood-card-glow"
+              >
+                {drink.image && drink.image.trim() !== '' && drink.image !== '☕' && !drink.image.startsWith('emoji:') && (
+                  <div className="w-12 h-12 relative rounded-full overflow-hidden border-2 border-gray-100 shadow-sm">
+                    <Image
+                      src={drink.image}
+                      alt={drink.nameAr}
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                      unoptimized={true}
+                    />
+                  </div>
+                )}
+                <p className="text-[10px] font-black text-[#3E2723] truncate w-full">
+                  {isAr ? drink.nameAr : drink.nameEn}
+                </p>
+                <p className="text-[9px] font-black text-amber-700">
+                  {formattedPrice(drink.price)}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
     </motion.div>
   )
 }

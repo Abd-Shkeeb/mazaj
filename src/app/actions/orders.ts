@@ -85,42 +85,55 @@ export async function createOrderAction(data: {
   cafeId: string
   tableNumber?: string
 }) {
-  // Verify that the cafe has an active subscription
-  await assertActiveSubscription(data.cafeId)
+  try {
+    // Verify that the cafe has an active subscription
+    await assertActiveSubscription(data.cafeId)
 
-  // IP‑based rate limiting (max 10 orders per minute per IP)
-  const headerList = await headers()
-  const ip =
-    headerList.get('x-forwarded-for') ||
-    headerList.get('x-real-ip') ||
-    '127.0.0.1'
-  if (isRateLimited(ip, 10)) {
-    throw new Error('Too many requests / تم إرسال الكثير من الطلبات، يرجى الانتظار قليلاً')
+    // IP‑based rate limiting (max 10 orders per minute per IP)
+    const headerList = await headers()
+    const ip =
+      headerList.get('x-forwarded-for') ||
+      headerList.get('x-real-ip') ||
+      '127.0.0.1'
+    if (isRateLimited(ip, 10)) {
+      throw new Error('Too many requests / تم إرسال الكثير من الطلبات، يرجى الانتظار قليلاً')
+    }
+
+    // Validate kiosk session before proceeding
+    const session = await validateKioskSession(data.cafeId)
+
+    const order = await db.order.create({
+      data: {
+        drinkId: data.drinkId,
+        drinkName: data.drinkName,
+        price: data.price,
+        cafeId: data.cafeId,
+        tableNumber: data.tableNumber || null,
+        status: 'PENDING',
+      },
+    })
+
+    // Mark the kiosk session as USED to prevent further actions
+    await (db as any).kioskSession.update({
+      where: { id: session.id },
+      data: { status: 'USED' },
+    })
+
+    // Revalidate the dashboard page after creation
+    revalidatePath('/[locale]/dashboard', 'page')
+    return { success: true, order }
+  } catch (error: any) {
+    const digest = error.digest || `digest-${Math.random().toString(36).substr(2, 9)}`
+    console.error(`[Order Creation Log] [Digest: ${digest}] ERROR:`, error.message || error)
+    if (error.stack) {
+      console.error(`[Order Creation Log] [Digest: ${digest}] STACK TRACE:`, error.stack)
+    }
+    return {
+      success: false,
+      error: error.message || 'An error occurred during order creation / حدث خطأ أثناء إنشاء الطلب',
+      digest,
+    }
   }
-
-  // Validate kiosk session before proceeding
-  const session = await validateKioskSession(data.cafeId)
-
-  const order = await db.order.create({
-    data: {
-      drinkId: data.drinkId,
-      drinkName: data.drinkName,
-      price: data.price,
-      cafeId: data.cafeId,
-      tableNumber: data.tableNumber || null,
-      status: 'PENDING',
-    },
-  })
-
-  // Mark the kiosk session as USED to prevent further actions
-  await (db as any).kioskSession.update({
-    where: { id: session.id },
-    data: { status: 'USED' },
-  })
-
-  // Revalidate the dashboard page after creation
-  revalidatePath('/[locale]/dashboard', 'page')
-  return order
 }
 
 /**

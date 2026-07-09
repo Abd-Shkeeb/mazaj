@@ -516,7 +516,7 @@ export default function KioskClient({
 
     setIsOrdering(true)
     try {
-      const order = await createOrderAction({
+      const res = await createOrderAction({
         drinkId: analysisResult.drinkId,
         drinkName: isAr ? analysisResult.suitableDrinkAr : analysisResult.suitableDrinkEn,
         price: analysisResult.price || 0,
@@ -524,6 +524,11 @@ export default function KioskClient({
         tableNumber: tableParam || undefined,
       })
 
+      if (res && 'success' in res && !res.success) {
+        throw new Error(`${res.error} (Digest: ${res.digest})`)
+      }
+
+      const order = (res as any)?.order
       if (order) {
         setPlacedOrder({
           id: order.id,
@@ -532,7 +537,11 @@ export default function KioskClient({
         })
 
         // Track event CREATE_ORDER
-        await trackEventAction(cafe.id, 'CREATE_ORDER')
+        try {
+          await trackEventAction(cafe.id, 'CREATE_ORDER')
+        } catch (eventErr) {
+          console.warn('Event tracking failed:', eventErr)
+        }
       }
     } catch (err) {
       console.error('Order creation failed:', err)
