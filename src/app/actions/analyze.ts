@@ -400,14 +400,19 @@ export async function analyzeMood(formData: {
       aiResult,
     }
   } catch (error: any) {
-    console.error('[AI Kiosk Session Log] CRITICAL ERROR IN analyzeMood Server Action:', error)
+    const digest = `digest-${Math.random().toString(36).substr(2, 9)}`
+    console.error(`[AI Kiosk Session Log] [Digest: ${digest}] CRITICAL ERROR IN analyzeMood Server Action:`, error.message || error)
     if (error.stack) {
-      console.error('[AI Kiosk Session Log] STACK TRACE:', error.stack)
+      console.error(`[AI Kiosk Session Log] [Digest: ${digest}] STACK TRACE:`, error.stack)
     }
+    const isSessionErr = ['SESSION_MISSING', 'SESSION_INVALID', 'SESSION_USED', 'SESSION_EXPIRED', 'SESSION_MISMATCH'].includes(error.message)
     // Return structured error response to avoid Next.js 500 render crash
     return {
+      success: false,
+      code: isSessionErr ? error.message : 'ANALYZE_FAILED',
       id: '',
       error: error.message || 'Internal Server Error',
+      digest,
       aiResult: {
         moodNameAr: 'خطأ في التحليل',
         moodNameEn: 'Analysis Error',
@@ -517,16 +522,24 @@ export async function saveFeedbackAction(analysisId: string, isAppropriate: bool
     }
     await validateKioskSession(analysis.cafeId)
 
-    return await db.analysis.update({
+    const updated = await db.analysis.update({
       where: { id: analysisId },
       data: { feedbackVal: isAppropriate },
     })
+    return { success: true, updated }
   } catch (error: any) {
-    console.error('[AI Kiosk Session Log] ERROR in saveFeedbackAction Server Action:', error)
+    const digest = `digest-${Math.random().toString(36).substr(2, 9)}`
+    console.error(`[AI Kiosk Session Log] [Digest: ${digest}] ERROR in saveFeedbackAction Server Action:`, error.message || error)
     if (error.stack) {
-      console.error('[AI Kiosk Session Log] STACK TRACE:', error.stack)
+      console.error(`[AI Kiosk Session Log] [Digest: ${digest}] STACK TRACE:`, error.stack)
     }
-    throw error
+    const isSessionErr = ['SESSION_MISSING', 'SESSION_INVALID', 'SESSION_USED', 'SESSION_EXPIRED', 'SESSION_MISMATCH'].includes(error.message)
+    return {
+      success: false,
+      code: isSessionErr ? error.message : 'FEEDBACK_FAILED',
+      error: error.message || 'Feedback saving failed',
+      digest,
+    }
   }
 }
 
@@ -545,17 +558,25 @@ export async function trackEventAction(cafeId: string, eventName: string) {
       throw new Error('Invalid event name / اسم فعالية غير صحيح')
     }
 
-    return await db.event.create({
+    const event = await db.event.create({
       data: {
         cafeId,
         name: eventName,
       },
     })
+    return { success: true, event }
   } catch (error: any) {
-    console.error('[AI Kiosk Session Log] ERROR in trackEventAction Server Action:', error)
+    const digest = `digest-${Math.random().toString(36).substr(2, 9)}`
+    console.error(`[AI Kiosk Session Log] [Digest: ${digest}] ERROR in trackEventAction Server Action:`, error.message || error)
     if (error.stack) {
-      console.error('[AI Kiosk Session Log] STACK TRACE:', error.stack)
+      console.error(`[AI Kiosk Session Log] [Digest: ${digest}] STACK TRACE:`, error.stack)
     }
-    throw error
+    const isSessionErr = ['SESSION_MISSING', 'SESSION_INVALID', 'SESSION_USED', 'SESSION_EXPIRED', 'SESSION_MISMATCH'].includes(error.message)
+    return {
+      success: false,
+      code: isSessionErr ? error.message : 'TRACK_EVENT_FAILED',
+      error: error.message || 'Event tracking failed',
+      digest,
+    }
   }
 }

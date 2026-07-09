@@ -465,14 +465,13 @@ export default function KioskClient({
 
   const handleAnalyze = () => {
     if (isSessionExpired) {
-      alert(isAr ? 'انتهت صلاحية الجلسة، يرجى مسح رمز QR مرة أخرى' : 'Session expired, please scan the QR code again')
+      handleRedirectToScanQr()
       return
     }
     if (!selectedMood && !customText) return
 
     startTransition(async () => {
       try {
-        // Track event START_ANALYSIS
         await trackEventAction(cafe.id, 'START_ANALYSIS')
 
         const res = await analyzeMood({
@@ -481,27 +480,36 @@ export default function KioskClient({
           cafeId: cafe.id,
         })
 
-        if (res && res.aiResult) {
-          console.log('[KioskClient] Received res:', res)
-          console.log('[KioskClient] Received aiResult:', res.aiResult)
-          console.log('[KioskClient] aiResult.image:', (res.aiResult as { image?: string }).image)
-          setAnalysisId(res.id)
-          setAnalysisResult(res.aiResult as AIResult);
-          setEmptyState(!res.aiResult.suitableDrinkEn);
+        if (res && 'success' in res && !res.success) {
+          const code = (res as any).code || ''
+          const isSessionErr = ['SESSION_MISSING', 'SESSION_INVALID', 'SESSION_USED', 'SESSION_EXPIRED', 'SESSION_MISMATCH'].includes(code)
+          if (isSessionErr) {
+            handleRedirectToScanQr()
+          } else {
+            alert(res.error || (isAr ? 'حدث خطأ أثناء التحليل' : 'An error occurred during analysis'))
+          }
+          return
+        }
+
+        if (res && (res as any).aiResult) {
+          const result = res as any
+          setAnalysisId(result.id)
+          setAnalysisResult(result.aiResult as AIResult);
+          setEmptyState(!result.aiResult.suitableDrinkEn);
           setTimeLeft(60);
 
-          // Track event COMPLETE_ANALYSIS
           await trackEventAction(cafe.id, 'COMPLETE_ANALYSIS')
         }
       } catch (err) {
         console.error('Analysis failed:', err)
+        alert(isAr ? 'حدث خطأ غير متوقع' : 'An unexpected error occurred')
       }
     })
   }
 
   const handlePlaceOrder = async () => {
     if (isSessionExpired) {
-      alert(isAr ? 'انتهت صلاحية الجلسة، يرجى مسح رمز QR مرة أخرى' : 'Session expired, please scan the QR code again')
+      handleRedirectToScanQr()
       return
     }
     if (!analysisResult) return
@@ -525,7 +533,14 @@ export default function KioskClient({
       })
 
       if (res && 'success' in res && !res.success) {
-        throw new Error(`${res.error} (Digest: ${res.digest})`)
+        const code = (res as any).code || ''
+        const isSessionErr = ['SESSION_MISSING', 'SESSION_INVALID', 'SESSION_USED', 'SESSION_EXPIRED', 'SESSION_MISMATCH'].includes(code)
+        if (isSessionErr) {
+          handleRedirectToScanQr()
+        } else {
+          alert(res.error || (isAr ? 'عذراً، فشل إرسال الطلب' : 'Sorry, failed to place order'))
+        }
+        return
       }
 
       const order = (res as any)?.order
@@ -536,7 +551,6 @@ export default function KioskClient({
           price: order.price,
         })
 
-        // Track event CREATE_ORDER
         try {
           await trackEventAction(cafe.id, 'CREATE_ORDER')
         } catch (eventErr) {

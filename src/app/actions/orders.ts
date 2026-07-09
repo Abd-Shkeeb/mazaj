@@ -45,7 +45,8 @@ export async function validateKioskSession(cafeId: string) {
   const deviceFp = headerList.get('x-device-fingerprint') || cookieStore.get('kiosk-device-fp')?.value
 
   if (!sessionId) {
-    throw new Error('Missing kiosk session ID')
+    console.warn(`[Kiosk Session Validation] Missing session ID for cafeId: ${cafeId}`)
+    throw new Error('SESSION_MISSING')
   }
 
   const session = await (db as any).kioskSession.findUnique({
@@ -53,23 +54,28 @@ export async function validateKioskSession(cafeId: string) {
   })
 
   if (!session) {
-    throw new Error('Invalid kiosk session')
+    console.warn(`[Kiosk Session Validation] Invalid session ID: ${sessionId} for cafeId: ${cafeId}`)
+    throw new Error('SESSION_INVALID')
   }
 
   if (session.status === 'USED') {
-    throw new Error('Kiosk session already used')
+    console.warn(`[Kiosk Session Validation] Session already USED: ${sessionId}`)
+    throw new Error('SESSION_USED')
   }
 
   if (session.expiresAt < new Date()) {
-    throw new Error('Kiosk session expired')
+    console.warn(`[Kiosk Session Validation] Session expired at ${session.expiresAt} (current: ${new Date()}) for sessionId: ${sessionId}`)
+    throw new Error('SESSION_EXPIRED')
   }
 
   if (session.deviceFingerprint && session.deviceFingerprint !== deviceFp) {
-    throw new Error('Kiosk session used on another device')
+    console.warn(`[Kiosk Session Validation] Device fingerprint mismatch. Session FP: ${session.deviceFingerprint}, Request FP: ${deviceFp}`)
+    throw new Error('SESSION_MISMATCH')
   }
 
   if (session.cafeId !== cafeId) {
-    throw new Error('Session cafe mismatch')
+    console.warn(`[Kiosk Session Validation] Session cafe mismatch. Session Cafe: ${session.cafeId}, Target Cafe: ${cafeId}`)
+    throw new Error('SESSION_MISMATCH')
   }
 
   return session
@@ -128,8 +134,10 @@ export async function createOrderAction(data: {
     if (error.stack) {
       console.error(`[Order Creation Log] [Digest: ${digest}] STACK TRACE:`, error.stack)
     }
+    const isSessionErr = ['SESSION_MISSING', 'SESSION_INVALID', 'SESSION_USED', 'SESSION_EXPIRED', 'SESSION_MISMATCH'].includes(error.message)
     return {
       success: false,
+      code: isSessionErr ? error.message : 'ORDER_CREATION_FAILED',
       error: error.message || 'An error occurred during order creation / حدث خطأ أثناء إنشاء الطلب',
       digest,
     }
