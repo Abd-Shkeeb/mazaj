@@ -126,7 +126,11 @@ export async function createOrderAction(data: {
     })
 
     // Revalidate the dashboard page after creation
-    revalidatePath('/[locale]/dashboard', 'page')
+    try {
+      revalidatePath('/[locale]/dashboard', 'page')
+    } catch (e) {
+      console.warn('[Order Creation] revalidatePath failed (non-critical):', e)
+    }
     return { success: true, order }
   } catch (error: any) {
     const digest = error.digest || `digest-${Math.random().toString(36).substr(2, 9)}`
@@ -144,40 +148,55 @@ export async function createOrderAction(data: {
   }
 }
 
-/**
- * Update an order's status. Ownership is verified via `verifyOrderOwnership`.
- */
 export async function updateOrderStatusAction(orderId: number, status: string) {
-  await verifyOrderOwnership(orderId)
+  try {
+    await verifyOrderOwnership(orderId)
 
-  const updated = await db.order.update({
-    where: { id: orderId },
-    data: { status },
-  })
-
-  if (status === 'COMPLETED') {
-    await db.event.create({
-      data: {
-        cafeId: updated.cafeId,
-        name: 'COMPLETE_ORDER',
-      },
+    const updated = await db.order.update({
+      where: { id: orderId },
+      data: { status },
     })
-  }
 
-  revalidatePath('/[locale]/dashboard', 'page')
-  return updated
+    if (status === 'COMPLETED') {
+      await db.event.create({
+        data: {
+          cafeId: updated.cafeId,
+          name: 'COMPLETE_ORDER',
+        },
+      })
+    }
+
+    try {
+      revalidatePath('/[locale]/dashboard', 'page')
+    } catch (e) {
+      console.warn('[Update Order Status] revalidatePath failed:', e)
+    }
+    return updated
+  } catch (error: any) {
+    console.error('[Update Order Status Error]:', error.message || error)
+    throw error
+  }
 }
 
 /**
  * Delete an order. Ownership is verified via `verifyOrderOwnership`.
  */
 export async function deleteOrderAction(orderId: number) {
-  await verifyOrderOwnership(orderId)
+  try {
+    await verifyOrderOwnership(orderId)
 
-  const deleted = await db.order.delete({
-    where: { id: orderId },
-  })
+    const deleted = await db.order.delete({
+      where: { id: orderId },
+    })
 
-  revalidatePath('/[locale]/dashboard', 'page')
-  return deleted
+    try {
+      revalidatePath('/[locale]/dashboard', 'page')
+    } catch (e) {
+      console.warn('[Delete Order] revalidatePath failed:', e)
+    }
+    return deleted
+  } catch (error: any) {
+    console.error('[Delete Order Error]:', error.message || error)
+    throw error
+  }
 }
