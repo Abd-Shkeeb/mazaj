@@ -481,7 +481,9 @@ export default function KioskClient({
           const code = (res as any).code || ''
           const isSessionErr = ['SESSION_MISSING', 'SESSION_INVALID', 'SESSION_USED', 'SESSION_EXPIRED', 'SESSION_MISMATCH'].includes(code)
           if (isSessionErr) {
-            handleRedirectToScanQr()
+            // Re-initialize session transparently instead of redirecting
+            console.log('[KioskClient] Session invalid. Requesting new session...')
+            await checkAndInitSession()
           } else {
             alert(res.error || (isAr ? 'حدث خطأ أثناء التحليل' : 'An error occurred during analysis'))
           }
@@ -506,7 +508,7 @@ export default function KioskClient({
 
   const handlePlaceOrder = async () => {
     if (isSessionExpired) {
-      handleRedirectToScanQr()
+      await checkAndInitSession()
       return
     }
     if (!analysisResult) return
@@ -533,7 +535,8 @@ export default function KioskClient({
         const code = (res as any).code || ''
         const isSessionErr = ['SESSION_MISSING', 'SESSION_INVALID', 'SESSION_USED', 'SESSION_EXPIRED', 'SESSION_MISMATCH'].includes(code)
         if (isSessionErr) {
-          handleRedirectToScanQr()
+          console.log('[KioskClient] Session expired or used on checkout. Renewing session...')
+          await checkAndInitSession()
         } else {
           alert(res.error || (isAr ? 'عذراً، فشل إرسال الطلب' : 'Sorry, failed to place order'))
         }
@@ -917,10 +920,10 @@ export default function KioskClient({
               </p>
 
               <button
-                onClick={handleRedirectToScanQr}
+                onClick={checkAndInitSession}
                 className="w-full py-3 bg-[#5D4037] text-white rounded-xl font-black text-xs transition-colors cursor-pointer shadow-sm hover:bg-[#3E2723]"
               >
-                {isAr ? 'إعادة مسح رمز QR' : 'Re-scan QR Code'}
+                {isAr ? 'بدء جلسة جديدة' : 'Start New Session'}
               </button>
             </motion.div>
           </div>
