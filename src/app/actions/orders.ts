@@ -91,8 +91,9 @@ export async function createOrderAction(data: {
   cafeId: string
   tableNumber?: string
 }) {
-  try {
+    console.log('[Order Action Log] Starting createOrderAction execution...')
     // Verify that the cafe has an active subscription
+    console.log('[Order Action Log] Asserting active subscription for cafeId:', data.cafeId)
     await assertActiveSubscription(data.cafeId)
 
     // IP‑based rate limiting (max 10 orders per minute per IP)
@@ -101,13 +102,18 @@ export async function createOrderAction(data: {
       headerList.get('x-forwarded-for') ||
       headerList.get('x-real-ip') ||
       '127.0.0.1'
+    console.log('[Order Action Log] Verifying rate limit for IP:', ip)
     if (isRateLimited(ip, 10)) {
+      console.warn('[Order Action Log] IP is rate limited:', ip)
       throw new Error('Too many requests / تم إرسال الكثير من الطلبات، يرجى الانتظار قليلاً')
     }
 
     // Validate kiosk session before proceeding
+    console.log('[Order Action Log] Validating kiosk session for cafeId:', data.cafeId)
     const session = await validateKioskSession(data.cafeId)
+    console.log('[Order Action Log] Session validation passed. Session ID:', session.id)
 
+    console.log('[Order Action Log] Creating order entry in DB for drinkId:', data.drinkId)
     const order = await db.order.create({
       data: {
         drinkId: data.drinkId,
@@ -118,19 +124,25 @@ export async function createOrderAction(data: {
         status: 'PENDING',
       },
     })
+    console.log('[Order Action Log] Order created in database. Order ID:', order.id)
 
     // Mark the kiosk session as USED to prevent further actions
+    console.log('[Order Action Log] Updating kiosk session status to USED for session:', session.id)
     await (db as any).kioskSession.update({
       where: { id: session.id },
       data: { status: 'USED' },
     })
+    console.log('[Order Action Log] Session updated successfully to USED.')
 
     // Revalidate the dashboard page after creation
+    console.log('[Order Action Log] Triggering revalidatePath for dashboard...')
     try {
       revalidatePath('/[locale]/dashboard', 'page')
-    } catch (e) {
-      console.warn('[Order Creation] revalidatePath failed (non-critical):', e)
+      console.log('[Order Action Log] RevalidatePath completed successfully.')
+    } catch (e: any) {
+      console.warn('[Order Action Log] revalidatePath failed (non-critical):', e.message || e)
     }
+    console.log('[Order Action Log] Returning success response to client.')
     return { success: true, order }
   } catch (error: any) {
     const digest = error.digest || `digest-${Math.random().toString(36).substr(2, 9)}`

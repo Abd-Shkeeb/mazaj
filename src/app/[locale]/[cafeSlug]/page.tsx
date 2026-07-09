@@ -12,37 +12,47 @@ export default async function CafeKioskPage({
 }: {
   params: Promise<{ locale: string; cafeSlug: string }>
 }) {
+  console.log('[Page Render Log] Starting CafeKioskPage render...')
   const { cafeSlug, locale } = await params
   const isAr = locale === 'ar'
+  console.log(`[Page Render Log] Params parsed: cafeSlug="${cafeSlug}", locale="${locale}"`)
 
   // Fetch Cafe by slug
+  console.log('[Page Render Log] Fetching Cafe from DB with slug:', cafeSlug)
   const cafe = await db.cafe.findUnique({
     where: { slug: cafeSlug.toLowerCase().trim() },
   })
 
   if (!cafe) {
+    console.warn('[Page Render Log] Cafe not found, triggering notFound()')
     notFound()
   }
+  console.log('[Page Render Log] Cafe fetched successfully. Cafe ID:', cafe.id)
 
   // Server-side Kiosk Session Verification
   const { cookies: nextCookies } = await import('next/headers')
   const cookieStore = await nextCookies()
   const sessionId = cookieStore.get('kiosk-session-id')?.value
+  console.log('[Page Render Log] kiosk-session-id cookie value:', sessionId)
 
   if (sessionId) {
+    console.log('[Page Render Log] Fetching kioskSession from DB for ID:', sessionId)
     const session = await db.kioskSession.findUnique({
       where: { id: sessionId },
     })
+    console.log('[Page Render Log] Session entry retrieved:', session ? `status=${session.status}, expiresAt=${session.expiresAt}` : 'NULL')
     const isSessionInvalid = !session || session.expiresAt < new Date() || session.cafeId !== cafe.id || (session as any).status === 'USED'
 
     if (isSessionInvalid) {
-      // Delete invalid session cookies and let KioskClient request a new one transparently
-      cookieStore.delete('kiosk-session-id')
-      cookieStore.delete('kiosk-device-fp')
+      console.log('[Page Render Log] Session is invalid/used. Cookies will be cleaned by the KioskClient browser side.')
+    } else {
+      console.log('[Page Render Log] Session is valid.')
     }
   }
 
+  console.log('[Page Render Log] Verifying active subscription for cafeId:', cafe.id)
   const subStatus = await verifyActiveSubscription(cafe.id)
+  console.log('[Page Render Log] Subscription status is:', subStatus)
   const isExpired = subStatus === 'EXPIRED' || subStatus === 'SUSPENDED' || subStatus === 'CANCELLED'
 
   if (isExpired) {
