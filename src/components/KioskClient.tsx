@@ -167,8 +167,9 @@ export default function KioskClient({
     try {
       localStorage.removeItem('kioskDeviceFp')
     } catch (e) { }
-    // Redirect to scan-qr
-    router.replace('/scan-qr')
+    // Redirect through scan route so a fresh session is created automatically
+    // This avoids showing the static 'scan-qr expired' page unnecessarily
+    window.location.replace(`/api/kiosk/${cafe.slug}/scan?locale=${document.documentElement.lang || 'ar'}`)
   }
 
 
@@ -510,8 +511,9 @@ export default function KioskClient({
         const code = (res as any).code || ''
         const isSessionErr = ['SESSION_MISSING', 'SESSION_INVALID', 'SESSION_USED', 'SESSION_EXPIRED', 'SESSION_MISMATCH'].includes(code)
         if (isSessionErr) {
-          console.log('[KioskClient] Session expired or used on checkout. Renewing session...')
-          await checkAndInitSession()
+          // Session is invalid — redirect through scan route to create fresh session and re-enter kiosk
+          console.log('[KioskClient] Session error on checkout. Code:', code, '— redirecting through scan route.')
+          window.location.replace(`/api/kiosk/${cafe.slug}/scan?locale=${document.documentElement.lang || 'ar'}`)
         } else {
           alert(res.error || (isAr ? 'عذراً، فشل إرسال الطلب' : 'Sorry, failed to place order'))
         }

@@ -1,17 +1,11 @@
 // src/app/api/kiosk/[cafeSlug]/scan/route.ts
-// This is the TRUE entry point for QR code scans.
-// The physical QR code must point to: /api/kiosk/[cafeSlug]/scan?table=4 (optional table number)
-// This route:
-//   1. Looks up the cafe
-//   2. Invalidates any existing session cookie (USED or EXPIRED sessions are skipped)
-//   3. Creates a FRESH ACTIVE KioskSession in the database
-//   4. Sets the session cookie in the response
-//   5. Redirects the browser to the kiosk page
+// Entry point for QR code scans — creates a new ACTIVE KioskSession and redirects to the kiosk page.
+// Also handles automatic server redirects from page.tsx when an existing session is USED/EXPIRED.
 
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { addMinutes } from 'date-fns';
-import { isRateLimitedKey } from '@/lib/rateLimiter';
+import { isRateLimited } from '@/lib/rateLimit';
 
 export async function GET(
   request: NextRequest,
@@ -24,6 +18,13 @@ export async function GET(
 
   console.log(`[QR Scan Route] /api/kiosk/${cafeSlug}/scan called. tableNumber=${tableNumber}, locale=${locale}`);
 
+  // Rate limit per IP (not per cafe) to prevent abuse while allowing fast legitimate scans
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1';
+  if (isRateLimited(`scan-ip:${ip}`, 20)) {
+    console.warn(`[QR Scan Route] IP rate limit hit: ${ip}`);
+    return new NextResponse('Too many requests', { status: 429 });
+  }
+
   // 1. Find the cafe
   const cafe = await db.cafe.findUnique({ where: { slug: cafeSlug.toLowerCase().trim() } });
   if (!cafe) {
@@ -32,39 +33,39 @@ export async function GET(
   }
   console.log(`[QR Scan Route] Cafe matched. ID: ${cafe.id}`);
 
-  // Rate limit: max 30 QR scans / new sessions per cafe per minute (generous to handle automatic server redirects)
-  if (isRateLimitedKey(`scan:${cafe.id}`, 30)) {
-    console.warn(`[QR Scan Route] Rate limit hit for cafe: ${cafe.id}`);
-    return new NextResponse('Too many requests', { status: 429 });
+  // 2. Check if the existing session cookie is still ACTIVE — reuse it, don't create a new one unnecessarily
+  const existingSessionId = request.cookies.get('kiosk-session-id')?.value;
+  if (existingSessionId) {
+    const existing = await db.kioskSession.findUnique({ where: { id: existingSessionId } });
+    if (
+      existing &&
+      (existing as any).status === 'ACTIVE' &&
+      existing.expiresAt > new Date() &&
+      existing.cafeId === cafe.id
+    ) {
+      console.log(`[QR Scan Route] Reusing existing ACTIVE session: ${existingSessionId}`);
+      const kioskPath = `/${locale}/${cafeSlug}${tableNumber ? `?table=${tableNumber}` : ''}`;
+      return NextResponse.redirect(new URL(kioskPath, request.url), { status: 302 });
+    }
   }
 
-  // 3. Get the device fingerprint from header (optional, populated by the browser client if available)
+  // 3. Create a FRESH session
   const fingerprint = request.headers.get('x-device-fingerprint') ?? undefined;
-
-  // 4. Always create a FRESH session — ignore any existing cookie session
   const sessionMinutes = (cafe as any).kioskSessionMinutes ?? 15;
   const expiresAt = addMinutes(new Date(), sessionMinutes);
 
   const newSession = await db.kioskSession.create({
-    data: {
-      cafeId: cafe.id,
-      deviceFingerprint: fingerprint,
-      expiresAt,
-      status: 'ACTIVE',
-    },
+    data: { cafeId: cafe.id, deviceFingerprint: fingerprint, expiresAt, status: 'ACTIVE' },
     select: { id: true, expiresAt: true },
   });
 
   console.log(`[QR Scan Route] ✅ New session created. ID: ${newSession.id}, expiresAt: ${newSession.expiresAt}`);
 
-  // 5. Build redirect URL to kiosk page
+  // 4. Redirect to kiosk page with session cookie set
   const kioskPath = `/${locale}/${cafeSlug}${tableNumber ? `?table=${tableNumber}` : ''}`;
-
   console.log(`[QR Scan Route] Redirecting to kiosk: ${kioskPath}`);
 
-  // 6. Build response with redirect and set session cookies
   const response = NextResponse.redirect(new URL(kioskPath, request.url), { status: 302 });
-
   const maxAge = Math.floor((newSession.expiresAt.getTime() - Date.now()) / 1000);
 
   response.cookies.set('kiosk-session-id', newSession.id, {
@@ -73,9 +74,6 @@ export async function GET(
     httpOnly: false, // Must be readable by client-side JS for validate calls
     sameSite: 'lax',
   });
-
-  // Clear old device fingerprint cookie so client sets a fresh one
-  response.cookies.delete('kiosk-device-fp');
 
   return response;
 }
