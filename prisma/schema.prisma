@@ -33,7 +33,7 @@ model Cafe {
   orders     Order[]
   analyses   Analysis[]
   events     Event[]
-  kioskSessionMinutes Int @default(45) // default session duration in minutes
+  kioskSessionMinutes Int @default(15) // default session duration in minutes
   sessions   KioskSession[]
 }
 
