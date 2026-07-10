@@ -34,7 +34,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (isRateLimitedKey(cafe.id, 5)) {
     return NextResponse.json({ error: 'Too many session creations' }, { status: 429 });
   }
-  const expiresAt = addMinutes(new Date(), cafe.kioskSessionMinutes ?? 15);
+  // Enforce 15 minutes session duration
+  const sessionMinutes = (cafe.kioskSessionMinutes && cafe.kioskSessionMinutes !== 45) ? cafe.kioskSessionMinutes : 15;
+  const expiresAt = addMinutes(new Date(), sessionMinutes);
   const session = await db.kioskSession.create({
     data: {
       cafeId: cafe.id,
