@@ -9,6 +9,11 @@ export const metadata = {
   description:
     'منصة ذكية تعتمد على الذكاء الاصطناعي لتحليل حالتك المزاجية وترشيح المشروب المثالي والمقاهي المتوفر بها.',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/coffee_icon.png',
+    shortcut: '/coffee_icon.png',
+    apple: '/coffee_icon.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
