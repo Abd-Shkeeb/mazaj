@@ -114,7 +114,8 @@ export async function createOrderAction(data: {
     const session = await validateKioskSession(data.cafeId)
     console.log('[Order Action Log] Session validation passed. Session ID:', session.id)
 
-    console.log('[Order Action Log] Creating order entry in DB for drinkId:', data.drinkId)
+    const isTableOrder = !!data.tableNumber && data.tableNumber.trim() !== ''
+    console.log('[Order Action Log] Creating order entry in DB for drinkId:', data.drinkId, 'type:', isTableOrder ? 'TABLE' : 'TAKEAWAY')
     const order = await db.order.create({
       data: {
         drinkId: data.drinkId,
@@ -122,6 +123,7 @@ export async function createOrderAction(data: {
         price: data.price,
         cafeId: data.cafeId,
         tableNumber: data.tableNumber || null,
+        orderType: isTableOrder ? 'TABLE' : 'TAKEAWAY',
         status: 'PENDING',
       },
     })

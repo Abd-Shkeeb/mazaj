@@ -33,6 +33,7 @@ interface Order {
   price: number
   status: string
   tableNumber?: string | null
+  orderType?: string | null
   createdAt: Date
 }
 
@@ -103,9 +104,20 @@ export default function OrdersTab({
                 className="p-4 bg-white rounded-xl border border-amber-600/10 shadow-sm hover:border-amber-600/25 transition-all space-y-3 animate-in fade-in zoom-in-95 duration-200"
               >
                 <div className="flex justify-between items-start">
-                  <span className="bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded">
-                    #{order.id}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded">
+                      #{order.id}
+                    </span>
+                    {order.orderType === 'TABLE' || order.tableNumber ? (
+                      <span className="bg-blue-100 text-blue-800 text-[9px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                        🍽️ {isAr ? `طاولة ${order.tableNumber || ''}` : `Table ${order.tableNumber || ''}`}
+                      </span>
+                    ) : (
+                      <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                        🛍️ {isAr ? 'سفري' : 'Takeaway'}
+                      </span>
+                    )}
+                  </div>
                   <span className="text-[10px] text-gray-400 font-bold">
                     {getWaitTime(order.createdAt)}
                   </span>
@@ -178,9 +190,20 @@ export default function OrdersTab({
                 className="p-4 bg-white rounded-xl border border-blue-600/10 shadow-sm hover:border-blue-600/25 transition-all space-y-3 animate-in fade-in zoom-in-95 duration-200"
               >
                 <div className="flex justify-between items-start">
-                  <span className="bg-blue-500 text-white text-[9px] font-black px-2 py-0.5 rounded">
-                    #{order.id}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="bg-blue-500 text-white text-[9px] font-black px-2 py-0.5 rounded">
+                      #{order.id}
+                    </span>
+                    {order.orderType === 'TABLE' || order.tableNumber ? (
+                      <span className="bg-blue-100 text-blue-800 text-[9px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                        🍽️ {isAr ? `طاولة ${order.tableNumber || ''}` : `Table ${order.tableNumber || ''}`}
+                      </span>
+                    ) : (
+                      <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                        🛍️ {isAr ? 'سفري' : 'Takeaway'}
+                      </span>
+                    )}
+                  </div>
                   <span className="text-[10px] text-gray-400 font-bold">
                     {getWaitTime(order.createdAt)}
                   </span>
@@ -253,9 +276,20 @@ export default function OrdersTab({
                 className="p-4 bg-white rounded-xl border border-emerald-600/10 shadow-sm hover:border-emerald-600/25 transition-all space-y-3 animate-in fade-in zoom-in-95 duration-200"
               >
                 <div className="flex justify-between items-start">
-                  <span className="bg-emerald-500 text-white text-[9px] font-black px-2 py-0.5 rounded">
-                    #{order.id}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="bg-emerald-500 text-white text-[9px] font-black px-2 py-0.5 rounded">
+                      #{order.id}
+                    </span>
+                    {order.orderType === 'TABLE' || order.tableNumber ? (
+                      <span className="bg-blue-100 text-blue-800 text-[9px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                        🍽️ {isAr ? `طاولة ${order.tableNumber || ''}` : `Table ${order.tableNumber || ''}`}
+                      </span>
+                    ) : (
+                      <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                        🛍️ {isAr ? 'سفري' : 'Takeaway'}
+                      </span>
+                    )}
+                  </div>
                   <span className="text-[10px] text-gray-400 font-bold">
                     {getWaitTime(order.createdAt)}
                   </span>
@@ -362,13 +396,15 @@ export default function OrdersTab({
                             { hour: '2-digit', minute: '2-digit' },
                           )}
                         </span>
-                        {order.tableNumber && (
-                          <>
-                            <span>•</span>
-                            <span className="text-blue-600 bg-blue-50 px-1.5 py-0.2 rounded font-black">
-                              {isAr ? `طاولة ${order.tableNumber}` : `Table ${order.tableNumber}`}
-                            </span>
-                          </>
+                        <span>•</span>
+                        {order.orderType === 'TABLE' || order.tableNumber ? (
+                          <span className="text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
+                            🍽️ {isAr ? `طاولة ${order.tableNumber || ''}` : `Table ${order.tableNumber || ''}`}
+                          </span>
+                        ) : (
+                          <span className="text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
+                            🛍️ {isAr ? 'سفري' : 'Takeaway'}
+                          </span>
                         )}
                       </div>
                     </div>
