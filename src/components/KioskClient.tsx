@@ -209,19 +209,23 @@ export default function KioskClient({
 
   const checkAndInitSession = async () => {
     const isFreshScan = typeof window !== 'undefined' && window.location.search.includes('newSession=true')
+    console.log('[KioskSession Lifecycle Log] checkAndInitSession triggered. isFreshScan:', isFreshScan, 'Search query:', typeof window !== 'undefined' ? window.location.search : '')
     
     if (isFreshScan) {
-      console.log('[KioskClient] Fresh QR scan url query detected. Initiating a new session...')
+      console.log('[KioskSession Lifecycle Log] Detected fresh QR scan URL parameter newSession=true. Clearing old cookies now...')
       // Clear old session cookies
       document.cookie = 'kiosk-session-id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
       document.cookie = 'kiosk-device-fp=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
+      console.log('[KioskSession Lifecycle Log] Cookies cleared. Current document.cookie:', document.cookie)
       
       // Clean query parameter from URL bar to prevent refresh loops
       if (window.history && window.history.replaceState) {
         const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname
         window.history.replaceState({ path: cleanUrl }, '', cleanUrl)
+        console.log('[KioskSession Lifecycle Log] URL query cleared. New URL is:', cleanUrl)
       }
       
+      console.log('[KioskSession Lifecycle Log] Invoking initializeSession(true) to create a clean database session...')
       await initializeSession(true)
       return
     }
@@ -234,36 +238,47 @@ export default function KioskClient({
     
     const storedSessionId = cookiesObj['kiosk-session-id']
     const fp = getDeviceFingerprintLocal()
+    console.log('[KioskSession Lifecycle Log] Reading stored kiosk-session-id from cookies:', storedSessionId, 'Device Fingerprint:', fp)
     
     if (storedSessionId) {
       try {
-        const res = await fetch(`/api/kiosk/${cafe.slug}/session/validate?sessionId=${storedSessionId}`, {
+        const validateUrl = `/api/kiosk/${cafe.slug}/session/validate?sessionId=${storedSessionId}`
+        console.log('[KioskSession Lifecycle Log] Sending validate request to:', validateUrl)
+        const res = await fetch(validateUrl, {
           headers: {
             'x-device-fingerprint': fp
           }
         })
+        console.log('[KioskSession Lifecycle Log] Validate response status:', res.status)
         if (res.ok) {
           const data = await res.json()
+          console.log('[KioskSession Lifecycle Log] Validate response JSON payload:', data)
           if (data.valid) {
             const expiry = new Date(data.expiresAt)
             const secondsLeft = Math.max(0, Math.floor((expiry.getTime() - Date.now()) / 1000))
+            console.log('[KioskSession Lifecycle Log] Session is VALID. Expiry time remaining:', secondsLeft, 'seconds.')
             setSessionTimeLeft(secondsLeft)
             setIsSessionExpired(false)
             return
+          } else {
+            console.warn('[KioskSession Lifecycle Log] Session is INVALID or EXPIRED/USED. Code:', data.code, 'Error:', data.error)
           }
+        } else {
+          console.warn('[KioskSession Lifecycle Log] Validation endpoint returned non-OK status:', res.status)
         }
       } catch (e) {
-        console.warn('[Session] Stored session validation failed:', e)
+        console.error('[KioskSession Lifecycle Log] Error during validation request:', e)
       }
     }
     
     // If there is no session, or if it is invalid/expired/used, do not create a new one dynamically
     // unless this is a fresh scan from a QR code. Direct access must redirect to scan-qr.
-    console.log('[KioskClient] Session is missing or invalid. Enforcing QR scan requirement...')
+    console.log('[KioskSession Lifecycle Log] Session is missing or invalid. Enforcing redirect to scan-qr page...')
     handleRedirectToScanQr()
   }
 
   useEffect(() => {
+    console.log('[KioskSession Lifecycle Log] useEffect hook triggered checkAndInitSession for cafeId:', cafe.id)
     checkAndInitSession()
   }, [cafe.id])
 
