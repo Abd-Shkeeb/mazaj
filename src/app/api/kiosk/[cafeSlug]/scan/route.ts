@@ -18,13 +18,6 @@ export async function GET(
 
   console.log(`[QR Scan Route] /api/kiosk/${cafeSlug}/scan called. tableNumber=${tableNumber}, locale=${locale}`);
 
-  // Rate limit per IP (not per cafe) to prevent abuse while allowing fast legitimate scans
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1';
-  if (isRateLimited(`scan-ip:${ip}`, 20)) {
-    console.warn(`[QR Scan Route] IP rate limit hit: ${ip}`);
-    return new NextResponse('Too many requests', { status: 429 });
-  }
-
   // 1. Find the cafe
   const cafe = await db.cafe.findUnique({ where: { slug: cafeSlug.toLowerCase().trim() } });
   if (!cafe) {
