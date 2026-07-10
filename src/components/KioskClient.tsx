@@ -297,6 +297,7 @@ export default function KioskClient({
     id: number
     drinkName: string
     price: number
+    tableNumber?: string | null
   } | null>(null)
 
   const [timeLeft, setTimeLeft] = useState(60)
@@ -572,6 +573,7 @@ export default function KioskClient({
           id: order.id,
           drinkName: order.drinkName,
           price: order.price,
+          tableNumber: order.tableNumber || tableParam || null,
         })
 
         try {
@@ -849,7 +851,7 @@ export default function KioskClient({
         </AnimatePresence>
       </main>
 
-      {/* Checkout Order Success Modal */}
+      {/* Checkout Order Success Modal with Real-time Status Tracker */}
       <AnimatePresence>
         {placedOrder && (
           <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
@@ -867,29 +869,8 @@ export default function KioskClient({
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-white w-full max-w-sm rounded-3xl p-6 text-center shadow-2xl relative z-10 border border-[#5D4037]/10"
             >
-              <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Check className="h-6 w-6 stroke-[3]" />
-              </div>
-
-              <h2 className="text-xl font-black text-[#2D2D2D] mb-1">{tr('orderSuccessTitle')}</h2>
-
-              <div className="bg-[#FAF8F5] py-3 px-4 rounded-xl border border-[#5D4037]/5 mb-3 max-w-xs mx-auto">
-                <p className="text-[10px] text-[#6D6D6D] font-bold uppercase tracking-wider">
-                  {tr('orderNumberLabel')}
-                </p>
-                <p className="text-3xl font-black text-[#5D4037] mt-0.5">#{placedOrder.id}</p>
-              </div>
-
-              <div className="mb-4">
-                <p className="text-base font-extrabold text-[#2D2D2D]">{placedOrder.drinkName}</p>
-                <p className="text-xs font-black text-amber-700 mt-0.5">
-                  {formattedPrice(placedOrder.price)}
-                </p>
-              </div>
-
-              <p className="text-xs text-[#6D6D6D] font-semibold leading-relaxed mb-5">
-                {tr('orderSuccessMsg')}
-              </p>
+              {/* Order Status Checker Logic Wrapper */}
+              <OrderStatusTracker placedOrder={placedOrder} isAr={isAr} onClose={() => { setPlacedOrder(null); handleReset(true); }} />
 
               <button
                 onClick={() => { setPlacedOrder(null); handleReset(true); }}
@@ -952,6 +933,264 @@ export default function KioskClient({
           </div>
         )}
       </AnimatePresence>
+    </div>
+  )
+}
+
+function OrderStatusTracker({ placedOrder, isAr, onClose }: { placedOrder: { id: number; drinkName: string; price: number; tableNumber?: string | null }; isAr: boolean; onClose: () => void }) {
+  const [status, setStatus] = useState<string>('PENDING') // PENDING, PREPARING, READY, DELIVERED
+  const [rating, setRating] = useState<number>(0)
+  const [ratingSubmitted, setRatingSubmitted] = useState<boolean>(false)
+
+  // Estimated preparation time based on status
+  const getEstimatedTime = (s: string) => {
+    switch (s) {
+      case 'PENDING': return isAr ? '5 دقائق' : '5 mins'
+      case 'PREPARING': return isAr ? '2 دقيقة' : '2 mins'
+      case 'READY': return isAr ? 'جاهز الآن!' : 'Ready now!'
+      case 'DELIVERED': return isAr ? 'تم التسليم' : 'Delivered'
+      default: return isAr ? '5 دقائق' : '5 mins'
+    }
+  }
+
+  useEffect(() => {
+    let active = true
+    let intervalId: NodeJS.Timeout
+    let playedReadyAlert = false
+
+    const playNotification = () => {
+      // Browser audio context alert sound
+      try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
+        const oscillator = audioCtx.createOscillator()
+        const gainNode = audioCtx.createGain()
+        oscillator.connect(gainNode)
+        gainNode.connect(audioCtx.destination)
+        oscillator.type = 'sine'
+        oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime) // D5 note
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime)
+        oscillator.start()
+        oscillator.stop(audioCtx.currentTime + 0.3)
+      } catch (e) {
+        console.warn('Audio alert failed:', e)
+      }
+
+      // Device vibration (if supported)
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate([200, 100, 200])
+      }
+    }
+
+    const checkStatus = async () => {
+      try {
+        const res = await fetch(`/api/kiosk/order/${placedOrder.id}/status`)
+        if (res.ok && active) {
+          const data = await res.json()
+          if (data.success && data.status) {
+            const nextStatus = data.status
+            setStatus(nextStatus)
+
+            // Trigger alert when order becomes READY
+            if (nextStatus === 'READY' && !playedReadyAlert) {
+              playedReadyAlert = true
+              playNotification()
+            }
+
+            // Stop polling when DELIVERED
+            if (nextStatus === 'DELIVERED') {
+              console.log('[OrderStatusTracker] Order delivered. Clearing status poll interval...')
+              clearInterval(intervalId)
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to poll order status:', err)
+      }
+    }
+
+    // Initial check
+    checkStatus()
+
+    intervalId = setInterval(checkStatus, 3000)
+    return () => {
+      active = false
+      clearInterval(intervalId)
+    }
+  }, [placedOrder.id])
+
+  // Map status to steps: PENDING (0), PREPARING (1), READY (2), DELIVERED (3)
+  const getStepIndex = (s: string) => {
+    switch (s) {
+      case 'PENDING': return 0
+      case 'PREPARING': return 1
+      case 'READY': return 2
+      case 'DELIVERED': return 3
+      default: return 0
+    }
+  }
+
+  const currentStep = getStepIndex(status)
+  const steps = isAr
+    ? ['تم الاستلام', 'قيد التحضير', 'جاهز للاستلام', 'تم التسليم']
+    : ['Received', 'Preparing', 'Ready', 'Delivered']
+
+  return (
+    <div className="w-full text-center space-y-4 mb-5">
+      {/* Dynamic Animated Status Icon */}
+      <div className="mx-auto flex items-center justify-center">
+        {status === 'DELIVERED' ? (
+          <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center animate-bounce shadow-md">
+            <CheckCircle className="h-7 w-7 stroke-[3]" />
+          </div>
+        ) : status === 'READY' ? (
+          <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center animate-pulse shadow-md">
+            <Coffee className="h-7 w-7 stroke-[2.5]" />
+          </div>
+        ) : status === 'PREPARING' ? (
+          <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shadow-md">
+            <Loader2 className="h-7 w-7 stroke-[2.5] animate-spin" />
+          </div>
+        ) : (
+          <div className="w-14 h-14 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center shadow-sm">
+            <Check className="h-7 w-7 stroke-[3]" />
+          </div>
+        )}
+      </div>
+
+      {status !== 'DELIVERED' ? (
+        <>
+          <div className="space-y-1">
+            <h2 className="text-lg font-black text-emerald-600 leading-tight">
+              {isAr ? 'تم استلام طلبك بنجاح ✅' : 'Order Placed Successfully ✅'}
+            </h2>
+            <p className="text-[11px] font-black text-[#5D4037]">
+              {isAr ? 'سيتم تحضير مشروبك الآن' : 'Your drink is being prepared now'}
+            </p>
+          </div>
+
+          {/* Time & Table Info */}
+          <div className="bg-[#FAF8F5] p-3.5 rounded-2xl border border-[#5D4037]/5 max-w-xs mx-auto grid grid-cols-3 gap-2 text-center divide-x divide-gray-150">
+            <div className="space-y-0.5">
+              <p className="text-[8px] text-gray-400 font-black uppercase tracking-wider">
+                {isAr ? 'رقم الطلب' : 'Order No.'}
+              </p>
+              <p className="text-base font-black text-[#5D4037]">#{placedOrder.id}</p>
+            </div>
+            <div className="space-y-0.5 ps-2">
+              <p className="text-[8px] text-gray-400 font-black uppercase tracking-wider">
+                {isAr ? 'رقم الطاولة' : 'Table No.'}
+              </p>
+              <p className="text-base font-black text-[#5D4037]">
+                {placedOrder.tableNumber || (isAr ? 'سفري' : 'Takeaway')}
+              </p>
+            </div>
+            <div className="space-y-0.5 ps-2">
+              <p className="text-[8px] text-gray-400 font-black uppercase tracking-wider">
+                {isAr ? 'الوقت المقدر' : 'Est. Time'}
+              </p>
+              <p className="text-xs font-black text-amber-700 mt-0.5">{getEstimatedTime(status)}</p>
+            </div>
+          </div>
+
+          {/* Drink Name & Price */}
+          <div className="max-w-xs mx-auto text-center border-t border-b border-gray-100 py-2.5">
+            <p className="text-xs font-black text-[#2D2D2D]">{placedOrder.drinkName}</p>
+            <p className="text-[10px] font-black text-amber-700 mt-0.5">
+              {isAr ? `${placedOrder.price.toLocaleString('ar-IQ')} د.ع` : `${placedOrder.price.toLocaleString('en-US')} IQD`}
+            </p>
+          </div>
+
+          {/* Progress tracker timeline */}
+          <div className="py-2 px-2 space-y-3 text-right rtl:text-right ltr:text-left max-w-xs mx-auto">
+            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-center mb-1">
+              {isAr ? 'حالة التحضير مباشرة' : 'Live Preparation Status'}
+            </p>
+            
+            <div className="space-y-3.5 relative before:absolute before:top-2 before:bottom-2 before:start-[10px] before:w-[2px] before:bg-gray-150">
+              {steps.map((stepText, idx) => {
+                const isDone = idx <= currentStep
+                const isCurrent = idx === currentStep
+                
+                return (
+                  <div key={idx} className="flex items-center gap-3.5 relative z-10">
+                    <div className={`w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center transition-all duration-500 text-[9px] font-bold ${
+                      isCurrent 
+                        ? 'bg-[#5D4037] border-[#5D4037] text-white ring-4 ring-[#5D4037]/10' 
+                        : isDone 
+                          ? 'bg-emerald-500 border-emerald-500 text-white' 
+                          : 'bg-white border-gray-300 text-gray-400'
+                    }`}>
+                      {isDone && !isCurrent ? (
+                        <Check className="h-2.5 w-2.5 stroke-[3]" />
+                      ) : (
+                        <span>{idx + 1}</span>
+                      )}
+                    </div>
+                    <span className={`text-[11px] font-black transition-colors duration-500 ${
+                      isCurrent 
+                        ? 'text-[#5D4037]' 
+                        : isDone 
+                          ? 'text-emerald-600 font-bold' 
+                          : 'text-gray-400'
+                    }`}>
+                      {stepText}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </>
+      ) : (
+        /* ─── DELIVERED: THANK YOU & RATINGS ─── */
+        <div className="space-y-4 py-4 animate-in fade-in zoom-in-95 duration-350">
+          <div className="space-y-1">
+            <h2 className="text-xl font-black text-emerald-600">
+              {isAr ? 'بالعافية عليك! ☕❤️' : 'Enjoy your drink! ☕❤️'}
+            </h2>
+            <p className="text-xs text-gray-500 font-semibold">
+              {isAr ? 'تم تسليم طلبك بنجاح. نأمل أن يعجبك مشروبك!' : 'Your order has been delivered. We hope you love your drink!'}
+            </p>
+          </div>
+
+          <div className="bg-[#FAF8F5] p-4 rounded-2xl border border-gray-100 max-w-xs mx-auto space-y-3">
+            <p className="text-xs font-black text-[#5D4037]">
+              {ratingSubmitted 
+                ? (isAr ? 'شكراً لتقييمك الرائع! 🥰' : 'Thank you for your rating! 🥰') 
+                : (isAr ? 'كيف كانت تجربتك معنا؟' : 'How was your experience with us?')}
+            </p>
+            
+            {!ratingSubmitted ? (
+              <div className="flex justify-center gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => {
+                      setRating(star)
+                      setRatingSubmitted(true)
+                    }}
+                    className="text-2xl transition-transform hover:scale-125 focus:outline-none cursor-pointer"
+                  >
+                    {star <= rating ? '⭐' : '☆'}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="flex justify-center gap-1.5 text-amber-500 text-lg">
+                {'⭐'.repeat(rating)}
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={onClose}
+            className="w-full mt-2 py-3 bg-emerald-600 text-white rounded-xl font-black text-xs transition-colors cursor-pointer shadow-sm hover:bg-emerald-700"
+          >
+            {isAr ? 'طلب جديد ☕' : 'New Order ☕'}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
