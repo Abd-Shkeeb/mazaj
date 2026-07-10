@@ -171,114 +171,48 @@ export default function KioskClient({
     router.replace('/scan-qr')
   }
 
-  const initializeSession = async (forceNew: boolean = false) => {
-    try {
-      const fp = getDeviceFingerprintLocal()
-      const headersInit: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'x-device-fingerprint': fp
-      }
-      if (forceNew) {
-        headersInit['x-new-session'] = 'true'
-      }
-
-      const res = await fetch(`/api/kiosk/${cafe.slug}/session`, {
-        method: 'POST',
-        headers: headersInit
-      })
-      if (res.ok) {
-        const data = await res.json()
-        const expiry = new Date(data.expiresAt)
-        const secondsLeft = Math.max(0, Math.floor((expiry.getTime() - Date.now()) / 1000))
-
-        document.cookie = `kiosk-session-id=${data.sessionId}; path=/; max-age=${secondsLeft}`
-        document.cookie = `kiosk-device-fp=${encodeURIComponent(fp)}; path=/; max-age=${secondsLeft}`
-
-        setSessionTimeLeft(secondsLeft)
-        setIsSessionExpired(false)
-        console.log(`[Session] Created session ${data.sessionId}, expires in ${secondsLeft}s`)
-      } else {
-        console.error('[Session] Failed to initialize session')
-        handleRedirectToScanQr()
-      }
-    } catch (err) {
-      console.error('[Session] Error initializing session:', err)
-      handleRedirectToScanQr()
-    }
-  }
 
   const checkAndInitSession = async () => {
-    const isFreshScan = typeof window !== 'undefined' && window.location.search.includes('newSession=true')
-    console.log('[KioskSession Lifecycle Log] checkAndInitSession triggered. isFreshScan:', isFreshScan, 'Search query:', typeof window !== 'undefined' ? window.location.search : '')
-
-    if (isFreshScan) {
-      console.log('[KioskSession Lifecycle Log] Detected fresh QR scan URL parameter newSession=true. Clearing old cookies now...')
-      // Clear old session cookies
-      document.cookie = 'kiosk-session-id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
-      document.cookie = 'kiosk-device-fp=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
-      console.log('[KioskSession Lifecycle Log] Cookies cleared. Current document.cookie:', document.cookie)
-      
-      console.log('[KioskSession Lifecycle Log] Invoking initializeSession(true) to create a clean database session...')
-      await initializeSession(true)
-      
-      // Clean query parameter from URL bar to prevent refresh loops AFTER successfully initializing the session
-      if (window.history && window.history.replaceState) {
-        const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname
-        window.history.replaceState({ path: cleanUrl }, '', cleanUrl)
-        console.log('[KioskSession Lifecycle Log] URL query cleared. New URL is:', cleanUrl)
-      }
-      return
-    }
-
     const cookiesObj = document.cookie.split(';').reduce((acc, c) => {
       const [k, v] = c.trim().split('=')
-      if (k) acc[k] = v
+      if (k) acc[k.trim()] = v
       return acc
     }, {} as Record<string, string>)
 
     const storedSessionId = cookiesObj['kiosk-session-id']
     const fp = getDeviceFingerprintLocal()
-    console.log('[KioskSession Lifecycle Log] Reading stored kiosk-session-id from cookies:', storedSessionId, 'Device Fingerprint:', fp)
+    console.log('[KioskSession] Checking cookie. sessionId:', storedSessionId)
 
     if (storedSessionId) {
       try {
-        const validateUrl = `/api/kiosk/${cafe.slug}/session/validate?sessionId=${storedSessionId}`
-        console.log('[KioskSession Lifecycle Log] Sending validate request to:', validateUrl)
-        const res = await fetch(validateUrl, {
-          headers: {
-            'x-device-fingerprint': fp
-          }
+        const res = await fetch(`/api/kiosk/${cafe.slug}/session/validate?sessionId=${storedSessionId}`, {
+          headers: { 'x-device-fingerprint': fp }
         })
-        console.log('[KioskSession Lifecycle Log] Validate response status:', res.status)
         if (res.ok) {
           const data = await res.json()
-          console.log('[KioskSession Lifecycle Log] Validate response JSON payload:', data)
+          console.log('[KioskSession] Validate response:', data)
           if (data.valid) {
-            const expiry = new Date(data.expiresAt)
-            const secondsLeft = Math.max(0, Math.floor((expiry.getTime() - Date.now()) / 1000))
-            console.log('[KioskSession Lifecycle Log] Session is VALID. Expiry time remaining:', secondsLeft, 'seconds.')
+            const secondsLeft = Math.max(0, Math.floor((new Date(data.expiresAt).getTime() - Date.now()) / 1000))
+            console.log('[KioskSession] ✅ Session VALID. Seconds left:', secondsLeft)
             setSessionTimeLeft(secondsLeft)
             setIsSessionExpired(false)
             return
-          } else {
-            console.warn('[KioskSession Lifecycle Log] Session is INVALID, USED or EXPIRED. Redirecting to scan-qr...')
           }
-        } else {
-          console.warn('[KioskSession Lifecycle Log] Validation endpoint returned non-OK status:', res.status)
+          console.warn('[KioskSession] ❌ Session invalid/used/expired. Code:', data.code)
         }
       } catch (e) {
-        console.error('[KioskSession Lifecycle Log] Error during validation request:', e)
+        console.error('[KioskSession] Validation error:', e)
       }
+    } else {
+      console.log('[KioskSession] No session cookie found.')
     }
 
-    // If there is no session, or if it is invalid/expired/used, redirect the user to scan the physical QR code.
-    // We do NOT recreate session dynamically from inside KioskClient.
-    console.log('[KioskSession Lifecycle Log] Redirecting to scan-qr page...')
+    // No valid session → redirect to scan-qr
+    console.log('[KioskSession] Redirecting to scan-qr...')
     handleRedirectToScanQr()
   }
 
   useEffect(() => {
-    console.log('[KioskSession Lifecycle Log] useEffect hook triggered checkAndInitSession for cafeId:', cafe.id)
     checkAndInitSession()
   }, [cafe.id])
 
