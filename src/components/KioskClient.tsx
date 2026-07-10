@@ -166,7 +166,7 @@ export default function KioskClient({
     // Clear localStorage
     try {
       localStorage.removeItem('kioskDeviceFp')
-    } catch (e) {}
+    } catch (e) { }
     // Redirect to scan-qr
     router.replace('/scan-qr')
   }
@@ -190,10 +190,10 @@ export default function KioskClient({
         const data = await res.json()
         const expiry = new Date(data.expiresAt)
         const secondsLeft = Math.max(0, Math.floor((expiry.getTime() - Date.now()) / 1000))
-        
+
         document.cookie = `kiosk-session-id=${data.sessionId}; path=/; max-age=${secondsLeft}`
         document.cookie = `kiosk-device-fp=${encodeURIComponent(fp)}; path=/; max-age=${secondsLeft}`
-        
+
         setSessionTimeLeft(secondsLeft)
         setIsSessionExpired(false)
         console.log(`[Session] Created session ${data.sessionId}, expires in ${secondsLeft}s`)
@@ -210,7 +210,7 @@ export default function KioskClient({
   const checkAndInitSession = async () => {
     const isFreshScan = typeof window !== 'undefined' && window.location.search.includes('newSession=true')
     console.log('[KioskSession Lifecycle Log] checkAndInitSession triggered. isFreshScan:', isFreshScan, 'Search query:', typeof window !== 'undefined' ? window.location.search : '')
-    
+
     if (isFreshScan) {
       console.log('[KioskSession Lifecycle Log] Detected fresh QR scan URL parameter newSession=true. Clearing old cookies now...')
       // Clear old session cookies
@@ -218,15 +218,15 @@ export default function KioskClient({
       document.cookie = 'kiosk-device-fp=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
       console.log('[KioskSession Lifecycle Log] Cookies cleared. Current document.cookie:', document.cookie)
       
-      // Clean query parameter from URL bar to prevent refresh loops
+      console.log('[KioskSession Lifecycle Log] Invoking initializeSession(true) to create a clean database session...')
+      await initializeSession(true)
+      
+      // Clean query parameter from URL bar to prevent refresh loops AFTER successfully initializing the session
       if (window.history && window.history.replaceState) {
         const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname
         window.history.replaceState({ path: cleanUrl }, '', cleanUrl)
         console.log('[KioskSession Lifecycle Log] URL query cleared. New URL is:', cleanUrl)
       }
-      
-      console.log('[KioskSession Lifecycle Log] Invoking initializeSession(true) to create a clean database session...')
-      await initializeSession(true)
       return
     }
 
@@ -235,11 +235,11 @@ export default function KioskClient({
       if (k) acc[k] = v
       return acc
     }, {} as Record<string, string>)
-    
+
     const storedSessionId = cookiesObj['kiosk-session-id']
     const fp = getDeviceFingerprintLocal()
     console.log('[KioskSession Lifecycle Log] Reading stored kiosk-session-id from cookies:', storedSessionId, 'Device Fingerprint:', fp)
-    
+
     if (storedSessionId) {
       try {
         const validateUrl = `/api/kiosk/${cafe.slug}/session/validate?sessionId=${storedSessionId}`
@@ -270,7 +270,7 @@ export default function KioskClient({
         console.error('[KioskSession Lifecycle Log] Error during validation request:', e)
       }
     }
-    
+
     // If there is no session, or if it is invalid/expired/used, redirect the user to scan the physical QR code.
     // We do NOT recreate session dynamically from inside KioskClient.
     console.log('[KioskSession Lifecycle Log] Redirecting to scan-qr page...')
@@ -740,13 +740,12 @@ export default function KioskClient({
               const isCompleted = stepNum < activeStep
               return (
                 <div key={step} className="flex items-center gap-1">
-                  <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black transition-all duration-300 ${
-                    isActive
+                  <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black transition-all duration-300 ${isActive
                       ? 'bg-[#3E2723] text-white shadow-md'
                       : isCompleted
                         ? 'bg-emerald-100 text-emerald-700'
                         : 'bg-gray-100 text-gray-400'
-                  }`}>
+                    }`}>
                     {isCompleted ? (
                       <Check className="h-3 w-3" />
                     ) : (
@@ -755,9 +754,8 @@ export default function KioskClient({
                     <span className="hidden lg:inline">{step}</span>
                   </div>
                   {i < steps.length - 1 && (
-                    <div className={`w-4 h-[2px] rounded-full transition-colors duration-300 ${
-                      isCompleted ? 'bg-emerald-300' : 'bg-gray-200'
-                    }`} />
+                    <div className={`w-4 h-[2px] rounded-full transition-colors duration-300 ${isCompleted ? 'bg-emerald-300' : 'bg-gray-200'
+                      }`} />
                   )}
                 </div>
               )
@@ -812,17 +810,15 @@ export default function KioskClient({
             const isCompleted = stepNum < activeStep
             return (
               <div key={step} className="flex items-center gap-1">
-                <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  isActive
+                <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isActive
                     ? 'bg-[#3E2723] scale-125 shadow-sm'
                     : isCompleted
                       ? 'bg-emerald-500'
                       : 'bg-gray-300'
-                }`} />
-                {i < steps.length - 1 && (
-                  <div className={`w-5 h-[1.5px] rounded-full transition-colors duration-300 ${
-                    isCompleted ? 'bg-emerald-300' : 'bg-gray-200'
                   }`} />
+                {i < steps.length - 1 && (
+                  <div className={`w-5 h-[1.5px] rounded-full transition-colors duration-300 ${isCompleted ? 'bg-emerald-300' : 'bg-gray-200'
+                    }`} />
                 )}
               </div>
             )
@@ -1122,34 +1118,32 @@ function OrderStatusTracker({ placedOrder, isAr, onClose }: { placedOrder: { id:
             <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-center mb-1">
               {isAr ? 'حالة التحضير مباشرة' : 'Live Preparation Status'}
             </p>
-            
+
             <div className="space-y-3.5 relative before:absolute before:top-2 before:bottom-2 before:start-[10px] before:w-[2px] before:bg-gray-150">
               {steps.map((stepText, idx) => {
                 const isDone = idx <= currentStep
                 const isCurrent = idx === currentStep
-                
+
                 return (
                   <div key={idx} className="flex items-center gap-3.5 relative z-10">
-                    <div className={`w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center transition-all duration-500 text-[9px] font-bold ${
-                      isCurrent 
-                        ? 'bg-[#5D4037] border-[#5D4037] text-white ring-4 ring-[#5D4037]/10' 
-                        : isDone 
-                          ? 'bg-emerald-500 border-emerald-500 text-white' 
+                    <div className={`w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center transition-all duration-500 text-[9px] font-bold ${isCurrent
+                        ? 'bg-[#5D4037] border-[#5D4037] text-white ring-4 ring-[#5D4037]/10'
+                        : isDone
+                          ? 'bg-emerald-500 border-emerald-500 text-white'
                           : 'bg-white border-gray-300 text-gray-400'
-                    }`}>
+                      }`}>
                       {isDone && !isCurrent ? (
                         <Check className="h-2.5 w-2.5 stroke-[3]" />
                       ) : (
                         <span>{idx + 1}</span>
                       )}
                     </div>
-                    <span className={`text-[11px] font-black transition-colors duration-500 ${
-                      isCurrent 
-                        ? 'text-[#5D4037]' 
-                        : isDone 
-                          ? 'text-emerald-600 font-bold' 
+                    <span className={`text-[11px] font-black transition-colors duration-500 ${isCurrent
+                        ? 'text-[#5D4037]'
+                        : isDone
+                          ? 'text-emerald-600 font-bold'
                           : 'text-gray-400'
-                    }`}>
+                      }`}>
                       {stepText}
                     </span>
                   </div>
@@ -1172,11 +1166,11 @@ function OrderStatusTracker({ placedOrder, isAr, onClose }: { placedOrder: { id:
 
           <div className="bg-[#FAF8F5] p-4 rounded-2xl border border-gray-100 max-w-xs mx-auto space-y-3">
             <p className="text-xs font-black text-[#5D4037]">
-              {ratingSubmitted 
-                ? (isAr ? 'شكراً لتقييمك الرائع! 🥰' : 'Thank you for your rating! 🥰') 
+              {ratingSubmitted
+                ? (isAr ? 'شكراً لتقييمك الرائع! 🥰' : 'Thank you for your rating! 🥰')
                 : (isAr ? 'كيف كانت تجربتك معنا؟' : 'How was your experience with us?')}
             </p>
-            
+
             {!ratingSubmitted ? (
               <div className="flex justify-center gap-2">
                 {[1, 2, 3, 4, 5].map((star) => (
