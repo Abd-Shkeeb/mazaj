@@ -261,12 +261,7 @@ export default function KioskClient({
             setIsSessionExpired(false)
             return
           } else {
-            console.warn('[KioskSession Lifecycle Log] Session is INVALID, USED or EXPIRED. Regenerating session dynamically to prevent lockout...')
-            // Clear invalid session cookies
-            document.cookie = 'kiosk-session-id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
-            document.cookie = 'kiosk-device-fp=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
-            await initializeSession(true)
-            return
+            console.warn('[KioskSession Lifecycle Log] Session is INVALID, USED or EXPIRED. Redirecting to scan-qr...')
           }
         } else {
           console.warn('[KioskSession Lifecycle Log] Validation endpoint returned non-OK status:', res.status)
@@ -276,8 +271,9 @@ export default function KioskClient({
       }
     }
     
-    // If there is absolutely no session ID cookie present, redirect the user to scan the physical QR code
-    console.log('[KioskSession Lifecycle Log] Session cookie is completely missing. Redirecting to scan-qr page...')
+    // If there is no session, or if it is invalid/expired/used, redirect the user to scan the physical QR code.
+    // We do NOT recreate session dynamically from inside KioskClient.
+    console.log('[KioskSession Lifecycle Log] Redirecting to scan-qr page...')
     handleRedirectToScanQr()
   }
 
