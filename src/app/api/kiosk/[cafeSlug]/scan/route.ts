@@ -1,17 +1,19 @@
 // src/app/api/kiosk/[cafeSlug]/scan/route.ts
-// This is the TRUE entry point for QR code scans.
-// The physical QR code must point to: /api/kiosk/[cafeSlug]/scan?table=4 (optional table number)
+// TRUE entry point for QR code scans.
+// The physical QR code (generated in dashboard) must point to:
+//   https://[domain]/api/kiosk/[cafeSlug]/scan?locale=ar&table=4 (table is optional)
+//
 // This route:
 //   1. Looks up the cafe
-//   2. Invalidates any existing session cookie (USED or EXPIRED sessions are skipped)
-//   3. Creates a FRESH ACTIVE KioskSession in the database
-//   4. Sets the session cookie in the response
-//   5. Redirects the browser to the kiosk page
+//   2. Always creates a FRESH ACTIVE KioskSession in the database
+//   3. Sets the kiosk-session-id cookie in the redirect response
+//   4. Redirects the browser to the kiosk page (/[locale]/[cafeSlug])
+//
+// Because this is a proper Route Handler (not a Server Component), it CAN set cookies.
 
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { addMinutes } from 'date-fns';
-import { isRateLimitedKey } from '@/lib/rateLimiter';
 
 export async function GET(
   request: NextRequest,
@@ -22,60 +24,45 @@ export async function GET(
   const tableNumber = url.searchParams.get('table') ?? undefined;
   const locale = url.searchParams.get('locale') ?? 'ar';
 
-  console.log(`[QR Scan Route] /api/kiosk/${cafeSlug}/scan called. tableNumber=${tableNumber}, locale=${locale}`);
+  console.log(`[QR Scan Route] Received scan for cafe: ${cafeSlug}, locale: ${locale}, table: ${tableNumber}`);
 
   // 1. Find the cafe
   const cafe = await db.cafe.findUnique({ where: { slug: cafeSlug.toLowerCase().trim() } });
   if (!cafe) {
-    console.error(`[QR Scan Route] Cafe not found for slug: ${cafeSlug}`);
+    console.error(`[QR Scan Route] Cafe not found: ${cafeSlug}`);
     return NextResponse.json({ error: 'Cafe not found' }, { status: 404 });
   }
-  console.log(`[QR Scan Route] Cafe matched. ID: ${cafe.id}`);
 
-  // Rate limit: max 30 QR scans / new sessions per cafe per minute (generous to handle automatic server redirects)
-  if (isRateLimitedKey(`scan:${cafe.id}`, 30)) {
-    console.warn(`[QR Scan Route] Rate limit hit for cafe: ${cafe.id}`);
-    return new NextResponse('Too many requests', { status: 429 });
-  }
-
-  // 3. Get the device fingerprint from header (optional, populated by the browser client if available)
-  const fingerprint = request.headers.get('x-device-fingerprint') ?? undefined;
-
-  // 4. Always create a FRESH session — ignore any existing cookie session
+  // 2. Always create a FRESH ACTIVE session — regardless of any existing cookie
   const sessionMinutes = (cafe as any).kioskSessionMinutes ?? 15;
   const expiresAt = addMinutes(new Date(), sessionMinutes);
 
   const newSession = await db.kioskSession.create({
     data: {
       cafeId: cafe.id,
-      deviceFingerprint: fingerprint,
       expiresAt,
       status: 'ACTIVE',
     },
     select: { id: true, expiresAt: true },
   });
 
-  console.log(`[QR Scan Route] ✅ New session created. ID: ${newSession.id}, expiresAt: ${newSession.expiresAt}`);
+  console.log(`[QR Scan Route] ✅ Session created: ${newSession.id}, expires: ${newSession.expiresAt}`);
 
-  // 5. Build redirect URL to kiosk page
+  // 3. Build redirect to kiosk page
   const kioskPath = `/${locale}/${cafeSlug}${tableNumber ? `?table=${tableNumber}` : ''}`;
-
-  console.log(`[QR Scan Route] Redirecting to kiosk: ${kioskPath}`);
-
-  // 6. Build response with redirect and set session cookies
   const response = NextResponse.redirect(new URL(kioskPath, request.url), { status: 302 });
 
+  // 4. Set the session cookie in the redirect response (browser will send it on next request)
   const maxAge = Math.floor((newSession.expiresAt.getTime() - Date.now()) / 1000);
-
   response.cookies.set('kiosk-session-id', newSession.id, {
     path: '/',
     maxAge,
-    httpOnly: false, // Must be readable by client-side JS for validate calls
+    httpOnly: false, // readable by client JS for validate calls
     sameSite: 'lax',
   });
-
-  // Clear old device fingerprint cookie so client sets a fresh one
+  // Clear old fingerprint so client generates a fresh one
   response.cookies.delete('kiosk-device-fp');
 
+  console.log(`[QR Scan Route] Redirecting to: ${kioskPath} with session cookie set.`);
   return response;
 }

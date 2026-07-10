@@ -75,9 +75,10 @@ export default async function CafeKioskPage({
     console.log(`[KioskPage] No session cookie found. Redirecting to scan route to create new session.`)
   }
 
-  // 4. If no active session → redirect through scan route which creates session + sets cookie
+  // 4. If no active session → redirect to scan-qr page
+  // The physical QR code must point to /api/kiosk/[cafeSlug]/scan to create a new session
   if (!hasActiveSession) {
-    redirect(`/api/kiosk/${cafeSlug}/scan?locale=${locale}`)
+    redirect(`/${locale}/scan-qr`)
   }
 
   // 5. Fetch drinks (only reached if session is valid)

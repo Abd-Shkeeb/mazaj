@@ -343,9 +343,9 @@ export default function DashboardClient({
   }, [])
 
   const handlePrintQr = () => {
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(
-      `${window.location.origin}/${locale}/${settings.slug}${qrTableNumber ? `?table=${qrTableNumber}` : ''}`
-    )}`
+    // QR code points to the scan route which creates a fresh session then redirects to the kiosk
+    const kioskEntryUrl = `${window.location.origin}/api/kiosk/${settings.slug}/scan?locale=${locale}${qrTableNumber ? `&table=${qrTableNumber}` : ''}`
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(kioskEntryUrl)}`
     const printWindow = window.open('', '_blank')
     if (printWindow) {
       printWindow.document.write(`
@@ -402,9 +402,9 @@ export default function DashboardClient({
   }
 
   const handleDownloadQr = async () => {
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(
-      `${window.location.origin}/${locale}/${settings.slug}${qrTableNumber ? `?table=${qrTableNumber}` : ''}`
-    )}`
+    // QR code points to the scan route which creates a fresh session then redirects to the kiosk
+    const kioskEntryUrl = `${window.location.origin}/api/kiosk/${settings.slug}/scan?locale=${locale}${qrTableNumber ? `&table=${qrTableNumber}` : ''}`
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(kioskEntryUrl)}`
     try {
       const res = await fetch(qrUrl)
       const blob = await res.blob()
