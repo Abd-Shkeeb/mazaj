@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useTransition, useEffect } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter, usePathname } from '@/i18n/routing'
 import { useSearchParams } from 'next/navigation'
@@ -98,8 +98,6 @@ export default function KioskClient({
   const [statusReason, setStatusReason] = useState<string | null>(null)
   const [isSessionExpired, setIsSessionExpired] = useState(false)
   const [sessionTimeLeft, setSessionTimeLeft] = useState<number | null>(null)
-  // Track if an order was successfully placed — used to prevent unwanted redirects
-  const orderPlacedRef = React.useRef(false)
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -209,12 +207,6 @@ export default function KioskClient({
       console.log('[KioskSession] No session cookie found.')
     }
 
-    // If an order was already placed, do NOT redirect — session being USED is expected
-    if (orderPlacedRef.current) {
-      console.log('[KioskSession] Session is USED but order was placed. Skipping redirect.')
-      return
-    }
-
     // No valid session → redirect to scan-qr
     console.log('[KioskSession] Redirecting to scan-qr...')
     handleRedirectToScanQr()
@@ -227,10 +219,7 @@ export default function KioskClient({
   useEffect(() => {
     if (sessionTimeLeft === null) return
     if (sessionTimeLeft <= 0) {
-      // Only show expired modal if no order was placed yet
-      if (!orderPlacedRef.current) {
-        setIsSessionExpired(true)
-      }
+      setIsSessionExpired(true)
       return
     }
     const timer = setTimeout(() => {
@@ -521,10 +510,8 @@ export default function KioskClient({
         const code = (res as any).code || ''
         const isSessionErr = ['SESSION_MISSING', 'SESSION_INVALID', 'SESSION_USED', 'SESSION_EXPIRED', 'SESSION_MISMATCH'].includes(code)
         if (isSessionErr) {
-          // Session expired BEFORE the order was placed — do NOT redirect, show message and stay
-          console.warn('[KioskClient] Session error during checkout:', code)
-          alert(isAr ? 'انتهت صلاحية الجلسة. يرجى مسح QR مرة أخرى.' : 'Session expired. Please re-scan the QR code.')
-          handleRedirectToScanQr()
+          console.log('[KioskClient] Session expired or used on checkout. Renewing session...')
+          await checkAndInitSession()
         } else {
           alert(res.error || (isAr ? 'عذراً، فشل إرسال الطلب' : 'Sorry, failed to place order'))
         }
@@ -533,8 +520,6 @@ export default function KioskClient({
 
       const order = (res as any)?.order
       if (order) {
-        // Mark that an order was successfully placed — prevents session redirect
-        orderPlacedRef.current = true
         setPlacedOrder({
           id: order.id,
           drinkName: order.drinkName,
