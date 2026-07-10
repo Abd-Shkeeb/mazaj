@@ -355,7 +355,7 @@ export default function SettingsTab({
             name="kioskSessionMinutes"
             min={1}
             max={120}
-            defaultValue={settings.kioskSessionMinutes ?? 45}
+            defaultValue={settings.kioskSessionMinutes ?? 15}
             className="w-full p-2.5 rounded-xl border border-[#3E2723]/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#3E2723] bg-transparent"
           />
         </div>

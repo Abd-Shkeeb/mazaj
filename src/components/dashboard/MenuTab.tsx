@@ -167,45 +167,153 @@ export default function MenuTab({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 py-1 bg-gray-50 p-2.5 rounded-xl border border-gray-100">
-            <div className="space-y-0.5">
-              <label className="text-[8px] font-black text-gray-500 uppercase tracking-widest">
-                {isAr ? 'كافيين' : 'Caffeine'}
-              </label>
+          {/* ─── Premium Ingredient Attributes Sliders (1-5 scale) ─── */}
+          <div className="space-y-4 py-3 px-4 bg-gray-50/70 rounded-2xl border border-gray-100/60">
+            {/* Caffeine Level */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-black text-[#3E2723] uppercase tracking-wider">
+                  ⚡ {isAr ? 'مستوى الكافيين' : 'Caffeine Level'}
+                </span>
+                <span className="text-[9px] font-extrabold text-[#5D4037] bg-white px-2 py-0.5 rounded-md border border-gray-150 shadow-sm">
+                  {editingDrink?.caffeine || 3} / 5
+                </span>
+              </div>
               <input
-                type="number"
+                type="range"
                 min="1"
-                max="10"
+                max="5"
+                step="1"
                 name="caffeine"
-                defaultValue={editingDrink?.caffeine || 5}
-                className="w-full p-2 rounded-lg border border-[#3E2723]/10 text-xs font-semibold bg-white text-center"
+                defaultValue={editingDrink?.caffeine || 3}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const displayId = 'caffeine-desc';
+                  const label = document.getElementById(displayId);
+                  const stars = document.getElementById('caffeine-stars');
+                  if (label) {
+                    label.textContent = val === '1' ? (isAr ? 'منخفض جدًا (بدون كافيين تقريباً)' : 'Very Low (Almost decaf)') :
+                                      val === '2' ? (isAr ? 'منخفض (كافيين خفيف)' : 'Low (Mild caffeine)') :
+                                      val === '3' ? (isAr ? 'متوسط (كافيين متوازن)' : 'Medium (Balanced caffeine)') :
+                                      val === '4' ? (isAr ? 'مرتفع (كافيين قوي)' : 'High (Strong caffeine)') :
+                                      (isAr ? 'مرتفع جدًا (كافيين عالٍ جدًا)' : 'Very High (High boost)');
+                  }
+                  if (stars) {
+                    stars.textContent = '⭐'.repeat(parseInt(val, 10)) + '☆'.repeat(5 - parseInt(val, 10));
+                  }
+                }}
+                className="w-full accent-[#5D4037] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none"
               />
+              <div className="flex justify-between items-center text-[10px] text-gray-500 font-bold">
+                <span id="caffeine-desc" className="text-[9px] text-[#8D6E63] italic">
+                  {(editingDrink?.caffeine || 3) === 1 ? (isAr ? 'منخفض جدًا (بدون كافيين تقريباً)' : 'Very Low (Almost decaf)') :
+                   (editingDrink?.caffeine || 3) === 2 ? (isAr ? 'منخفض (كافيين خفيف)' : 'Low (Mild caffeine)') :
+                   (editingDrink?.caffeine || 3) === 3 ? (isAr ? 'متوسط (كافيين متوازن)' : 'Medium (Balanced caffeine)') :
+                   (editingDrink?.caffeine || 3) === 4 ? (isAr ? 'مرتفع (كافيين قوي)' : 'High (Strong caffeine)') :
+                   (isAr ? 'مرتفع جدًا (كافيين عالٍ جدًا)' : 'Very High (High boost)')}
+                </span>
+                <span id="caffeine-stars" className="text-amber-500 tracking-wider">
+                  {'⭐'.repeat(editingDrink?.caffeine || 3) + '☆'.repeat(5 - (editingDrink?.caffeine || 3))}
+                </span>
+              </div>
             </div>
-            <div className="space-y-0.5">
-              <label className="text-[8px] font-black text-gray-500 uppercase tracking-widest">
-                {isAr ? 'طاقة' : 'Energy'}
-              </label>
+
+            {/* Energy Level */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-black text-[#3E2723] uppercase tracking-wider">
+                  🔥 {isAr ? 'مستوى الطاقة والنشاط' : 'Energy Level'}
+                </span>
+                <span className="text-[9px] font-extrabold text-[#5D4037] bg-white px-2 py-0.5 rounded-md border border-gray-150 shadow-sm">
+                  {editingDrink?.energy || 3} / 5
+                </span>
+              </div>
               <input
-                type="number"
+                type="range"
                 min="1"
-                max="10"
+                max="5"
+                step="1"
                 name="energy"
-                defaultValue={editingDrink?.energy || 5}
-                className="w-full p-2 rounded-lg border border-[#3E2723]/10 text-xs font-semibold bg-white text-center"
+                defaultValue={editingDrink?.energy || 3}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const displayId = 'energy-desc';
+                  const label = document.getElementById(displayId);
+                  const stars = document.getElementById('energy-stars');
+                  if (label) {
+                    label.textContent = val === '1' ? (isAr ? 'منخفض جدًا (هدوء واسترخاء)' : 'Very Low (Calming & relaxing)') :
+                                      val === '2' ? (isAr ? 'منخفض (تأثير لطيف)' : 'Low (Gentle energy)') :
+                                      val === '3' ? (isAr ? 'متوسط (حيوية طبيعية)' : 'Medium (Moderate vitality)') :
+                                      val === '4' ? (isAr ? 'مرتفع (نشاط عالي)' : 'High (Active boost)') :
+                                      (isAr ? 'مرتفع جدًا (طاقة فائقة)' : 'Very High (Supercharged energy)');
+                  }
+                  if (stars) {
+                    stars.textContent = '⭐'.repeat(parseInt(val, 10)) + '☆'.repeat(5 - parseInt(val, 10));
+                  }
+                }}
+                className="w-full accent-[#5D4037] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none"
               />
+              <div className="flex justify-between items-center text-[10px] text-gray-500 font-bold">
+                <span id="energy-desc" className="text-[9px] text-[#8D6E63] italic">
+                  {(editingDrink?.energy || 3) === 1 ? (isAr ? 'منخفض جدًا (هدوء واسترخاء)' : 'Very Low (Calming & relaxing)') :
+                   (editingDrink?.energy || 3) === 2 ? (isAr ? 'منخفض (تأثير لطيف)' : 'Low (Gentle energy)') :
+                   (editingDrink?.energy || 3) === 3 ? (isAr ? 'متوسط (حيوية طبيعية)' : 'Medium (Moderate vitality)') :
+                   (editingDrink?.energy || 3) === 4 ? (isAr ? 'مرتفع (نشاط عالي)' : 'High (Active boost)') :
+                   (isAr ? 'مرتفع جدًا (طاقة فائقة)' : 'Very High (Supercharged energy)')}
+                </span>
+                <span id="energy-stars" className="text-amber-500 tracking-wider">
+                  {'⭐'.repeat(editingDrink?.energy || 3) + '☆'.repeat(5 - (editingDrink?.energy || 3))}
+                </span>
+              </div>
             </div>
-            <div className="space-y-0.5">
-              <label className="text-[8px] font-black text-gray-500 uppercase tracking-widest">
-                {isAr ? 'حلاوة' : 'Sweet'}
-              </label>
+
+            {/* Sweetness Level */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-black text-[#3E2723] uppercase tracking-wider">
+                  🍯 {isAr ? 'مستوى الحلاوة' : 'Sweetness'}
+                </span>
+                <span className="text-[9px] font-extrabold text-[#5D4037] bg-white px-2 py-0.5 rounded-md border border-gray-150 shadow-sm">
+                  {editingDrink?.sweetness || 3} / 5
+                </span>
+              </div>
               <input
-                type="number"
+                type="range"
                 min="1"
-                max="10"
+                max="5"
+                step="1"
                 name="sweetness"
-                defaultValue={editingDrink?.sweetness || 5}
-                className="w-full p-2 rounded-lg border border-[#3E2723]/10 text-xs font-semibold bg-white text-center"
+                defaultValue={editingDrink?.sweetness || 3}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const displayId = 'sweetness-desc';
+                  const label = document.getElementById(displayId);
+                  const stars = document.getElementById('sweetness-stars');
+                  if (label) {
+                    label.textContent = val === '1' ? (isAr ? 'منخفض جدًا (بدون سكر)' : 'Very Low (No added sugar)') :
+                                      val === '2' ? (isAr ? 'منخفض (حلاوة خفيفة)' : 'Low (Slightly sweet)') :
+                                      val === '3' ? (isAr ? 'متوسط (حلاوة متوازنة)' : 'Medium (Semi-sweet)') :
+                                      val === '4' ? (isAr ? 'مرتفع (حلو المذاق)' : 'High (Sweet & rich)') :
+                                      (isAr ? 'مرتفع جدًا (حلو للغاية)' : 'Very High (Super sweet)');
+                  }
+                  if (stars) {
+                    stars.textContent = '⭐'.repeat(parseInt(val, 10)) + '☆'.repeat(5 - parseInt(val, 10));
+                  }
+                }}
+                className="w-full accent-[#5D4037] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none"
               />
+              <div className="flex justify-between items-center text-[10px] text-gray-500 font-bold">
+                <span id="sweetness-desc" className="text-[9px] text-[#8D6E63] italic">
+                  {(editingDrink?.sweetness || 3) === 1 ? (isAr ? 'منخفض جدًا (بدون سكر)' : 'Very Low (No added sugar)') :
+                   (editingDrink?.sweetness || 3) === 2 ? (isAr ? 'منخفض (حلاوة خفيفة)' : 'Low (Slightly sweet)') :
+                   (editingDrink?.sweetness || 3) === 3 ? (isAr ? 'متوسط (حلاوة متوازنة)' : 'Medium (Semi-sweet)') :
+                   (editingDrink?.sweetness || 3) === 4 ? (isAr ? 'مرتفع (حلو المذاق)' : 'High (Sweet & rich)') :
+                   (isAr ? 'مرتفع جدًا (حلو للغاية)' : 'Very High (Super sweet)')}
+                </span>
+                <span id="sweetness-stars" className="text-amber-500 tracking-wider">
+                  {'⭐'.repeat(editingDrink?.sweetness || 3) + '☆'.repeat(5 - (editingDrink?.sweetness || 3))}
+                </span>
+              </div>
             </div>
           </div>
 

@@ -663,7 +663,7 @@ export default function KioskClient({
   }
 
   // Circular timer values
-  const sessionDuration = (cafe.kioskSessionMinutes ?? 45) * 60
+  const sessionDuration = (cafe.kioskSessionMinutes ?? 15) * 60
   const timerRadius = 18
   const timerCircumference = 2 * Math.PI * timerRadius
   const timerProgress = sessionTimeLeft !== null ? (sessionTimeLeft / sessionDuration) : 1

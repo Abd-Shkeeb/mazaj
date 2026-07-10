@@ -1013,7 +1013,7 @@ export default function DashboardClient({
     const kioskSessionMinutesStr = fd.get('kioskSessionMinutes') as string
     let kioskSessionMinutes = parseInt(kioskSessionMinutesStr, 10)
     if (isNaN(kioskSessionMinutes) || kioskSessionMinutes < 1 || kioskSessionMinutes > 120) {
-      kioskSessionMinutes = 45
+      kioskSessionMinutes = 15
     }
 
     if (!nameAr || !nameEn) return

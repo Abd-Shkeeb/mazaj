@@ -211,7 +211,7 @@ export async function updateCafeSettingsAction(
   if (data.facebook !== undefined) updateData.facebook = data.facebook || null
   if (data.kioskSessionMinutes !== undefined) {
     const minVal = data.kioskSessionMinutes;
-    (updateData as any).kioskSessionMinutes = typeof minVal === 'number' && minVal >= 1 && minVal <= 120 ? minVal : 45;
+    (updateData as any).kioskSessionMinutes = typeof minVal === 'number' && minVal >= 1 && minVal <= 120 ? minVal : 15;
   }
 
   await db.cafe.update({
