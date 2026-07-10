@@ -252,13 +252,10 @@ export default function KioskClient({
       }
     }
     
-    // If we reach here, there was either no session or it was invalid/expired/used.
-    // Instead of forcing redirect to scan-qr, we transparently generate a fresh session.
-    console.log('[KioskClient] No valid session found. Creating a new session dynamically...')
-    // Clear cookies first to request a fresh one
-    document.cookie = 'kiosk-session-id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
-    document.cookie = 'kiosk-device-fp=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
-    await initializeSession()
+    // If there is no session, or if it is invalid/expired/used, do not create a new one dynamically
+    // unless this is a fresh scan from a QR code. Direct access must redirect to scan-qr.
+    console.log('[KioskClient] Session is missing or invalid. Enforcing QR scan requirement...')
+    handleRedirectToScanQr()
   }
 
   useEffect(() => {
