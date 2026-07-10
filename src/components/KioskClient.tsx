@@ -171,15 +171,20 @@ export default function KioskClient({
     router.replace('/scan-qr')
   }
 
-  const initializeSession = async () => {
+  const initializeSession = async (forceNew: boolean = false) => {
     try {
       const fp = getDeviceFingerprintLocal()
+      const headersInit: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'x-device-fingerprint': fp
+      }
+      if (forceNew) {
+        headersInit['x-new-session'] = 'true'
+      }
+
       const res = await fetch(`/api/kiosk/${cafe.slug}/session`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-device-fingerprint': fp
-        }
+        headers: headersInit
       })
       if (res.ok) {
         const data = await res.json()
@@ -191,7 +196,7 @@ export default function KioskClient({
         
         setSessionTimeLeft(secondsLeft)
         setIsSessionExpired(false)
-        console.log(`[Session] Created/Retrieved session ${data.sessionId}, expires in ${secondsLeft}s`)
+        console.log(`[Session] Created session ${data.sessionId}, expires in ${secondsLeft}s`)
       } else {
         console.error('[Session] Failed to initialize session')
         handleRedirectToScanQr()
@@ -217,7 +222,7 @@ export default function KioskClient({
         window.history.replaceState({ path: cleanUrl }, '', cleanUrl)
       }
       
-      await initializeSession()
+      await initializeSession(true)
       return
     }
 

@@ -13,9 +13,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: 'Cafe not found' }, { status: 404 });
   }
 
-  // Check for active existing session
+  // Check for active existing session (skip if newSession query/header is present to force a fresh session)
+  const isForceNew = request.nextUrl.searchParams.get('newSession') === 'true' || request.headers.get('x-new-session') === 'true';
   const sessionId = request.cookies.get('kiosk-session-id')?.value;
-  if (sessionId) {
+  if (sessionId && !isForceNew) {
     const existingSession = await db.kioskSession.findUnique({
       where: { id: sessionId },
     });
