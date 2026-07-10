@@ -125,7 +125,7 @@ export async function createOrderAction(data: {
         tableNumber: data.tableNumber || null,
         orderType: isTableOrder ? 'TABLE' : 'TAKEAWAY',
         status: 'PENDING',
-      },
+      } as any,
     })
     console.log('[Order Action Log] Order created in database. Order ID:', order.id)
 
