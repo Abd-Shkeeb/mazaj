@@ -1658,33 +1658,60 @@ export default function DashboardClient({
 
                   {/* Elegant Gemini API AI Status Ribbon */}
                   <div className="flex items-center gap-2 mt-3.5">
-                    <span className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/5 text-amber-900 border border-amber-500/10 rounded-full shadow-sm text-[10px] font-bold">
-                      <Sparkles className="h-3 w-3 text-amber-700 animate-pulse" />
-                      <span className="font-black">
-                        {settings.geminiFailureReason?.includes('401') || settings.geminiFailureReason?.includes('403')
-                          ? (isAr ? 'مستشار الذكاء الاصطناعي: مفتاح API غير صالح' : 'AI Advisor: Invalid API Key')
-                          : settings.geminiQuotaExceeded || settings.geminiFailureReason?.includes('429') || settings.geminiFailureReason?.includes('Quota') || (limits.maxAnalyses !== 999999 && cycleAnalysesCount >= limits.maxAnalyses)
-                          ? (isAr ? 'مستشار الذكاء الاصطناعي: انتهت الحصة اليومية' : 'AI Advisor: Quota Exhausted')
-                          : settings.geminiFailureReason
-                          ? (isAr ? 'مستشار الذكاء الاصطناعي: متوقف حالياً' : 'AI Advisor: Offline')
-                          : (isAr ? 'مستشار الذكاء الاصطناعي: نشط ويعمل بكفاءة' : 'AI Advisor: Active & Operational')}
-                      </span>
-                      <span className="text-amber-900/30">|</span>
-                      <span className="group relative inline-flex items-center gap-1 cursor-pointer text-gray-500 text-[9px] font-extrabold">
-                        <span>
-                          {isAr 
-                            ? `تحليلات الدورة الحالية: ${cycleAnalysesCount} / ${limits.maxAnalyses === 999999 ? 'غير محدود' : `${limits.maxAnalyses} تحليلًا`} (المتبقي: ${limits.maxAnalyses === 999999 ? 'غير محدود' : `${Math.max(0, limits.maxAnalyses - cycleAnalysesCount)} تحليلًا`})` 
-                            : `Current cycle analyses: ${cycleAnalysesCount} / ${limits.maxAnalyses === 999999 ? 'Unlimited' : `${limits.maxAnalyses}`} (Remaining: ${limits.maxAnalyses === 999999 ? 'Unlimited' : `${Math.max(0, limits.maxAnalyses - cycleAnalysesCount)}`})`}
+                    {(() => {
+                      const isQuotaExhausted = limits.maxAnalyses !== 999999 && cycleAnalysesCount >= limits.maxAnalyses
+                      const isNearLimit = limits.maxAnalyses !== 999999 && cycleAnalysesCount >= limits.maxAnalyses * 0.8 && cycleAnalysesCount < limits.maxAnalyses
+                      const hasGeminiError = settings.geminiQuotaExceeded || 
+                        settings.geminiFailureReason?.includes('429') || 
+                        settings.geminiFailureReason?.includes('401') || 
+                        settings.geminiFailureReason?.includes('403') || 
+                        settings.geminiFailureReason?.includes('500') ||
+                        settings.geminiFailureReason?.includes('Quota')
+
+                      let statusText = ''
+                      let badgeStyle = ''
+                      let dotColor = ''
+
+                      if (isQuotaExhausted) {
+                        statusText = isAr ? 'انتهت حصة الذكاء الاصطناعي للدورة الحالية' : 'AI quota exhausted for the current cycle'
+                        badgeStyle = 'bg-rose-500/10 text-rose-800 border-rose-200'
+                        dotColor = 'bg-rose-500'
+                      } else if (hasGeminiError) {
+                        statusText = isAr ? 'خدمة Gemini غير متاحة مؤقتًا' : 'Gemini service is temporarily unavailable'
+                        badgeStyle = 'bg-rose-500/10 text-rose-800 border-rose-200'
+                        dotColor = 'bg-rose-500 animate-pulse'
+                      } else if (isNearLimit) {
+                        statusText = isAr ? 'اقتربت من حد الاستهلاك' : 'Approaching plan limit'
+                        badgeStyle = 'bg-amber-50 text-amber-800 border-amber-200'
+                        dotColor = 'bg-amber-500 animate-bounce'
+                      } else {
+                        statusText = isAr ? 'مستشار الذكاء الاصطناعي: متاح' : 'AI Advisor: Operational'
+                        badgeStyle = 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                        dotColor = 'bg-emerald-500 animate-pulse'
+                      }
+
+                      return (
+                        <span className={`inline-flex items-center gap-2 px-3 py-1 border rounded-full shadow-sm text-[10px] font-bold ${badgeStyle}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
+                          <span className="font-black">{statusText}</span>
+                          <span className="opacity-30">|</span>
+                          <span className="group relative inline-flex items-center gap-1 cursor-pointer text-gray-500 text-[9px] font-extrabold">
+                            <span>
+                              {isAr 
+                                ? `تحليلات الدورة الحالية: ${cycleAnalysesCount} / ${limits.maxAnalyses === 999999 ? 'غير محدود' : `${limits.maxAnalyses} تحليلًا`} (المتبقي: ${limits.maxAnalyses === 999999 ? 'غير محدود' : `${Math.max(0, limits.maxAnalyses - cycleAnalysesCount)} تحليلًا`})` 
+                                : `Current cycle analyses: ${cycleAnalysesCount} / ${limits.maxAnalyses === 999999 ? 'Unlimited' : `${limits.maxAnalyses}`} (Remaining: ${limits.maxAnalyses === 999999 ? 'Unlimited' : `${Math.max(0, limits.maxAnalyses - cycleAnalysesCount)}`})`}
+                            </span>
+                            
+                            {/* Interactive Tooltip */}
+                            <span className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#3E2723] border border-[#3E2723]/10 px-3 py-1.5 text-[9px] font-bold text-[#FAF8F5] opacity-0 transition-opacity duration-200 group-hover:opacity-100 shadow-xl z-50">
+                              {isAr 
+                                ? 'يمثل هذا العدد التحليلات المنفذة داخل المنصة خلال الدورة الحالية وليس الحصة المتبقية من Gemini. يصفر تلقائياً عند التجديد.' 
+                                : 'This represents analyses processed in the platform during the current cycle, not the remaining Gemini API quota. Resets on renewal.'}
+                            </span>
+                          </span>
                         </span>
-                        
-                        {/* Interactive Tooltip */}
-                        <span className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#3E2723] border border-[#3E2723]/10 px-3 py-1.5 text-[9px] font-bold text-[#FAF8F5] opacity-0 transition-opacity duration-200 group-hover:opacity-100 shadow-xl z-50">
-                          {isAr 
-                            ? 'يمثل هذا العدد التحليلات المنفذة داخل المنصة خلال الدورة الحالية وليس الحصة المتبقية من Gemini. يصفر تلقائياً عند التجديد.' 
-                            : 'This represents analyses processed in the platform during the current cycle, not the remaining Gemini API quota. Resets on renewal.'}
-                        </span>
-                      </span>
-                    </span>
+                      )
+                    })()}
                   </div>
                 </div>
 
