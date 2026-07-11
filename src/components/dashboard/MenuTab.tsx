@@ -114,7 +114,7 @@ export default function MenuTab({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch animate-in fade-in duration-200">
       {/* Form to add or edit */}
-      <div className="lg:col-span-4 bg-white p-6 rounded-2xl border border-stone-200/80 shadow-sm h-fit space-y-5">
+      <div className="lg:col-span-4 bg-white p-6 rounded-2xl border border-stone-200/80 shadow-sm h-full space-y-5">
         <div className="flex items-center gap-2 border-b border-stone-200/80 pb-3">
           <Plus className="h-4.5 w-4.5 text-stone-900" />
           <h3 className="text-sm font-bold text-stone-900">
@@ -492,7 +492,7 @@ export default function MenuTab({
       </div>
 
       {/* List */}
-      <div className="lg:col-span-8 bg-white p-6 rounded-2xl border border-stone-200/80 shadow-sm flex flex-col space-y-4 max-h-[950px]">
+      <div className="lg:col-span-8 bg-white p-6 rounded-2xl border border-stone-200/80 shadow-sm flex flex-col space-y-4 h-full">
         <h3 className="text-sm font-bold text-stone-900 border-b border-stone-200/80 pb-3 text-right rtl:text-right ltr:text-left">
           {isAr ? 'قائمة مشروبات مقهاك' : 'Your Cafe Menu'}
         </h3>
@@ -523,7 +523,7 @@ export default function MenuTab({
               : 'No drinks match your current search.'}
           </div>
         ) : (
-          <div className="divide-y divide-stone-100 flex-1 overflow-y-auto pr-1 scrollbar-none">
+          <div className="divide-y divide-stone-100 flex-1 overflow-y-auto pr-1 scrollbar-none max-h-[710px]">
             {filteredDrinks.map(drink => (
               <div
                 key={drink.id}
@@ -541,8 +541,12 @@ export default function MenuTab({
                       />
                     </div>
                   ) : (
-                    <div className="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center text-stone-400 border border-stone-200/80 flex-shrink-0">
-                      <Coffee className="h-5 w-5" />
+                    <div className="w-12 h-12 rounded-xl bg-stone-50 flex items-center justify-center text-stone-500 border border-stone-200/80 flex-shrink-0">
+                      <svg className="h-5.5 w-5.5 text-stone-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 10H16C17.1046 10 18 10.8954 18 12V15C18 17.2091 16.2091 19 14 19H8C5.79086 19 4 17.2091 4 15V12C4 10.8954 4.89543 10 6 10Z" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
+                        <path d="M18 12H19C20.1046 12 21 12.8954 21 14C21 15.1046 20.1046 16 19 16H18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M6 6C6.3 4.5 7.2 4.5 7.5 6M10.5 6C10.8 4.5 11.7 4.5 12 6M15 6C15.3 4.5 16.2 4.5 16.5 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      </svg>
                     </div>
                   )}
                   <div className="text-right rtl:text-right ltr:text-left">
@@ -607,15 +611,15 @@ export default function MenuTab({
                   <div className="flex gap-1.5">
                     <button
                       onClick={() => setEditingDrink(drink)}
-                      className="p-2 text-stone-500 hover:text-stone-900 hover:bg-stone-50 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-stone-200"
+                      className="p-2 text-emerald-700 bg-emerald-50 hover:bg-emerald-100/70 border border-emerald-200/60 rounded-xl cursor-pointer transition-all"
                     >
-                      <Edit2 className="h-4 w-4" />
+                      <Edit2 className="h-3.8 w-3.8" />
                     </button>
                     <button
                       onClick={() => handleDeleteDrink(drink.id)}
-                      className="p-2 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-rose-100"
+                      className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100/70 border border-rose-200/60 rounded-xl cursor-pointer transition-all"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.8 w-3.8" />
                     </button>
                   </div>
                 </div>

@@ -1740,7 +1740,7 @@ export default function DashboardClient({
                       setActiveTab(tab.id as 'orders' | 'menu' | 'analytics' | 'users' | 'settings')
                     }
                     className={`flex items-center justify-center gap-2 flex-1 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${isActive
-                      ? 'bg-white text-stone-900 border border-stone-200/50 shadow-sm'
+                      ? 'bg-[#4A2E20] text-white border border-[#4A2E20]/10 shadow-sm'
                       : 'text-stone-600 hover:bg-white/50 hover:text-stone-900'
                       }`}
                   >
