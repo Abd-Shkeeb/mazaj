@@ -1478,6 +1478,26 @@ export default function SuperAdminDashboard({ initialStats, locale }: Props) {
 
                             <button
                               onClick={async () => {
+                                try {
+                                  await updateCafeSubscriptionAction(cafe.id, {
+                                    subscriptionStatus: 'EXPIRED',
+                                  })
+                                } catch (err) {
+                                  alert((err as Error).message || 'Error updating subscriptionStatus')
+                                }
+                                handleRefresh()
+                              }}
+                              className={`px-2 py-0.5 rounded text-[9px] font-extrabold cursor-pointer transition-all ${
+                                darkMode
+                                  ? 'bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25'
+                                  : 'bg-red-700/15 border border-red-600/30 text-red-705 text-red-700 hover:bg-red-600/25'
+                              }`}
+                            >
+                              {currentLocale === 'ar' ? 'إنهاء الباقة 🛑' : 'Expire Plan 🛑'}
+                            </button>
+
+                            <button
+                              onClick={async () => {
                                 const pastDate = new Date(Date.now() - 60 * 60 * 1000) // 1 hour ago
                                 try {
                                   await updateCafeSubscriptionAction(cafe.id, {
