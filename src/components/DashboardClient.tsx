@@ -183,6 +183,17 @@ export default function DashboardClient({
       }
     }
     switch (plan) {
+      case 'STARTER':
+        return {
+          maxDrinks: 15,
+          maxUsers: 2,
+          maxAnalyses: 500,
+          hasMoodAnalytics: true,
+          hasSalesReports: false,
+          hasBetaAnalytics: false,
+          hasFunnelAnalytics: false,
+          hasMultiBranch: false,
+        }
       case 'LITE':
         return {
           maxDrinks: 10,
@@ -1652,7 +1663,7 @@ export default function DashboardClient({
                       <span className="font-black">
                         {settings.geminiFailureReason?.includes('401') || settings.geminiFailureReason?.includes('403')
                           ? (isAr ? 'مستشار الذكاء الاصطناعي: مفتاح API غير صالح' : 'AI Advisor: Invalid API Key')
-                          : settings.geminiQuotaExceeded || settings.geminiFailureReason?.includes('429') || settings.geminiFailureReason?.includes('Quota')
+                          : settings.geminiQuotaExceeded || settings.geminiFailureReason?.includes('429') || settings.geminiFailureReason?.includes('Quota') || (limits.maxAnalyses !== 999999 && cycleAnalysesCount >= limits.maxAnalyses)
                           ? (isAr ? 'مستشار الذكاء الاصطناعي: انتهت الحصة اليومية' : 'AI Advisor: Quota Exhausted')
                           : settings.geminiFailureReason
                           ? (isAr ? 'مستشار الذكاء الاصطناعي: متوقف حالياً' : 'AI Advisor: Offline')
