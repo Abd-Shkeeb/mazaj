@@ -334,6 +334,19 @@ export async function analyzeMood(formData: {
         let logEvent = 'GENERAL_ERROR'
 
         if (isQuotaErr) {
+          const keyStr = apiKey || '';
+          const maskedKey = keyStr.length > 8 
+            ? `${keyStr.substring(0, 4)}...${keyStr.substring(keyStr.length - 4)}` 
+            : 'INVALID_KEY_LENGTH';
+          console.error(
+            `\n========================================` +
+            `\n[DIAGNOSTIC] 429 Quota Exceeded detected!` +
+            `\n  Model Name : gemini-2.5-flash` +
+            `\n  API Key    : ${maskedKey}` +
+            `\n  Env Key Match: ${process.env.GEMINI_API_KEY === apiKey}` +
+            `\n  Raw Error  : ${errorMsg}` +
+            `\n========================================\n`
+          );
           failureReason = `Quota Limit Exceeded / انتهت حصة استهلاك الباقة الفعلية (429 Quota Exceeded)`
           logEvent = 'QUOTA_EXCEEDED'
         } else if (isAuthErr) {
