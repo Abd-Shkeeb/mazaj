@@ -1634,6 +1634,33 @@ export default function DashboardClient({
                       <Activity className="h-3 w-3 text-purple-600" />
                       {isAr ? `آخر نشاط: ${lastActivity}` : `Last Activity: ${lastActivity}`}
                     </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1.5 bg-amber-50 text-amber-800 border border-amber-100 px-2 py-0.5 rounded-full">
+                      <Sparkles className="h-3 w-3 text-amber-600 animate-pulse" />
+                      <span className="font-extrabold">
+                        {settings.geminiFailureReason?.includes('401') || settings.geminiFailureReason?.includes('403')
+                          ? (isAr ? 'Gemini: مفتاح غير صالح' : 'Gemini: Invalid Key')
+                          : settings.geminiQuotaExceeded || settings.geminiFailureReason?.includes('429') || settings.geminiFailureReason?.includes('Quota')
+                          ? (isAr ? 'Gemini: انتهت الحصة' : 'Gemini: Quota Exhausted')
+                          : settings.geminiFailureReason
+                          ? (isAr ? 'Gemini: مشكلة بالخدمة' : 'Gemini: Service Issue')
+                          : (isAr ? 'Gemini: تعمل بنجاح' : 'Gemini: Active')}
+                      </span>
+                      <span className="text-[9px] text-[#3E2723]/60 flex items-center gap-1 whitespace-nowrap font-bold">
+                        <span>|</span>
+                        <span>
+                          {isAr 
+                            ? `الاستهلاك التقديري اليوم: ${todayAnalyses.length}/1500 (تقديري)` 
+                            : `Est. usage: ${todayAnalyses.length}/1500 (est.)`}
+                        </span>
+                        <span className="w-12 h-1.5 bg-amber-200/50 rounded-full overflow-hidden inline-block border border-amber-300/20">
+                          <span 
+                            className="h-full bg-amber-600 rounded-full block transition-all duration-300"
+                            style={{ width: `${Math.min(100, (todayAnalyses.length / 1500) * 100)}%` }}
+                          />
+                        </span>
+                      </span>
+                    </span>
                   </div>
                 </div>
 
