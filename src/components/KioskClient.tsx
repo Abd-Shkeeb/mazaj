@@ -174,11 +174,13 @@ export default function KioskClient({
 
 
   const checkAndInitSession = async () => {
-    const cookiesObj = document.cookie.split(';').reduce((acc, c) => {
-      const [k, v] = c.trim().split('=')
+    const cookiesObj = document.cookie ? document.cookie.split(';').reduce((acc, c) => {
+      const parts = c.trim().split('=')
+      const k = parts[0]
+      const v = parts.slice(1).join('=')
       if (k) acc[k.trim()] = v
       return acc
-    }, {} as Record<string, string>)
+    }, {} as Record<string, string>) : {}
 
     const storedSessionId = cookiesObj['kiosk-session-id']
     const fp = getDeviceFingerprintLocal()
@@ -192,9 +194,15 @@ export default function KioskClient({
         if (res.ok) {
           const data = await res.json()
           console.log('[KioskSession] Validate response:', data)
-          if (data.valid) {
-            const secondsLeft = Math.max(0, Math.floor((new Date(data.expiresAt).getTime() - Date.now()) / 1000))
-            console.log('[KioskSession] ✅ Session VALID. Seconds left:', secondsLeft)
+          
+          // Allow session if valid, OR if it was marked USED but we are still looking at the active placed order status screen
+          const isPageViewingActiveOrder = placedOrder !== null
+          const isValidOrUsedActiveOrder = data.valid || (data.code === 'SESSION_USED' && isPageViewingActiveOrder)
+          
+          if (isValidOrUsedActiveOrder) {
+            const expiryTime = data.expiresAt ? new Date(data.expiresAt).getTime() : (Date.now() + 60000)
+            const secondsLeft = Math.max(0, Math.floor((expiryTime - Date.now()) / 1000))
+            console.log('[KioskSession] ✅ Session allowed. Seconds left:', secondsLeft)
             setSessionTimeLeft(secondsLeft)
             setIsSessionExpired(false)
             return

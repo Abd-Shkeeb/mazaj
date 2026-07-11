@@ -60,22 +60,23 @@ export default async function CafeKioskPage({
     const session = await db.kioskSession.findUnique({ where: { id: existingSessionId } })
     console.log(`[KioskPage] Cookie session: id=${existingSessionId}, status=${(session as any)?.status}, expiresAt=${session?.expiresAt}`)
 
+    // Allow both ACTIVE and USED sessions on page load so client KioskClient can show success tracking state.
     hasActiveSession =
       !!session &&
-      (session as any).status === 'ACTIVE' &&
+      ((session as any).status === 'ACTIVE' || (session as any).status === 'USED') &&
       session.expiresAt > new Date() &&
       session.cafeId === cafe.id
 
     if (hasActiveSession) {
-      console.log(`[KioskPage] ✅ Valid ACTIVE session found: ${existingSessionId}`)
+      console.log(`[KioskPage] ✅ Session allowed (ACTIVE or USED): ${existingSessionId}`)
     } else {
-      console.log(`[KioskPage] ❌ Session invalid/used/expired. Redirecting to scan route to create new session.`)
+      console.log(`[KioskPage] ❌ Session invalid/expired. Redirecting to scan route to create new session.`)
     }
   } else {
     console.log(`[KioskPage] No session cookie found. Redirecting to scan route to create new session.`)
   }
 
-  // 4. If no active session → redirect through scan route which creates session + sets cookie
+  // 4. If no active/valid session → redirect through scan route which creates session + sets cookie
   if (!hasActiveSession) {
     redirect(`/api/kiosk/${cafeSlug}/scan?locale=${locale}`)
   }
