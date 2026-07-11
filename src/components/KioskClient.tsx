@@ -482,9 +482,16 @@ export default function KioskClient({
 
           await trackEventAction(cafe.id, 'COMPLETE_ANALYSIS')
         }
-      } catch (err) {
-        console.error('Analysis failed:', err)
-        alert(isAr ? 'حدث خطأ غير متوقع' : 'An unexpected error occurred')
+      } catch (err: any) {
+        console.error('[KioskClient] Unexpected error during AI analyzeMood action:', err)
+        const errMsg = err?.message || ''
+        if (errMsg.includes('GEMINI_QUOTA_EXCEEDED') || errMsg.includes('حد تحليل المزاج')) {
+          alert(isAr 
+            ? 'عذرًا، انتهت حصة التحليل المسموح بها للمقهى لهذا الشهر. يرجى إبلاغ الكاشير.' 
+            : 'Sorry, the cafe has reached its monthly AI analysis limit. Please inform the cashier.')
+        } else {
+          alert(isAr ? 'عذرًا، خدمة الذكاء الاصطناعي غير متاحة مؤقتًا. يرجى المحاولة مرة أخرى.' : 'Sorry, the AI service is temporarily unavailable. Please try again.')
+        }
       }
     })
   }

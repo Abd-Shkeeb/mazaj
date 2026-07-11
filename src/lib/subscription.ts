@@ -276,6 +276,14 @@ export async function assertCanAnalyzeMood(cafeId: string): Promise<void> {
     },
   })
 
+  console.log(
+    `[TRACE] assertCanAnalyzeMood metrics:` +
+    `\n  Cafe ID         : ${cafeId}` +
+    `\n  Billing Cycle   : ${cycleStart.toISOString()}` +
+    `\n  Analyses Used   : ${analysesCount}` +
+    `\n  Plan Max Limit  : ${limits.maxAnalyses}`
+  )
+
   if (analysesCount >= limits.maxAnalyses) {
     throw new Error(
       `لقد تجاوزت حد تحليل المزاج المسموح به لباقتك الحالية في هذا الشهر (${limits.maxAnalyses} عملية). يرجى الترقية للباقة الأعلى للاستمرار.`,

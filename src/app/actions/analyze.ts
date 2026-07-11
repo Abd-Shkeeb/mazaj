@@ -82,7 +82,20 @@ export async function analyzeMood(formData: {
     // Assert active subscription first (blocks Gemini API call if expired/suspended)
     await assertActiveSubscription(formData.cafeId)
     // Check Gemini vibe analysis quota limits by plan
-    await assertCanAnalyzeMood(formData.cafeId)
+    try {
+      console.log(`[TRACE] Checking plan analysis limits for Cafe: ${formData.cafeId}`);
+      await assertCanAnalyzeMood(formData.cafeId)
+      console.log(`[TRACE] Plan limits check passed successfully for Cafe: ${formData.cafeId}`);
+    } catch (limitErr: any) {
+      console.error(
+        `\n========================================` +
+        `\n[TRACE] assertCanAnalyzeMood FAILED!` +
+        `\n  Source      : assertCanAnalyzeMood (subscription.ts)` +
+        `\n  Error Msg   : ${limitErr.message}` +
+        `\n========================================\n`
+      );
+      throw limitErr;
+    }
 
     // IP-based Rate Limiting (Limit to 5 AI requests per minute per IP)
     const headersList = await headers()
@@ -347,6 +360,8 @@ export async function analyzeMood(formData: {
           `\n[GEMINI API ERROR DIAGNOSTIC]` +
           `\n  Model Name  : gemini-2.5-flash` +
           `\n  HTTP Status : ${error.status || error.code || 'Google API Error'}` +
+          `\n  Error Reason: ${error.reason || 'None'}` +
+          `\n  Error Details: ${JSON.stringify(error.details || error, null, 2)}` +
           `\n  API Key     : ${apiKey ? `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}` : 'NONE'}` +
           `\n  Raw Error   : ${errorMsg}` +
           `\n========================================\n`
@@ -356,7 +371,7 @@ export async function analyzeMood(formData: {
         let logEvent = 'GENERAL_ERROR'
 
         if (isQuota429) {
-          failureReason = `Quota Limit Exceeded / انتهت حصة استهلاك الباقة الفعلية (429 Quota Exceeded)`
+          failureReason = `Google Rate Limit/Quota limit hit. Gracefully falling back to local recomendation.`
           logEvent = 'QUOTA_EXCEEDED'
         } else if (isAuthErr) {
           failureReason = `Invalid API Key / مفتاح الـ API غير صالح أو غير مصرح له (401/403 Invalid Key)`
@@ -369,17 +384,14 @@ export async function analyzeMood(formData: {
         }
 
         // Save last checked status and classification to database
-        // Critical change: Only set geminiQuotaExceeded = true if it's strictly a 429 Quota Error.
-        // We do NOT block the dashboard with a permanent Quota state for transient network/auth/server (500) errors.
+        // Critical change: We DO NOT lock geminiQuotaExceeded = true or save blocking error state 
+        // to DB for Google 429 Rate Limits, keeping the kiosk running. We only log.
         await (db.cafe.update as any)({
           where: { id: formData.cafeId },
           data: { 
-            geminiQuotaExceeded: isQuota429,
+            geminiQuotaExceeded: false,
             geminiFailureReason: failureReason,
-            geminiLastChecked: new Date(),
-            geminiErrorCount: {
-              increment: isQuota429 ? 1 : 0
-            }
+            geminiLastChecked: new Date()
           }
         })
 
@@ -392,14 +404,12 @@ export async function analyzeMood(formData: {
           }
         })
 
-        // Propagate / Throw errors clearly
-        if (isQuota429) {
-          throw new Error(`GEMINI_QUOTA_EXCEEDED: ${failureReason}`)
-        } else if (isAuthErr) {
+        // Propagate / Throw errors ONLY for absolute key/auth failures.
+        // For 429 Rate Limits or network errors, we gracefully fallback to local recommended drinks so the customer session never fails.
+        if (isAuthErr) {
           throw new Error(`GEMINI_AUTH_ERROR: ${failureReason}`)
         } else {
-          // Gracefully fallback to local recommended drinks for general network/500 errors
-          console.warn(`[AI Kiosk Session Log] Temporary Gemini API error: ${errorMsg}. Using local fallback.`)
+          console.warn(`[AI Kiosk Session Log] 429 Rate Limit or Network issue: ${errorMsg}. Falling back to local menu match gracefully.`)
           aiResult = getFallbackResult(moodInputText, menuDrinks)
         }
       }
