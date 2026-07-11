@@ -167,9 +167,8 @@ export default function KioskClient({
     try {
       localStorage.removeItem('kioskDeviceFp')
     } catch (e) { }
-    // Redirect through scan route so a fresh session is created automatically
-    // This avoids showing the static 'scan-qr expired' page unnecessarily
-    window.location.replace(`/api/kiosk/${cafe.slug}/scan?locale=${document.documentElement.lang || 'ar'}`)
+    // Strictly redirect to scan-qr page to block remote access and require a physical QR scan
+    window.location.replace(`/${locale}/scan-qr`)
   }
 
 
@@ -519,9 +518,9 @@ export default function KioskClient({
         const code = (res as any).code || ''
         const isSessionErr = ['SESSION_MISSING', 'SESSION_INVALID', 'SESSION_USED', 'SESSION_EXPIRED', 'SESSION_MISMATCH'].includes(code)
         if (isSessionErr) {
-          // Session is invalid — redirect through scan route to create fresh session and re-enter kiosk
-          console.log('[KioskClient] Session error on checkout. Code:', code, '— redirecting through scan route.')
-          window.location.replace(`/api/kiosk/${cafe.slug}/scan?locale=${document.documentElement.lang || 'ar'}`)
+          // Session is invalid — strictly redirect to scan-qr lock screen
+          console.log('[KioskClient] Session error on checkout. Code:', code, '— redirecting to scan-qr.')
+          window.location.replace(`/${locale}/scan-qr`)
         } else {
           alert(res.error || (isAr ? 'عذراً، فشل إرسال الطلب' : 'Sorry, failed to place order'))
         }
@@ -877,14 +876,14 @@ export default function KioskClient({
               </h2>
 
               <p className="text-xs text-[#6D6D6D] font-semibold leading-relaxed mb-6">
-                {isAr ? 'انتهت صلاحية الجلسة، يرجى تحديث الصفحة للمتابعة' : 'Session expired, please refresh the page to continue'}
+                {isAr ? 'انتهت صلاحية الجلسة، يرجى مسح رمز QR مرة أخرى' : 'Session expired, please scan the QR code again'}
               </p>
 
               <button
-                onClick={() => window.location.reload()}
+                onClick={handleRedirectToScanQr}
                 className="w-full py-3 bg-[#5D4037] text-white rounded-xl font-black text-xs transition-colors cursor-pointer shadow-sm hover:bg-[#3E2723]"
               >
-                {isAr ? 'تحديث الصفحة' : 'Refresh Page'}
+                {isAr ? 'إعادة مسح رمز QR' : 'Re-scan QR Code'}
               </button>
             </motion.div>
           </div>
