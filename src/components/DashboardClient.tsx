@@ -104,6 +104,8 @@ interface Cafe {
   subscriptionEndsAt?: Date | string | null
   subscriptionPlan: string
   subscriptionStatus: string
+  geminiQuotaExceeded?: boolean
+  geminiFailureReason?: string | null
 }
 
 interface Event {
@@ -1558,6 +1560,47 @@ export default function DashboardClient({
         ) : (
           /* REGULAR DASHBOARD TABS AND PAGES */
           <>
+            {/* Gemini API Quota Monitoring Alert Banner */}
+            {settings.geminiQuotaExceeded && (
+              <div className="bg-amber-50 border border-amber-200 rounded-3xl p-5 sm:p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm animate-in fade-in duration-300">
+                <div className="flex items-start gap-4 text-right rtl:text-right ltr:text-left">
+                  <div className="p-3 bg-amber-100 text-amber-800 rounded-2xl flex items-center justify-center flex-shrink-0">
+                    <ShieldAlert className="h-6 w-6 text-amber-700" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-amber-900 leading-tight">
+                      {isAr ? '⚠️ تنبيه: خدمة الذكاء الاصطناعي معطلة مؤقتاً' : '⚠️ Alert: AI Mood Advisor Paused'}
+                    </h3>
+                    <p className="text-xs font-bold text-amber-800/85 mt-1 leading-relaxed">
+                      {isAr 
+                        ? 'انتهى رصيد أو حصة استهلاك الـ Gemini API. تم إيقاف عملية تحليل المزاج التفاعلية مؤقتاً لحين تجديد الباقة أو إدخال مفتاح API صالح.' 
+                        : 'The Gemini API consumption limit or quota has been reached. Mood analysis is paused until you renew your plan or supply a valid API key.'}
+                    </p>
+                    <span className="inline-block mt-2 text-[10px] bg-amber-100/50 text-amber-900/70 border border-amber-200 px-2 py-0.5 rounded-md font-mono">
+                      {settings.geminiFailureReason}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+                  <button
+                    onClick={() => setActiveTab('settings')}
+                    className="px-4 py-2.5 bg-amber-700 hover:bg-amber-800 text-white rounded-xl text-xs font-black transition-colors cursor-pointer shadow-sm"
+                  >
+                    {isAr ? 'تحديث مفتاح API' : 'Update API Key'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Switch to Settings tab or show mock renewal
+                      alert(isAr ? 'جاري توجيهك لبوابة التجديد والدفع...' : 'Redirecting to subscription renewal gateway...')
+                    }}
+                    className="px-4 py-2.5 bg-[#3E2723] hover:bg-[#2D1B18] text-white rounded-xl text-xs font-black transition-colors cursor-pointer shadow-sm"
+                  >
+                    {isAr ? 'تجديد الباقة' : 'Renew Plan'}
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* 1. Welcoming Header display with Cream gradient */}
             <div className="bg-gradient-to-br from-amber-500/5 via-transparent to-[#3E2723]/2 border border-[#3E2723]/10 p-5 sm:p-6 rounded-3xl mb-8 relative overflow-hidden shadow-sm">
               <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none select-none" />

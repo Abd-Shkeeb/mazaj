@@ -173,6 +173,15 @@ export async function analyzeMood(formData: {
       return { id: analysis.id, aiResult: noDrinkResult };
     }
 
+    // Check if Gemini Quota has been marked as exceeded
+    const currentCafe = await db.cafe.findUnique({
+      where: { id: formData.cafeId },
+      select: { geminiQuotaExceeded: true, geminiFailureReason: true },
+    })
+    if (currentCafe?.geminiQuotaExceeded) {
+      throw new Error(`GEMINI_QUOTA_EXCEEDED: ${currentCafe.geminiFailureReason || 'Gemini API limit reached / تم تجاوز حصة Gemini'}`)
+    }
+
     const apiKey = process.env.GEMINI_API_KEY
     let geminiCalled = false
     let rawGeminiTextResponse = ''
@@ -272,8 +281,34 @@ export async function analyzeMood(formData: {
           energyLevel: selectedCandidate.energyLevel ?? 50,
           sweetnessLevel: selectedCandidate.sweetnessLevel ?? 50,
         }
-      } catch (error) {
-        console.error('[AI Kiosk Session Log] Gemini API Error, falling back to local fallback:', error)
+
+        // Reset quota error since API call succeeded
+        if (currentCafe?.geminiQuotaExceeded) {
+          await db.cafe.update({
+            where: { id: formData.cafeId },
+            data: { geminiQuotaExceeded: false, geminiFailureReason: null }
+          })
+        }
+      } catch (error: any) {
+        console.error('[AI Kiosk Session Log] Gemini API Error, checking for quota exceptions:', error)
+        
+        const errorMsg = error?.message || String(error)
+        const isQuotaErr = errorMsg.includes('429') || 
+                           errorMsg.toLowerCase().includes('quota') || 
+                           errorMsg.toLowerCase().includes('limit') ||
+                           errorMsg.toLowerCase().includes('resource_exhausted')
+        
+        if (isQuotaErr) {
+          await db.cafe.update({
+            where: { id: formData.cafeId },
+            data: { 
+              geminiQuotaExceeded: true, 
+              geminiFailureReason: `API Limit Reached / تم تجاوز حد الاستهلاك المسموح (Gemini 429 Quota Exceeded)`
+            }
+          })
+          throw new Error(`GEMINI_QUOTA_EXCEEDED: API Limit Reached / تم تجاوز حد الاستهلاك المسموح (Gemini 429 Quota Exceeded)`)
+        }
+
         aiResult = getFallbackResult(moodInputText, menuDrinks)
       }
     } else {

@@ -35,6 +35,10 @@ model Cafe {
   events     Event[]
   kioskSessionMinutes Int @default(15) // default session duration in minutes
   sessions   KioskSession[]
+  
+  // Gemini API monitoring fields
+  geminiQuotaExceeded Boolean @default(false)
+  geminiFailureReason String?
 }
 
 model User {
