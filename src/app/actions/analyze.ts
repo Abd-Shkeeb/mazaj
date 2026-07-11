@@ -304,49 +304,30 @@ export async function analyzeMood(formData: {
           })
         }
       } catch (error: any) {
-        console.error('[AI Kiosk Session Log] Gemini API Error, classifying exception:', error)
-        
         const errorMsg = error?.message || String(error)
         const lowerMsg = errorMsg.toLowerCase()
-        
-        // 1. Quota / API Limit Reached (429 / resource exhausted)
-        const isQuotaErr = errorMsg.includes('429') || 
-                           lowerMsg.includes('quota') || 
-                           lowerMsg.includes('limit') ||
-                           lowerMsg.includes('resource_exhausted')
-                           
-        // 2. Authentication / API Key Invalid (401 / 403 / API key)
-        const isAuthErr = errorMsg.includes('401') ||
-                          errorMsg.includes('403') ||
-                          lowerMsg.includes('key invalid') ||
-                          lowerMsg.includes('unauthorized') ||
-                          lowerMsg.includes('not valid')
-                          
-        // 3. Network issues (Timeout / DNS / fetch / ENOTFOUND)
-        const isNetworkErr = lowerMsg.includes('timeout') ||
-                             lowerMsg.includes('fetch') ||
-                             lowerMsg.includes('network') ||
-                             lowerMsg.includes('dns') ||
-                             lowerMsg.includes('econnrefused') ||
-                             lowerMsg.includes('enotfound')
+
+        // 1. Check for specific status codes or error messages
+        const isQuota429 = errorMsg.includes('429') || lowerMsg.includes('resource_exhausted')
+        const isAuthErr = errorMsg.includes('401') || errorMsg.includes('403') || lowerMsg.includes('key invalid') || lowerMsg.includes('unauthorized')
+        const isNetworkErr = lowerMsg.includes('timeout') || lowerMsg.includes('fetch') || lowerMsg.includes('network') || lowerMsg.includes('dns')
+
+        // Detailed Diagnostics Log for all errors
+        console.error(
+          `\n========================================` +
+          `\n[GEMINI API ERROR DIAGNOSTIC]` +
+          `\n  Model Name  : gemini-2.5-flash` +
+          `\n  Prompt Size : ${prompt ? prompt.length : '0'} chars` +
+          `\n  HTTP Status : ${error.status || error.code || 'Google API Error'}` +
+          `\n  API Key     : ${apiKey ? `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}` : 'NONE'}` +
+          `\n  Raw Error   : ${errorMsg}` +
+          `\n========================================\n`
+        )
 
         let failureReason = `System Error / خطأ في النظام`
         let logEvent = 'GENERAL_ERROR'
 
-        if (isQuotaErr) {
-          const keyStr = apiKey || '';
-          const maskedKey = keyStr.length > 8 
-            ? `${keyStr.substring(0, 4)}...${keyStr.substring(keyStr.length - 4)}` 
-            : 'INVALID_KEY_LENGTH';
-          console.error(
-            `\n========================================` +
-            `\n[DIAGNOSTIC] 429 Quota Exceeded detected!` +
-            `\n  Model Name : gemini-2.5-flash` +
-            `\n  API Key    : ${maskedKey}` +
-            `\n  Env Key Match: ${process.env.GEMINI_API_KEY === apiKey}` +
-            `\n  Raw Error  : ${errorMsg}` +
-            `\n========================================\n`
-          );
+        if (isQuota429) {
           failureReason = `Quota Limit Exceeded / انتهت حصة استهلاك الباقة الفعلية (429 Quota Exceeded)`
           logEvent = 'QUOTA_EXCEEDED'
         } else if (isAuthErr) {
@@ -359,18 +340,17 @@ export async function analyzeMood(formData: {
           failureReason = `Google Server Error / مشكلة مؤقتة في خوادم الخدمة (500/503 Service Unavailable): ${errorMsg.substring(0, 80)}`
         }
 
-        // Increment error count for quota/auth issues
-        const errorIncrement = (isQuotaErr || isAuthErr) ? 1 : 0
-
         // Save last checked status and classification to database
+        // Critical change: Only set geminiQuotaExceeded = true if it's strictly a 429 Quota Error.
+        // We do NOT block the dashboard with a permanent Quota state for transient network/auth/server (500) errors.
         await (db.cafe.update as any)({
           where: { id: formData.cafeId },
           data: { 
-            geminiQuotaExceeded: isQuotaErr || isAuthErr, // Block active analysis only if key is invalid or quota is finished
+            geminiQuotaExceeded: isQuota429,
             geminiFailureReason: failureReason,
             geminiLastChecked: new Date(),
             geminiErrorCount: {
-              increment: errorIncrement
+              increment: isQuota429 ? 1 : 0
             }
           }
         })
@@ -384,12 +364,16 @@ export async function analyzeMood(formData: {
           }
         })
 
-        // Re-throw quota or authentication errors to show blocking state, otherwise fallback to local recommended menu list gracefully
-        if (isQuotaErr || isAuthErr) {
-          throw new Error(`GEMINI_API_PAUSED: ${failureReason}`)
+        // Propagate / Throw errors clearly
+        if (isQuota429) {
+          throw new Error(`GEMINI_QUOTA_EXCEEDED: ${failureReason}`)
+        } else if (isAuthErr) {
+          throw new Error(`GEMINI_AUTH_ERROR: ${failureReason}`)
+        } else {
+          // Gracefully fallback to local recommended drinks for general network/500 errors
+          console.warn(`[AI Kiosk Session Log] Temporary Gemini API error: ${errorMsg}. Using local fallback.`)
+          aiResult = getFallbackResult(moodInputText, menuDrinks)
         }
-
-        aiResult = getFallbackResult(moodInputText, menuDrinks)
       }
     } else {
       console.log('[AI Kiosk Session Log] GEMINI_API_KEY not configured. Falling back to local fallback.')
