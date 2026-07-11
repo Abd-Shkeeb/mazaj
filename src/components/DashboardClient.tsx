@@ -11,6 +11,9 @@ import {
   deleteDrinkAction,
   updateDrinkAction,
   updateCafeSettingsAction,
+  retryGeminiConnectionAction,
+  clearHealthLogsAction,
+  checkSystemHealthAction,
 } from '@/app/actions/dashboard'
 import { uploadFileToStorage, deleteFileFromStorage } from '@/lib/supabase'
 import dynamic from 'next/dynamic'
@@ -106,6 +109,8 @@ interface Cafe {
   subscriptionStatus: string
   geminiQuotaExceeded?: boolean
   geminiFailureReason?: string | null
+  geminiLastChecked?: Date | string | null
+  geminiErrorCount?: number
 }
 
 interface Event {
@@ -127,6 +132,14 @@ interface Analysis {
   createdAt: Date
 }
 
+interface GeminiHealthLog {
+  id: string
+  cafeId: string
+  event: string
+  details: string | null
+  createdAt: Date | string
+}
+
 interface DashboardClientProps {
   orders: Order[]
   drinks: Drink[]
@@ -134,6 +147,7 @@ interface DashboardClientProps {
   settings: Cafe
   cafes: Cafe[]
   events: Event[]
+  healthLogs?: GeminiHealthLog[]
 }
 
 export default function DashboardClient({
@@ -143,6 +157,7 @@ export default function DashboardClient({
   settings,
   cafes,
   events,
+  healthLogs = [],
 }: DashboardClientProps) {
   const t = useTranslations('admin')
   const locale = useLocale()
@@ -1560,46 +1575,168 @@ export default function DashboardClient({
         ) : (
           /* REGULAR DASHBOARD TABS AND PAGES */
           <>
-            {/* Gemini API Quota Monitoring Alert Banner */}
-            {settings.geminiQuotaExceeded && (
-              <div className="bg-amber-50 border border-amber-200 rounded-3xl p-5 sm:p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm animate-in fade-in duration-300">
+            {/* Gemini API Service Status Monitor Widget */}
+            <div className="bg-white border border-[#3E2723]/10 rounded-3xl p-5 sm:p-6 mb-8 shadow-sm">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div className="flex items-start gap-4 text-right rtl:text-right ltr:text-left">
-                  <div className="p-3 bg-amber-100 text-amber-800 rounded-2xl flex items-center justify-center flex-shrink-0">
-                    <ShieldAlert className="h-6 w-6 text-amber-700" />
+                  <div className="p-3 bg-amber-500/5 text-[#3E2723] border border-[#3E2723]/10 rounded-2xl flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="h-6 w-6 text-amber-700" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-black text-amber-900 leading-tight">
-                      {isAr ? '⚠️ تنبيه: خدمة الذكاء الاصطناعي معطلة مؤقتاً' : '⚠️ Alert: AI Mood Advisor Paused'}
+                    <h3 className="text-sm font-black text-[#3E2723] flex items-center gap-2">
+                      <span>{isAr ? 'حالة مستشار المزاج بالذكاء الاصطناعي (Gemini)' : 'AI Mood Advisor Service Status'}</span>
+                      {!settings.geminiQuotaExceeded && !settings.geminiFailureReason ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          {isAr ? '🟢 تعمل بشكل ممتاز' : '🟢 Active & Healthy'}
+                        </span>
+                      ) : settings.geminiFailureReason?.includes('401') || settings.geminiFailureReason?.includes('403') ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] bg-red-50 text-red-800 border border-red-200 px-2 py-0.5 rounded-full font-bold">
+                          {isAr ? '🔴 مفتاح API غير صالح' : '🔴 Invalid API Key'}
+                        </span>
+                      ) : settings.geminiFailureReason?.includes('429') || settings.geminiFailureReason?.includes('Quota') ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] bg-rose-50 text-rose-800 border border-rose-200 px-2 py-0.5 rounded-full font-bold">
+                          {isAr ? '🔴 انتهت الحصة' : '🔴 Quota Exhausted'}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full font-bold">
+                          {isAr ? '🟡 مشكلة مؤقتة / شبكة' : '🟡 Temporary network/server delay'}
+                        </span>
+                      )}
                     </h3>
-                    <p className="text-xs font-bold text-amber-800/85 mt-1 leading-relaxed">
+                    <p className="text-xs font-bold text-gray-500 mt-1 leading-relaxed">
                       {isAr 
-                        ? 'انتهى رصيد أو حصة استهلاك الـ Gemini API. تم إيقاف عملية تحليل المزاج التفاعلية مؤقتاً لحين تجديد الباقة أو إدخال مفتاح API صالح.' 
-                        : 'The Gemini API consumption limit or quota has been reached. Mood analysis is paused until you renew your plan or supply a valid API key.'}
+                        ? 'تتم مزامنة حالة الاتصال بخوادم Google Gemini ذكياً لضمان استقرار جلسات الكشك.' 
+                        : 'Real-time connectivity logs are monitored dynamically to secure kiosk recommendations.'}
                     </p>
-                    <span className="inline-block mt-2 text-[10px] bg-amber-100/50 text-amber-900/70 border border-amber-200 px-2 py-0.5 rounded-md font-mono">
-                      {settings.geminiFailureReason}
-                    </span>
+                    
+                    <div className="flex flex-wrap items-center gap-2 mt-2.5 text-[10px] font-bold">
+                      {settings.geminiFailureReason && (
+                        <span className="bg-rose-50 text-rose-900 border border-rose-200 px-2 py-0.5 rounded-md font-mono">
+                          {isAr ? 'آخر خطأ:' : 'Last error:'} {settings.geminiFailureReason}
+                        </span>
+                      )}
+                      {settings.geminiLastChecked && (
+                        <span className="text-gray-400">
+                          {isAr ? 'آخر فحص:' : 'Last checked:'} {new Date(settings.geminiLastChecked as any).toLocaleTimeString(isAr ? 'ar-IQ' : 'en-US')}
+                        </span>
+                      )}
+                      {settings.geminiErrorCount !== undefined && settings.geminiErrorCount > 0 && (
+                        <span className="text-gray-400/80 italic">
+                          ({isAr ? `تكرار التشخيص: ${settings.geminiErrorCount}` : `Diagnostic count: ${settings.geminiErrorCount}`})
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-                  <button
-                    onClick={() => setActiveTab('settings')}
-                    className="px-4 py-2.5 bg-amber-700 hover:bg-amber-800 text-white rounded-xl text-xs font-black transition-colors cursor-pointer shadow-sm"
-                  >
-                    {isAr ? 'تحديث مفتاح API' : 'Update API Key'}
-                  </button>
+
+                <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
                   <button
                     onClick={() => {
-                      // Switch to Settings tab or show mock renewal
-                      alert(isAr ? 'جاري توجيهك لبوابة التجديد والدفع...' : 'Redirecting to subscription renewal gateway...')
+                      startTransition(async () => {
+                        try {
+                          const res = await retryGeminiConnectionAction(settings.id)
+                          if (res.success) {
+                            addToast(isAr ? 'نجح الاتصال! الخدمة تعمل الآن بكفاءة.' : 'Connection verified! Gemini advisor fully active.', 'success')
+                            router.refresh()
+                          } else {
+                            addToast(res.error || (isAr ? 'فشل فحص الاتصال بالخدمة' : 'Connection check failed'), 'error')
+                          }
+                        } catch (e: any) {
+                          addToast(e.message || (isAr ? 'حدث خطأ أثناء الاتصال' : 'An error occurred during reconnect'), 'error')
+                        }
+                      })
                     }}
-                    className="px-4 py-2.5 bg-[#3E2723] hover:bg-[#2D1B18] text-white rounded-xl text-xs font-black transition-colors cursor-pointer shadow-sm"
+                    disabled={isPending}
+                    className="px-3.5 py-2 bg-amber-100 hover:bg-amber-200 disabled:opacity-50 text-amber-900 rounded-xl text-xs font-black transition-all cursor-pointer shadow-sm active:scale-95"
                   >
-                    {isAr ? 'تجديد الباقة' : 'Renew Plan'}
+                    {isAr ? 'إعادة فحص الاتصال' : 'Check Connectivity'}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('settings')}
+                    className="px-3.5 py-2 bg-[#3E2723] hover:bg-[#2D1B18] text-white rounded-xl text-xs font-black transition-all cursor-pointer shadow-sm active:scale-95"
+                  >
+                    {isAr ? 'إعدادات مفتاح API' : 'Configure API Key'}
                   </button>
                 </div>
               </div>
-            )}
+
+              {/* Gemini Health History Logger */}
+              {healthLogs && healthLogs.length > 0 && (
+                <div className="mt-6 border-t border-[#3E2723]/10 pt-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-xs font-black text-[#3E2723]/80 uppercase tracking-wider">
+                      📋 {isAr ? 'سجل حالة Gemini (آخر 20 حدث)' : 'Gemini Health History (Last 20 Events)'}
+                    </h4>
+                    <button
+                      onClick={() => {
+                        if (!confirm(isAr ? 'هل تريد مسح هذا السجل بالكامل؟' : 'Are you sure you want to clear this health log?')) return
+                        startTransition(async () => {
+                          try {
+                            const res = await clearHealthLogsAction(settings.id)
+                            if (res.success) {
+                              addToast(isAr ? 'تم مسح السجل بنجاح' : 'Health log cleared successfully', 'info')
+                              router.refresh()
+                            }
+                          } catch (err: any) {
+                            addToast(isAr ? 'حدث خطأ أثناء مسح السجل' : 'Failed to clear log', 'error')
+                          }
+                        })
+                      }}
+                      className="text-[10px] font-black text-rose-700 bg-rose-50 hover:bg-rose-100 px-2.5 py-1 rounded-md border border-rose-200/40 cursor-pointer transition-colors"
+                    >
+                      {isAr ? 'مسح السجل' : 'Clear Log'}
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto rounded-xl border border-gray-100 bg-[#FAF8F5]/50">
+                    <table className="w-full text-right rtl:text-right ltr:text-left text-[11px] font-semibold text-gray-600">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-100 text-gray-500 font-bold">
+                          <th className="px-4 py-2">{isAr ? 'التوقيت' : 'Timestamp'}</th>
+                          <th className="px-4 py-2">{isAr ? 'الحدث' : 'Event'}</th>
+                          <th className="px-4 py-2">{isAr ? 'التفاصيل' : 'Details'}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {healthLogs.map((log) => (
+                          <tr key={log.id} className="hover:bg-white transition-colors">
+                            <td className="px-4 py-2 whitespace-nowrap text-gray-400 font-mono text-[10px]">
+                              {new Date(log.createdAt).toLocaleString(isAr ? 'ar-IQ' : 'en-US')}
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap">
+                              {log.event === 'QUOTA_EXCEEDED' && (
+                                <span className="bg-rose-50 text-rose-700 px-2 py-0.5 rounded font-black text-[9px]">🔴 QUOTA_EXCEEDED</span>
+                              )}
+                              {log.event === 'INVALID_API_KEY' && (
+                                <span className="bg-red-50 text-red-700 px-2 py-0.5 rounded font-black text-[9px]">🔴 INVALID_API_KEY</span>
+                              )}
+                              {log.event === 'RECOVERY_SUCCESS' && (
+                                <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-black text-[9px]">🟢 RECOVERY_SUCCESS</span>
+                              )}
+                              {log.event === 'NETWORK_TIMEOUT' && (
+                                <span className="bg-amber-50 text-amber-700 px-2 py-0.5 rounded font-black text-[9px]">🟡 NETWORK_TIMEOUT</span>
+                              )}
+                              {log.event === 'GENERAL_ERROR' && (
+                                <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded font-black text-[9px]">⚪ GENERAL_ERROR</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-2 text-[10px] font-mono text-gray-500">
+                              {log.details}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            {/* System Health Status Panel */}
+            <SystemHealthPanel 
+              isAr={isAr} 
+              settingsId={settings.id} 
+              checkSystemHealthAction={checkSystemHealthAction} 
+              addToast={addToast}
+            />
 
             {/* 1. Welcoming Header display with Cream gradient */}
             <div className="bg-gradient-to-br from-amber-500/5 via-transparent to-[#3E2723]/2 border border-[#3E2723]/10 p-5 sm:p-6 rounded-3xl mb-8 relative overflow-hidden shadow-sm">
@@ -2020,5 +2157,147 @@ export default function DashboardClient({
         )
       }
     </>
+  )
+}
+
+function SystemHealthPanel({
+  isAr,
+  settingsId,
+  checkSystemHealthAction,
+  addToast,
+}: {
+  isAr: boolean
+  settingsId: string
+  checkSystemHealthAction: (cafeId: string) => Promise<any>
+  addToast: (msg: string, type: 'success' | 'error' | 'info') => void
+}) {
+  const [health, setHealth] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
+
+  const handleCheckHealth = async () => {
+    setLoading(true)
+    try {
+      const res = await checkSystemHealthAction(settingsId)
+      if (res.success) {
+        setHealth(res)
+        addToast(isAr ? 'تم فحص أداء النظام بنجاح!' : 'System health audit completed!', 'success')
+      } else {
+        addToast(res.error || (isAr ? 'فشل فحص أداء النظام' : 'System health audit failed'), 'error')
+      }
+    } catch (e: any) {
+      addToast(e.message || (isAr ? 'خطأ أثناء الاتصال' : 'Failed to connect to health audit endpoint'), 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Run on initial mount
+  useEffect(() => {
+    handleCheckHealth()
+  }, [])
+
+  const getStatusBadge = (status: 'OK' | 'SLOW' | 'ERROR') => {
+    switch (status) {
+      case 'OK':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-50 text-emerald-800 border border-emerald-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            {isAr ? '🟢 يعمل' : '🟢 Works'}
+          </span>
+        )
+      case 'SLOW':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-50 text-amber-800 border border-amber-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            {isAr ? '🟡 بطيء' : '🟡 Slow'}
+          </span>
+        )
+      case 'ERROR':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black bg-rose-50 text-rose-800 border border-rose-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+            {isAr ? '🔴 متوقف' : '🔴 Stopped'}
+          </span>
+        )
+    }
+  }
+
+  const renderService = (labelAr: string, labelEn: string, serviceKey: string) => {
+    const service = health?.results?.[serviceKey]
+    if (!service) {
+      return (
+        <div key={serviceKey} className="p-4 bg-gray-50 border border-gray-150 rounded-2xl animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-1/3 mb-2" />
+          <div className="h-3 bg-gray-200 rounded w-2/3" />
+        </div>
+      )
+    }
+    return (
+      <div key={serviceKey} className="p-4 bg-gray-50/50 border border-[#3E2723]/5 rounded-2xl hover:bg-white transition-colors relative overflow-hidden group">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs font-black text-[#3E2723]">
+            {isAr ? labelAr : labelEn}
+          </span>
+          {getStatusBadge(service.status)}
+        </div>
+        <p className="text-[10px] font-bold text-gray-500 mt-2 truncate">
+          {service.details}
+        </p>
+        <div className="mt-3 flex items-center justify-between text-[9px] text-gray-400 font-mono">
+          <span>{isAr ? 'زمن الاستجابة:' : 'Latency:'}</span>
+          <span className={service.status === 'ERROR' ? 'text-rose-600 font-bold' : service.status === 'SLOW' ? 'text-amber-600 font-bold' : 'text-emerald-700 font-bold'}>
+            {service.latency}ms
+          </span>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-white border border-[#3E2723]/10 rounded-3xl p-5 sm:p-6 mb-8 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+        <div className="space-y-1">
+          <h3 className="text-sm font-black text-[#3E2723] flex items-center gap-2">
+            <span>💻 {isAr ? 'حالة أداء وسلامة النظام العام' : 'Overall System Health'}</span>
+            {health?.lastChecked && (
+              <span className="text-[9px] text-gray-400 font-normal">
+                ({isAr ? 'آخر فحص:' : 'Last check:'} {health.lastChecked})
+              </span>
+            )}
+          </h3>
+          <p className="text-xs font-bold text-gray-500 leading-relaxed">
+            {isAr 
+              ? 'مراقبة حية فورية ومباشرة للأداء وزمن الاستجابة للبنية التحتية والخدمات التابعة لمزاج.' 
+              : 'Real-time performance and latency monitoring for Mazaj core infrastructure services.'}
+          </p>
+        </div>
+        
+        <button
+          onClick={handleCheckHealth}
+          disabled={loading}
+          className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[#3E2723] hover:bg-[#2D1B18] text-white disabled:opacity-60 rounded-xl text-xs font-black transition-all cursor-pointer shadow-sm active:scale-95 whitespace-nowrap"
+        >
+          {loading ? (
+            <>
+              <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span>{isAr ? 'جاري الفحص...' : 'Auditing...'}</span>
+            </>
+          ) : (
+            <>
+              <span>⚡</span>
+              <span>{isAr ? 'فحص جميع الخدمات' : 'Audit All Services'}</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {renderService('قاعدة البيانات (Postgres)', 'Database (Postgres)', 'database')}
+        {renderService('محرك الذكاء الاصطناعي (Gemini)', 'Gemini AI Advisor', 'gemini')}
+        {renderService('بوت تيليجرام (Telegram)', 'Telegram Notification Bot', 'telegram')}
+        {renderService('بوابة Supabase Client', 'Supabase Client API', 'supabase')}
+        {renderService('التخزين السحابي (Bucket)', 'Storage CDN Storage', 'storage')}
+      </div>
+    </div>
   )
 }

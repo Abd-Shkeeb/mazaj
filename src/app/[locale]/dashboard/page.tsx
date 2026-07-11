@@ -99,6 +99,13 @@ const isAr = locale === 'ar';
     orderBy: { createdAt: 'desc' },
   })
 
+  // 6. Fetch Gemini Health Logs (last 20 logs)
+  const healthLogs = await ((db as any).geminiHealthLog.findMany)({
+    where: { cafeId: activeCafe.id },
+    orderBy: { createdAt: 'desc' },
+    take: 20,
+  })
+
   return (
     <DashboardClient
       orders={orders}
@@ -107,6 +114,7 @@ const isAr = locale === 'ar';
       settings={activeCafe}
       cafes={cafes}
       events={events}
+      healthLogs={healthLogs}
     />
   )
 }

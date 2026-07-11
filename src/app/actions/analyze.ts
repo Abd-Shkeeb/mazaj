@@ -174,10 +174,9 @@ export async function analyzeMood(formData: {
     }
 
     // Check if Gemini Quota has been marked as exceeded
-    const currentCafe = await db.cafe.findUnique({
+    const currentCafe = await (db.cafe.findUnique({
       where: { id: formData.cafeId },
-      select: { geminiQuotaExceeded: true, geminiFailureReason: true },
-    })
+    }) as any)
     if (currentCafe?.geminiQuotaExceeded) {
       throw new Error(`GEMINI_QUOTA_EXCEEDED: ${currentCafe.geminiFailureReason || 'Gemini API limit reached / تم تجاوز حصة Gemini'}`)
     }
@@ -282,31 +281,99 @@ export async function analyzeMood(formData: {
           sweetnessLevel: selectedCandidate.sweetnessLevel ?? 50,
         }
 
-        // Reset quota error since API call succeeded
-        if (currentCafe?.geminiQuotaExceeded) {
-          await db.cafe.update({
-            where: { id: formData.cafeId },
-            data: { geminiQuotaExceeded: false, geminiFailureReason: null }
+        // Reset quota error and error count since API call succeeded
+        const wasExceeded = currentCafe?.geminiQuotaExceeded
+        await (db.cafe.update as any)({
+          where: { id: formData.cafeId },
+          data: {
+            geminiQuotaExceeded: false,
+            geminiFailureReason: null,
+            geminiLastChecked: new Date(),
+            geminiErrorCount: 0,
+          }
+        })
+
+        // Log recovery success in GeminiHealthLog
+        if (wasExceeded) {
+          await ((db as any).geminiHealthLog.create)({
+            data: {
+              cafeId: formData.cafeId,
+              event: 'RECOVERY_SUCCESS',
+              details: 'AI Service connection restored successfully / تم استعادة عمل الخدمة بنجاح'
+            }
           })
         }
       } catch (error: any) {
-        console.error('[AI Kiosk Session Log] Gemini API Error, checking for quota exceptions:', error)
+        console.error('[AI Kiosk Session Log] Gemini API Error, classifying exception:', error)
         
         const errorMsg = error?.message || String(error)
-        const isQuotaErr = errorMsg.includes('429') || 
-                           errorMsg.toLowerCase().includes('quota') || 
-                           errorMsg.toLowerCase().includes('limit') ||
-                           errorMsg.toLowerCase().includes('resource_exhausted')
+        const lowerMsg = errorMsg.toLowerCase()
         
+        // 1. Quota / API Limit Reached (429 / resource exhausted)
+        const isQuotaErr = errorMsg.includes('429') || 
+                           lowerMsg.includes('quota') || 
+                           lowerMsg.includes('limit') ||
+                           lowerMsg.includes('resource_exhausted')
+                           
+        // 2. Authentication / API Key Invalid (401 / 403 / API key)
+        const isAuthErr = errorMsg.includes('401') ||
+                          errorMsg.includes('403') ||
+                          lowerMsg.includes('key invalid') ||
+                          lowerMsg.includes('unauthorized') ||
+                          lowerMsg.includes('not valid')
+                          
+        // 3. Network issues (Timeout / DNS / fetch / ENOTFOUND)
+        const isNetworkErr = lowerMsg.includes('timeout') ||
+                             lowerMsg.includes('fetch') ||
+                             lowerMsg.includes('network') ||
+                             lowerMsg.includes('dns') ||
+                             lowerMsg.includes('econnrefused') ||
+                             lowerMsg.includes('enotfound')
+
+        let failureReason = `System Error / خطأ في النظام`
+        let logEvent = 'GENERAL_ERROR'
+
         if (isQuotaErr) {
-          await db.cafe.update({
-            where: { id: formData.cafeId },
-            data: { 
-              geminiQuotaExceeded: true, 
-              geminiFailureReason: `API Limit Reached / تم تجاوز حد الاستهلاك المسموح (Gemini 429 Quota Exceeded)`
+          failureReason = `Quota Limit Exceeded / انتهت حصة استهلاك الباقة الفعلية (429 Quota Exceeded)`
+          logEvent = 'QUOTA_EXCEEDED'
+        } else if (isAuthErr) {
+          failureReason = `Invalid API Key / مفتاح الـ API غير صالح أو غير مصرح له (401/403 Invalid Key)`
+          logEvent = 'INVALID_API_KEY'
+        } else if (isNetworkErr) {
+          failureReason = `Network Error / فشل الاتصال بخوادم Google (Network Timeout/DNS)`
+          logEvent = 'NETWORK_TIMEOUT'
+        } else {
+          failureReason = `Google Server Error / مشكلة مؤقتة في خوادم الخدمة (500/503 Service Unavailable): ${errorMsg.substring(0, 80)}`
+        }
+
+        // Increment error count for quota/auth issues
+        const errorIncrement = (isQuotaErr || isAuthErr) ? 1 : 0
+
+        // Save last checked status and classification to database
+        await (db.cafe.update as any)({
+          where: { id: formData.cafeId },
+          data: { 
+            geminiQuotaExceeded: isQuotaErr || isAuthErr, // Block active analysis only if key is invalid or quota is finished
+            geminiFailureReason: failureReason,
+            geminiLastChecked: new Date(),
+            geminiErrorCount: {
+              increment: errorIncrement
             }
-          })
-          throw new Error(`GEMINI_QUOTA_EXCEEDED: API Limit Reached / تم تجاوز حد الاستهلاك المسموح (Gemini 429 Quota Exceeded)`)
+          }
+        })
+
+        // Log health incident
+        await ((db as any).geminiHealthLog.create)({
+          data: {
+            cafeId: formData.cafeId,
+            event: logEvent,
+            details: failureReason
+          }
+        })
+
+        // Re-throw quota or authentication errors to show blocking state, otherwise fallback to local recommended menu list gracefully
+        if (isQuotaErr || isAuthErr) {
+          throw new Error(`GEMINI_API_PAUSED: ${failureReason}`)
         }
 
         aiResult = getFallbackResult(moodInputText, menuDrinks)

@@ -39,6 +39,9 @@ model Cafe {
   // Gemini API monitoring fields
   geminiQuotaExceeded Boolean @default(false)
   geminiFailureReason String?
+  geminiLastChecked   DateTime?
+  geminiErrorCount    Int      @default(0)
+  geminiHealthLogs    GeminiHealthLog[]
 }
 
 model User {
@@ -167,4 +170,17 @@ model KioskSession {
 
   @@index([cafeId])
   @@index([expiresAt])
+}
+
+model GeminiHealthLog {
+  id        String   @id @default(cuid())
+  cafeId    String
+  event     String   // QUOTA_EXCEEDED, INVALID_API_KEY, RECOVERY_SUCCESS, NETWORK_TIMEOUT, GENERAL_ERROR
+  details   String?
+  createdAt DateTime @default(now())
+
+  cafe      Cafe     @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+
+  @@index([cafeId])
+  @@index([createdAt])
 }
