@@ -1413,7 +1413,7 @@ export default function SuperAdminDashboard({ initialStats, locale }: Props) {
                             </div>
                           </td>
                           <td className={`p-4 ${isRTL ? 'text-right' : 'text-left'}`}>
-                            <div className="flex items-center gap-1 font-bold text-emerald-400">
+              <div className="flex items-center gap-1 font-bold text-emerald-400">
                               <ThumbsUp className="w-3 h-3" />
                               <span>{cafe.satisfaction}%</span>
                             </div>
@@ -1474,6 +1474,29 @@ export default function SuperAdminDashboard({ initialStats, locale }: Props) {
                                 : currentLocale === 'ar'
                                   ? 'تفعيل ▶'
                                   : 'Activate'}
+                            </button>
+
+                            <button
+                              onClick={async () => {
+                                const pastDate = new Date(Date.now() - 60 * 60 * 1000) // 1 hour ago
+                                try {
+                                  await updateCafeSubscriptionAction(cafe.id, {
+                                    trialEndsAt: pastDate,
+                                    subscriptionEndsAt: pastDate,
+                                    subscriptionStatus: 'EXPIRED',
+                                  })
+                                } catch (err) {
+                                  alert((err as Error).message || 'Error expiring subscription')
+                                }
+                                handleRefresh()
+                              }}
+                              className={`px-2 py-0.5 rounded text-[9px] font-extrabold cursor-pointer transition-all ${
+                                darkMode
+                                  ? 'bg-rose-500/15 border border-rose-500/30 text-rose-400 hover:bg-rose-500/25'
+                                  : 'bg-rose-700/15 border border-rose-600/30 text-rose-700 hover:bg-rose-600/25'
+                              }`}
+                            >
+                              {currentLocale === 'ar' ? 'إنهاء الآن ⏳' : 'Expire Now ⏳'}
                             </button>
 
                             <button
