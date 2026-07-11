@@ -1721,25 +1721,6 @@ export default function DashboardClient({
                     <span>{isAr ? 'رابط الكشك التفاعلي' : 'Live Kiosk Link'}</span>
                     <ExternalLink className="h-4 w-4" />
                   </a>
-
-                  {cafes.length > 1 && (
-                    <div className="flex items-center gap-2 bg-white border border-[#E8E3DD] rounded-xl px-3 py-2 shadow-sm">
-                      <label className="text-[10px] font-bold text-[#5B3A29]/60 uppercase tracking-widest whitespace-nowrap">
-                        {isAr ? 'المقاهي:' : 'Cafes:'}
-                      </label>
-                      <select
-                        value={settings.id}
-                        onChange={e => handleSwitchCafe(e.target.value)}
-                        className="bg-transparent text-xs font-bold text-[#5B3A29] focus:outline-none cursor-pointer"
-                      >
-                        {cafes.map(c => (
-                          <option key={c.id} value={c.id}>
-                            {isAr ? c.nameAr : c.nameEn}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
