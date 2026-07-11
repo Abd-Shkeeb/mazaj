@@ -662,8 +662,8 @@ export default function KioskClient({
           {/* Cafe branding */}
           <div className="flex items-center gap-3">
             {cafe.logo && (
-              <div className="relative w-10 h-10 rounded-full ring-2 ring-amber-400/30 ring-offset-2 ring-offset-white overflow-hidden shadow-md">
-                <Image src={cafe.logo ?? ''} alt="Cafe Logo" fill sizes="40px" className="object-cover" unoptimized />
+              <div className="relative w-10 h-10 overflow-hidden">
+                <Image src={cafe.logo ?? ''} alt="Cafe Logo" fill sizes="40px" className="object-contain" unoptimized />
               </div>
             )}
             <div>
