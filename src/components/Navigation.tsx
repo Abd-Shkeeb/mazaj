@@ -76,21 +76,21 @@ export default function Navigation({
           {/* Logo Section */}
           <div className="flex-shrink-0 flex items-center">
             <Link href="/" className="flex items-center gap-2 group animate-logo-hover">
-              <div className="text-[#3E2723] group-hover:scale-110 transition-transform duration-300 flex items-center justify-center">
+              <div className="p-2 rounded-xl bg-[#3E2723]/10 text-[#3E2723] group-hover:scale-110 transition-transform duration-300 shadow-sm border border-[#3E2723]/10 backdrop-blur-sm flex items-center justify-center">
                 <svg
-                  className="h-10 w-10 text-[#3E2723] transition-transform"
+                  className="h-9 w-9 text-[#3E2723] transition-transform"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2.2"
+                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M12 3C7 3 4 7 4 12C4 17 7 21 12 21" />
-                  <path d="M12 3C17 3 20 7 20 12C20 17 17 21 12 21" />
+                  <path d="M12 3C7 3 4 7 4 12C4 17 7 21 12 21" strokeWidth="2" />
+                  <path d="M12 3C17 3 20 7 20 12C20 17 17 21 12 21" strokeWidth="2" />
                   <path
                     d="M12 3C10 7.5 14 11.5 12 16.5C11.2 18.3 10.8 19.8 12 21"
-                    strokeWidth="2.7"
+                    strokeWidth="2.5"
                   />
                 </svg>
               </div>
