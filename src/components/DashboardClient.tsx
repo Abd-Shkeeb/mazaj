@@ -1751,7 +1751,7 @@ export default function DashboardClient({
                 { id: 'orders', label: t('liveOrders'), icon: ShoppingBag },
                 { id: 'menu', label: t('menuManagement'), icon: Coffee },
                 { id: 'analytics', label: t('stats'), icon: BarChart3 },
-                { id: 'users', label: isAr ? '👥 إدارة الموظفين' : 'Staff Users', icon: Users },
+                { id: 'users', label: isAr ? 'إدارة الموظفين' : 'Staff Users', icon: Users },
                 { id: 'settings', label: t('cafeSettings'), icon: Settings },
               ].map(tab => {
                 const Icon = tab.icon
