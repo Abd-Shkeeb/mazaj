@@ -877,14 +877,14 @@ export default function KioskClient({
               </h2>
 
               <p className="text-xs text-[#6D6D6D] font-semibold leading-relaxed mb-6">
-                {isAr ? 'انتهت صلاحية الجلسة، يرجى مسح رمز QR مرة أخرى' : 'Session expired, please scan the QR code again'}
+                {isAr ? 'انتهت صلاحية الجلسة، يرجى تحديث الصفحة للمتابعة' : 'Session expired, please refresh the page to continue'}
               </p>
 
               <button
-                onClick={handleRedirectToScanQr}
+                onClick={() => window.location.reload()}
                 className="w-full py-3 bg-[#5D4037] text-white rounded-xl font-black text-xs transition-colors cursor-pointer shadow-sm hover:bg-[#3E2723]"
               >
-                {isAr ? 'إعادة مسح رمز QR' : 'Re-scan QR Code'}
+                {isAr ? 'تحديث الصفحة' : 'Refresh Page'}
               </button>
             </motion.div>
           </div>
