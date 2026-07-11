@@ -1680,14 +1680,6 @@ export default function DashboardClient({
                         dotColor = 'bg-emerald-500 animate-pulse'
                       }
 
-                      // Check for API errors separately
-                      const hasGeminiError = settings.geminiQuotaExceeded || 
-                        settings.geminiFailureReason?.includes('429') || 
-                        settings.geminiFailureReason?.includes('401') || 
-                        settings.geminiFailureReason?.includes('403') || 
-                        settings.geminiFailureReason?.includes('500') ||
-                        settings.geminiFailureReason?.includes('Quota')
-
                       return (
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center gap-2">
@@ -1711,23 +1703,6 @@ export default function DashboardClient({
                               </span>
                             </span>
                           </div>
-
-                          {/* Separate Card for Gemini API/Key errors */}
-                          {hasGeminiError && (
-                            <div className="flex items-center gap-2.5 px-3 py-2 bg-rose-50 border border-rose-100 text-rose-800 rounded-2xl text-[10px] font-bold animate-pulse max-w-lg">
-                              <AlertTriangle className="h-4.5 w-4.5 text-rose-600 flex-shrink-0" />
-                              <div className="flex flex-col">
-                                <span className="font-extrabold text-[10px] text-rose-900">
-                                  {isAr ? 'عطل أو خلل في خدمة Gemini الذكية' : 'Gemini AI Service Interrupted'}
-                                </span>
-                                <span className="text-[9px] font-normal text-rose-700 leading-tight">
-                                  {settings.geminiFailureReason?.includes('401') || settings.geminiFailureReason?.includes('403')
-                                    ? (isAr ? 'مشكلة في إعدادات المنصة: مفتاح API غير صالح أو غير مصرح به.' : 'Platform setup error: Invalid or unauthorized API key.')
-                                    : (isAr ? 'خدمة Gemini غير متاحة مؤقتًا أو تواجه ضغط طلبات حاليًا (429/500).' : 'Gemini service is temporarily offline or experiencing rate limits (429/500).')}
-                                </span>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       )
                     })()}

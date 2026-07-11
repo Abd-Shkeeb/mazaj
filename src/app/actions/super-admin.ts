@@ -428,6 +428,8 @@ export async function getSuperAdminStats(searchQuery: string = '') {
       modelName,
       popularMoods,
       popularDrinks,
+      recentGeminiFailureReason: allCafes.find(c => c.geminiFailureReason !== null)?.geminiFailureReason || null,
+      recentGeminiQuotaExceeded: allCafes.some(c => c.geminiQuotaExceeded),
     },
     retention: {
       newSubscriptions,

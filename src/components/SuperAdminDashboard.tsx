@@ -85,6 +85,8 @@ interface StatsData {
     modelName: string
     popularMoods: Array<{ mood: string; count: number }>
     popularDrinks: Array<{ name: string; count: number }>
+    recentGeminiFailureReason?: string | null
+    recentGeminiQuotaExceeded?: boolean
   }
   retention: {
     newSubscriptions: number
@@ -1030,9 +1032,65 @@ export default function SuperAdminDashboard({ initialStats, locale }: Props) {
                       {stats.gemini.geminiCallsMonth || 0}
                     </span>
                   </div>
-                  <div className="flex justify-between pb-2">
+                  <div className="flex justify-between pb-2 border-b border-zinc-800/40">
                     <span className="text-xs text-zinc-500">Gemini Cost Per Call</span>
                     <span className="text-xs font-bold text-zinc-400">$0.00022</span>
+                  </div>
+
+                  {/* Gemini API Service Status Monitor for Super Admin */}
+                  <div className="mt-4 pt-3 border-t border-zinc-850">
+                    <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">
+                      Gemini API Service Status
+                    </div>
+                    {(() => {
+                      const reason = stats.gemini.recentGeminiFailureReason
+                      const isQuota = stats.gemini.recentGeminiQuotaExceeded || reason?.includes('429') || reason?.includes('Quota')
+                      const isAuth = reason?.includes('401') || reason?.includes('403') || reason?.includes('key')
+                      const isServer = reason?.includes('500') || reason?.includes('503')
+                      const isNetwork = reason?.includes('fetch') || reason?.includes('Network') || reason?.includes('timeout')
+
+                      let statusLabel = ''
+                      let statusDesc = ''
+                      let badgeColor = ''
+
+                      if (isQuota) {
+                        statusLabel = currentLocale === 'ar' ? 'نفدت حصة Gemini API الخاصة بالمنصة (429)' : 'Platform Gemini API Quota Exhausted (429)'
+                        statusDesc = currentLocale === 'ar' ? 'تجاوز المشروع الحد المسموح به من Google AI Studio.' : 'The platform has exceeded limits on Google AI Studio.'
+                        badgeColor = 'text-rose-400 bg-rose-500/10 border-rose-900/30'
+                      } else if (isAuth) {
+                        statusLabel = currentLocale === 'ar' ? 'مفتاح API غير صالح أو غير مصرح (401/403)' : 'Invalid or Unauthorized API Key (401/403)'
+                        statusDesc = currentLocale === 'ar' ? 'يرجى مراجعة متغير GEMINI_API_KEY في ملف .env' : 'Please check GEMINI_API_KEY value in your .env configuration.'
+                        badgeColor = 'text-amber-400 bg-amber-500/10 border-amber-900/30'
+                      } else if (isServer) {
+                        statusLabel = currentLocale === 'ar' ? 'خدمة Gemini غير متاحة مؤقتًا (500/503)' : 'Gemini Service Temporarily Offline (500/503)'
+                        statusDesc = currentLocale === 'ar' ? 'مشكلة عامة من خوادم Google، ستعمل الخدمة تلقائيًا عند استقرارها.' : 'Internal Google API servers error. Will recover automatically.'
+                        badgeColor = 'text-red-400 bg-red-500/10 border-red-900/30'
+                      } else if (isNetwork) {
+                        statusLabel = currentLocale === 'ar' ? 'تعذر الاتصال بخدمة Gemini (Network)' : 'Could Not Connect to Gemini (Network)'
+                        statusDesc = currentLocale === 'ar' ? 'خطأ في الاتصال بالشبكة من السيرفر الخاص بنا.' : 'Server network request or socket connection timeout.'
+                        badgeColor = 'text-rose-400 bg-rose-500/10 border-rose-900/30'
+                      } else if (reason) {
+                        statusLabel = currentLocale === 'ar' ? `خطأ: ${reason}` : `Error: ${reason}`
+                        statusDesc = currentLocale === 'ar' ? 'حدث خطأ غير معروف أثناء معالجة الطلب.' : 'An unclassified error occurred.'
+                        badgeColor = 'text-rose-400 bg-rose-500/10 border-rose-900/30'
+                      } else {
+                        statusLabel = currentLocale === 'ar' ? 'تعمل بنجاح (Active)' : 'Active & Operational'
+                        statusDesc = currentLocale === 'ar' ? 'جميع اتصالات الـ API سليمة والخدمة مستقرة.' : 'All API handshakes are successful. Performance is healthy.'
+                        badgeColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-900/30'
+                      }
+
+                      return (
+                        <div className={`p-3 border rounded-xl flex flex-col gap-1.5 ${badgeColor}`}>
+                          <div className="flex items-center gap-1.5 font-bold text-xs">
+                            <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                            <span>{statusLabel}</span>
+                          </div>
+                          <span className="text-[9px] font-medium opacity-80 leading-normal">
+                            {statusDesc}
+                          </span>
+                        </div>
+                      )
+                    })()}
                   </div>
                 </div>
               </div>
