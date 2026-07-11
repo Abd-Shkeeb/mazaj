@@ -178,7 +178,8 @@ export async function analyzeMood(formData: {
       where: { id: formData.cafeId },
       select: {
         subscriptionPlan: true,
-        createdAt: true
+        createdAt: true,
+        geminiQuotaExceeded: true
       }
     })
     if (!currentCafe) {
