@@ -5,7 +5,7 @@ import db from '@/lib/db'
 import { Drink } from '@prisma/client'
 import { headers } from 'next/headers'
 import { isRateLimited } from '@/lib/rateLimit'
-import { assertActiveSubscription, assertCanAnalyzeMood } from '@/lib/subscription'
+import { assertActiveSubscription, assertCanAnalyzeMood, getPlanLimits } from '@/lib/subscription'
 import { getMenuDrinks } from '@/lib/drinkCache'
 import { validateKioskSession } from './orders'
 
@@ -177,8 +177,40 @@ export async function analyzeMood(formData: {
     const currentCafe = await (db.cafe.findUnique({
       where: { id: formData.cafeId },
     }) as any)
+
     if (currentCafe?.geminiQuotaExceeded) {
-      throw new Error(`GEMINI_QUOTA_EXCEEDED: ${currentCafe.geminiFailureReason || 'Gemini API limit reached / تم تجاوز حصة Gemini'}`)
+      // Self-healing: if the admin cleared or renewed, or the database field is stale 
+      // but they still have cycleAnalysesCount remaining, we clear it and let it run.
+      // We only block if they actually ran out of plan limit.
+      const limits = getPlanLimits(currentCafe.subscriptionPlan)
+      
+      // Fetch billing cycle start via raw SQL to bypass stale Prisma CafeSelect types
+      const billingRows = await db.$queryRaw<Array<{ currentBillingCycleStart: Date | null }>>`
+        SELECT "currentBillingCycleStart" FROM "Cafe" WHERE id = ${formData.cafeId}
+      `
+      const cycleStart = billingRows[0]?.currentBillingCycleStart
+        ? new Date(billingRows[0].currentBillingCycleStart)
+        : new Date(currentCafe.createdAt)
+
+      const analysesCount = await db.analysis.count({
+        where: {
+          cafeId: formData.cafeId,
+          createdAt: { gte: cycleStart },
+        },
+      })
+
+      if (limits.maxAnalyses !== 999999 && analysesCount >= limits.maxAnalyses) {
+        throw new Error(`GEMINI_QUOTA_EXCEEDED: ${currentCafe.geminiFailureReason || 'Gemini API limit reached / تم تجاوز حصة Gemini'}`)
+      } else {
+        // Safe reset: They have remaining quota. Clear the stale DB status.
+        await (db.cafe.update as any)({
+          where: { id: formData.cafeId },
+          data: {
+            geminiQuotaExceeded: false,
+            geminiFailureReason: null
+          }
+        })
+      }
     }
 
     const apiKey = process.env.GEMINI_API_KEY
