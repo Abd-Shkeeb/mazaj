@@ -349,7 +349,6 @@ export async function analyzeMood(formData: {
           `\n========================================` +
           `\n[GEMINI API ERROR DIAGNOSTIC]` +
           `\n  Model Name  : gemini-2.5-flash` +
-          `\n  Prompt Size : ${prompt ? prompt.length : '0'} chars` +
           `\n  HTTP Status : ${error.status || error.code || 'Google API Error'}` +
           `\n  API Key     : ${apiKey ? `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}` : 'NONE'}` +
           `\n  Raw Error   : ${errorMsg}` +
