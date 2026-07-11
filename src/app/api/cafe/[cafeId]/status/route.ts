@@ -18,7 +18,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // Check subscription status
     const subStatus = await verifyActiveSubscription(cafeId);
-    if (subStatus === 'EXPIRED' || subStatus === 'SUSPENDED' || subStatus === 'CANCELLED') {
+    if (subStatus === 'EXPIRED' || subStatus === 'SUSPENDED' || subStatus === 'CANCELLED' || subStatus === 'CONFIG_ERROR') {
       return NextResponse.json({ status: subStatus });
     }
 

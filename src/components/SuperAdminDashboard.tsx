@@ -1231,6 +1231,7 @@ export default function SuperAdminDashboard({ initialStats, locale }: Props) {
                   <option value="ALL">{t.allStatuses}</option>
                   <option value="ACTIVE">ACTIVE</option>
                   <option value="EXPIRED">EXPIRED</option>
+                  <option value="CONFIG_ERROR">⚠️ CONFIG_ERROR</option>
                   <option value="CANCELLED">CANCELLED / SUSPENDED</option>
                 </select>
               </div>
@@ -1309,17 +1310,27 @@ export default function SuperAdminDashboard({ initialStats, locale }: Props) {
                             </span>
                           </td>
                           <td className={`p-4 ${isRTL ? 'text-right' : 'text-left'}`}>
-                            <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                cafe.status === 'ACTIVE'
-                                  ? 'bg-emerald-500/10 text-emerald-400'
-                                  : cafe.status === 'EXPIRED'
-                                    ? 'bg-rose-500/10 text-rose-400'
-                                    : 'bg-zinc-500/10 text-zinc-400'
-                              }`}
-                            >
-                              {cafe.status}
-                            </span>
+                            {cafe.status === 'CONFIG_ERROR' ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                CONFIG_ERROR
+                              </span>
+                            ) : (
+                              <span
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                  cafe.status === 'ACTIVE'
+                                    ? 'bg-emerald-500/10 text-emerald-400'
+                                    : cafe.status === 'EXPIRED'
+                                      ? 'bg-rose-500/10 text-rose-400'
+                                      : 'bg-zinc-500/10 text-zinc-400'
+                                }`}
+                              >
+                                {cafe.status}
+                              </span>
+                            )}
                           </td>
                           <td className={`p-4 text-zinc-400 ${isRTL ? 'text-right' : 'text-left'}`}>
                             {new Date(cafe.createdAt).toLocaleDateString(
@@ -1356,9 +1367,18 @@ export default function SuperAdminDashboard({ initialStats, locale }: Props) {
                               value={cafe.plan}
                               onChange={async e => {
                                 const newPlan = e.target.value
-                                await updateCafeSubscriptionAction(cafe.id, {
-                                  subscriptionPlan: newPlan,
-                                })
+                                const paidPlans = ['STARTER', 'LITE', 'STANDARD', 'PRO', 'ENTERPRISE']
+                                const payload: any = { subscriptionPlan: newPlan }
+                                if (paidPlans.includes(newPlan.toUpperCase())) {
+                                  const futureDate = new Date()
+                                  futureDate.setDate(futureDate.getDate() + 30)
+                                  payload.subscriptionEndsAt = futureDate
+                                }
+                                try {
+                                  await updateCafeSubscriptionAction(cafe.id, payload)
+                                } catch (err) {
+                                  alert((err as Error).message || 'Error updating plan')
+                                }
                                 handleRefresh()
                               }}
                               className={`text-[10px] p-1 rounded border outline-none cursor-pointer ${

@@ -467,20 +467,36 @@ export async function updateCafeSubscriptionAction(
 
   const updateData: Prisma.CafeUpdateInput = { ...data }
 
+  // Track whether we need to reset the billing cycle after the update
+  let shouldResetBillingCycle = false
+
   if (data.subscriptionPlan) {
     const plan = data.subscriptionPlan.toUpperCase()
     const paidPlans = ['STARTER', 'LITE', 'STANDARD', 'PRO', 'ENTERPRISE']
     if (paidPlans.includes(plan)) {
-      updateData.subscriptionEndsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // today + 30 days
+      // Validate that subscriptionEndsAt is provided for paid plans
+      if (data.subscriptionEndsAt === undefined && updateData.subscriptionEndsAt === undefined) {
+        throw new Error(
+          'Subscription configuration error: paid plans require an end date (subscriptionEndsAt) / خطأ إعدادات الاشتراك: تتطلب الباقات المدفوعة تاريخ انتهاء.'
+        )
+      }
       updateData.subscriptionStatus = 'ACTIVE'
+      shouldResetBillingCycle = true
     } else if (plan === 'FREE_TRIAL' || plan === 'FREE') {
-      updateData.trialEndsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // today + 30 days
+      updateData.trialEndsAt = data.trialEndsAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days default
       updateData.subscriptionEndsAt = null // clear paid sub end date
       updateData.subscriptionStatus = 'ACTIVE'
+      shouldResetBillingCycle = true
     }
   }
 
   const updated = await db.cafe.update({ where: { id: cafeId }, data: updateData })
+
+  // Reset billing cycle start via raw SQL (bypasses stale Prisma CafeUpdateInput types)
+  if (shouldResetBillingCycle) {
+    await db.$executeRaw`UPDATE "Cafe" SET "currentBillingCycleStart" = NOW() WHERE id = ${cafeId}`
+  }
+
   return { success: true, cafe: updated }
 }
 

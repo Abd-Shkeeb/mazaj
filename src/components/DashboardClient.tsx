@@ -107,6 +107,7 @@ interface Cafe {
   subscriptionEndsAt?: Date | string | null
   subscriptionPlan: string
   subscriptionStatus: string
+  currentBillingCycleStart?: Date | string | null
   geminiQuotaExceeded?: boolean
   geminiFailureReason?: string | null
   geminiLastChecked?: Date | string | null
@@ -148,6 +149,7 @@ interface DashboardClientProps {
   cafes: Cafe[]
   events: Event[]
   healthLogs?: GeminiHealthLog[]
+  cycleAnalysesCount?: number
 }
 
 export default function DashboardClient({
@@ -158,6 +160,7 @@ export default function DashboardClient({
   cafes,
   events,
   healthLogs = [],
+  cycleAnalysesCount = 0,
 }: DashboardClientProps) {
   const t = useTranslations('admin')
   const locale = useLocale()
@@ -171,6 +174,7 @@ export default function DashboardClient({
       return {
         maxDrinks: 999999,
         maxUsers: 999999,
+        maxAnalyses: 100,
         hasMoodAnalytics: true,
         hasSalesReports: true,
         hasBetaAnalytics: true,
@@ -183,6 +187,7 @@ export default function DashboardClient({
         return {
           maxDrinks: 10,
           maxUsers: 1,
+          maxAnalyses: 1000,
           hasMoodAnalytics: false,
           hasSalesReports: false,
           hasBetaAnalytics: false,
@@ -193,6 +198,7 @@ export default function DashboardClient({
         return {
           maxDrinks: 30,
           maxUsers: 3,
+          maxAnalyses: 5000,
           hasMoodAnalytics: true,
           hasSalesReports: true,
           hasBetaAnalytics: false,
@@ -203,6 +209,7 @@ export default function DashboardClient({
         return {
           maxDrinks: 999999,
           maxUsers: 999999,
+          maxAnalyses: 20000,
           hasMoodAnalytics: true,
           hasSalesReports: true,
           hasBetaAnalytics: true,
@@ -213,6 +220,7 @@ export default function DashboardClient({
         return {
           maxDrinks: 999999,
           maxUsers: 999999,
+          maxAnalyses: 999999,
           hasMoodAnalytics: true,
           hasSalesReports: true,
           hasBetaAnalytics: true,
@@ -223,6 +231,7 @@ export default function DashboardClient({
         return {
           maxDrinks: 10,
           maxUsers: 1,
+          maxAnalyses: 100,
           hasMoodAnalytics: false,
           hasSalesReports: false,
           hasBetaAnalytics: false,
@@ -1634,24 +1643,34 @@ export default function DashboardClient({
                       <Activity className="h-3 w-3 text-purple-600" />
                       {isAr ? `آخر نشاط: ${lastActivity}` : `Last Activity: ${lastActivity}`}
                     </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1.5 bg-amber-50 text-amber-800 border border-amber-100 px-2 py-0.5 rounded-full">
-                      <Sparkles className="h-3 w-3 text-amber-600 animate-pulse" />
-                      <span className="font-extrabold">
+                  </div>
+
+                  {/* Elegant Gemini API AI Status Ribbon */}
+                  <div className="flex items-center gap-2 mt-3.5">
+                    <span className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/5 text-amber-900 border border-amber-500/10 rounded-full shadow-sm text-[10px] font-bold">
+                      <Sparkles className="h-3 w-3 text-amber-700 animate-pulse" />
+                      <span className="font-black">
                         {settings.geminiFailureReason?.includes('401') || settings.geminiFailureReason?.includes('403')
-                          ? (isAr ? 'Gemini: مفتاح غير صالح' : 'Gemini: Invalid Key')
+                          ? (isAr ? 'مستشار الذكاء الاصطناعي: مفتاح API غير صالح' : 'AI Advisor: Invalid API Key')
                           : settings.geminiQuotaExceeded || settings.geminiFailureReason?.includes('429') || settings.geminiFailureReason?.includes('Quota')
-                          ? (isAr ? 'Gemini: انتهت الحصة' : 'Gemini: Quota Exhausted')
+                          ? (isAr ? 'مستشار الذكاء الاصطناعي: انتهت الحصة اليومية' : 'AI Advisor: Quota Exhausted')
                           : settings.geminiFailureReason
-                          ? (isAr ? 'Gemini: مشكلة بالخدمة' : 'Gemini: Service Issue')
-                          : (isAr ? 'Gemini: تعمل بنجاح' : 'Gemini: Active')}
+                          ? (isAr ? 'مستشار الذكاء الاصطناعي: متوقف حالياً' : 'AI Advisor: Offline')
+                          : (isAr ? 'مستشار الذكاء الاصطناعي: نشط ويعمل بكفاءة' : 'AI Advisor: Active & Operational')}
                       </span>
-                      <span className="text-[9px] text-[#3E2723]/60 flex items-center gap-1 whitespace-nowrap font-bold">
-                        <span>|</span>
+                      <span className="text-amber-900/30">|</span>
+                      <span className="group relative inline-flex items-center gap-1 cursor-pointer text-gray-500 text-[9px] font-extrabold">
                         <span>
                           {isAr 
-                            ? `تحليلات اليوم: ${todayAnalyses.length} (إحصائية استخدام داخلية)` 
-                            : `Analyses today: ${todayAnalyses.length} (internal usage stat)`}
+                            ? `تحليلات الدورة الحالية: ${cycleAnalysesCount} / ${limits.maxAnalyses === 999999 ? 'غير محدود' : `${limits.maxAnalyses} تحليلًا`} (المتبقي: ${limits.maxAnalyses === 999999 ? 'غير محدود' : `${Math.max(0, limits.maxAnalyses - cycleAnalysesCount)} تحليلًا`})` 
+                            : `Current cycle analyses: ${cycleAnalysesCount} / ${limits.maxAnalyses === 999999 ? 'Unlimited' : `${limits.maxAnalyses}`} (Remaining: ${limits.maxAnalyses === 999999 ? 'Unlimited' : `${Math.max(0, limits.maxAnalyses - cycleAnalysesCount)}`})`}
+                        </span>
+                        
+                        {/* Interactive Tooltip */}
+                        <span className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#3E2723] border border-[#3E2723]/10 px-3 py-1.5 text-[9px] font-bold text-[#FAF8F5] opacity-0 transition-opacity duration-200 group-hover:opacity-100 shadow-xl z-50">
+                          {isAr 
+                            ? 'يمثل هذا العدد التحليلات المنفذة داخل المنصة خلال الدورة الحالية وليس الحصة المتبقية من Gemini. يصفر تلقائياً عند التجديد.' 
+                            : 'This represents analyses processed in the platform during the current cycle, not the remaining Gemini API quota. Resets on renewal.'}
                         </span>
                       </span>
                     </span>

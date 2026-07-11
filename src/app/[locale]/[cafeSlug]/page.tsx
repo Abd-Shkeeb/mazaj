@@ -22,7 +22,7 @@ export default async function CafeKioskPage({
 
   // 2. Check subscription
   const subStatus = await verifyActiveSubscription(cafe.id)
-  const isExpired = subStatus === 'EXPIRED' || subStatus === 'SUSPENDED' || subStatus === 'CANCELLED'
+  const isExpired = subStatus === 'EXPIRED' || subStatus === 'SUSPENDED' || subStatus === 'CANCELLED' || subStatus === 'CONFIG_ERROR'
   if (isExpired) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5] px-4 py-12 relative overflow-hidden">

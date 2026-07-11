@@ -128,7 +128,7 @@ export default function KioskClient({
         const data = await res.json()
         console.log('[KioskStatusCheck] Response data:', data);
 
-        if (data.status === 'OWNER_LOGGED_OUT' || data.status === 'CANCELLED' || data.status === 'SUSPENDED' || data.status === 'EXPIRED') {
+        if (data.status === 'OWNER_LOGGED_OUT' || data.status === 'CANCELLED' || data.status === 'SUSPENDED' || data.status === 'EXPIRED' || data.status === 'CONFIG_ERROR') {
           setIsKioskActive(false)
           setStatusReason(data.status)
         } else {

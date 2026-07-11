@@ -23,10 +23,11 @@ model Cafe {
   createdAt      DateTime   @default(now())
 
   // Subscription / Trial properties
-  trialEndsAt        DateTime @default(now())
-  subscriptionEndsAt DateTime?
-  subscriptionPlan   String   @default("FREE_TRIAL") // FREE_TRIAL, LITE, STANDARD, PRO, ENTERPRISE
-  subscriptionStatus String   @default("ACTIVE")     // ACTIVE, EXPIRED, SUSPENDED, CANCELLED
+  trialEndsAt               DateTime @default(now())
+  subscriptionEndsAt        DateTime?
+  subscriptionPlan          String   @default("FREE_TRIAL") // FREE_TRIAL, LITE, STANDARD, PRO, ENTERPRISE
+  subscriptionStatus        String   @default("ACTIVE")     // ACTIVE, EXPIRED, SUSPENDED, CANCELLED
+  currentBillingCycleStart  DateTime @default(now())        // Start of the current monthly billing cycle
 
   users      User[]
   drinks     Drink[]
