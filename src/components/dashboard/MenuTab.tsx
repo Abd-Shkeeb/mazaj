@@ -492,7 +492,7 @@ export default function MenuTab({
       </div>
 
       {/* List */}
-      <div className="lg:col-span-8 bg-white p-6 rounded-2xl border border-stone-200/80 shadow-sm space-y-4">
+      <div className="lg:col-span-8 bg-white p-6 rounded-2xl border border-stone-200/80 shadow-sm space-y-4 h-fit">
         <h3 className="text-sm font-bold text-stone-900 border-b border-stone-200/80 pb-3 text-right rtl:text-right ltr:text-left">
           {isAr ? 'قائمة مشروبات مقهاك' : 'Your Cafe Menu'}
         </h3>
@@ -523,7 +523,7 @@ export default function MenuTab({
               : 'No drinks match your current search.'}
           </div>
         ) : (
-          <div className="divide-y divide-stone-100 max-h-[600px] overflow-y-auto pr-1 scrollbar-none">
+          <div className="divide-y divide-stone-100 pr-1">
             {filteredDrinks.map(drink => (
               <div
                 key={drink.id}
