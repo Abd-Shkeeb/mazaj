@@ -194,11 +194,11 @@ export default function KioskClient({
         if (res.ok) {
           const data = await res.json()
           console.log('[KioskSession] Validate response:', data)
-          
+
           // Allow session if valid, OR if it was marked USED but we are still looking at the active placed order status screen
           const isPageViewingActiveOrder = placedOrder !== null
           const isValidOrUsedActiveOrder = data.valid || (data.code === 'SESSION_USED' && isPageViewingActiveOrder)
-          
+
           if (isValidOrUsedActiveOrder) {
             const expiryTime = data.expiresAt ? new Date(data.expiresAt).getTime() : (Date.now() + 60000)
             const secondsLeft = Math.max(0, Math.floor((expiryTime - Date.now()) / 1000))
@@ -662,8 +662,8 @@ export default function KioskClient({
           {/* Cafe branding */}
           <div className="flex items-center gap-3">
             {cafe.logo && (
-              <div className="relative w-10 h-10 overflow-hidden">
-                <Image src={cafe.logo ?? ''} alt="Cafe Logo" fill sizes="40px" className="object-contain" unoptimized />
+              <div className="relative w-10 h-10 rounded-xl bg-[#3E2723]/10 text-[#3E2723] border border-[#3E2723]/10 backdrop-blur-sm flex items-center justify-center p-1.5 overflow-hidden">
+                <Image src={cafe.logo ?? ''} alt="Cafe Logo" fill sizes="40px" className="object-contain p-1" unoptimized />
               </div>
             )}
             <div>
@@ -685,10 +685,10 @@ export default function KioskClient({
               return (
                 <div key={step} className="flex items-center gap-1">
                   <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black transition-all duration-300 ${isActive
-                      ? 'bg-[#3E2723] text-white shadow-md'
-                      : isCompleted
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-gray-100 text-gray-400'
+                    ? 'bg-[#3E2723] text-white shadow-md'
+                    : isCompleted
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-gray-100 text-gray-400'
                     }`}>
                     {isCompleted ? (
                       <Check className="h-3 w-3" />
@@ -755,10 +755,10 @@ export default function KioskClient({
             return (
               <div key={step} className="flex items-center gap-1">
                 <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isActive
-                    ? 'bg-[#3E2723] scale-125 shadow-sm'
-                    : isCompleted
-                      ? 'bg-emerald-500'
-                      : 'bg-gray-300'
+                  ? 'bg-[#3E2723] scale-125 shadow-sm'
+                  : isCompleted
+                    ? 'bg-emerald-500'
+                    : 'bg-gray-300'
                   }`} />
                 {i < steps.length - 1 && (
                   <div className={`w-5 h-[1.5px] rounded-full transition-colors duration-300 ${isCompleted ? 'bg-emerald-300' : 'bg-gray-200'
@@ -1071,10 +1071,10 @@ function OrderStatusTracker({ placedOrder, isAr, onClose }: { placedOrder: { id:
                 return (
                   <div key={idx} className="flex items-center gap-3.5 relative z-10">
                     <div className={`w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center transition-all duration-500 text-[9px] font-bold ${isCurrent
-                        ? 'bg-[#5D4037] border-[#5D4037] text-white ring-4 ring-[#5D4037]/10'
-                        : isDone
-                          ? 'bg-emerald-500 border-emerald-500 text-white'
-                          : 'bg-white border-gray-300 text-gray-400'
+                      ? 'bg-[#5D4037] border-[#5D4037] text-white ring-4 ring-[#5D4037]/10'
+                      : isDone
+                        ? 'bg-emerald-500 border-emerald-500 text-white'
+                        : 'bg-white border-gray-300 text-gray-400'
                       }`}>
                       {isDone && !isCurrent ? (
                         <Check className="h-2.5 w-2.5 stroke-[3]" />
@@ -1083,10 +1083,10 @@ function OrderStatusTracker({ placedOrder, isAr, onClose }: { placedOrder: { id:
                       )}
                     </div>
                     <span className={`text-[11px] font-black transition-colors duration-500 ${isCurrent
-                        ? 'text-[#5D4037]'
-                        : isDone
-                          ? 'text-emerald-600 font-bold'
-                          : 'text-gray-400'
+                      ? 'text-[#5D4037]'
+                      : isDone
+                        ? 'text-emerald-600 font-bold'
+                        : 'text-gray-400'
                       }`}>
                       {stepText}
                     </span>
