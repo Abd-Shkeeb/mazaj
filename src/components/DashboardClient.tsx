@@ -1597,30 +1597,29 @@ export default function DashboardClient({
         ) : (
           /* REGULAR DASHBOARD TABS AND PAGES */
           <>
-            {/* 1. Welcoming Header display with Cream gradient */}
-            <div className="bg-gradient-to-br from-amber-500/5 via-transparent to-[#3E2723]/2 border border-[#3E2723]/10 p-5 sm:p-6 rounded-3xl mb-8 relative overflow-hidden shadow-sm">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none select-none" />
-              <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#3E2723]/5 rounded-full blur-2xl pointer-events-none select-none" />
-
+            {/* 1. Welcoming Header display with Premium Minimal styling */}
+            <div className="bg-white border border-[#E8E3DD] p-6 rounded-2xl mb-8 relative overflow-hidden shadow-sm">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl pointer-events-none select-none" />
+              
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
-                <div className="space-y-1 text-right rtl:text-right ltr:text-left">
+                <div className="space-y-2 text-right rtl:text-right ltr:text-left">
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl">👋</span>
-                    <h1 className="text-lg sm:text-xl font-black text-[#3E2723]">
+                    <span className="text-3xl">☕</span>
+                    <h1 className="text-2xl sm:text-3xl font-black text-[#5B3A29] tracking-tight">
                       {isAr
                         ? `أهلاً بك مجدداً في لوحة تحكم ${settings.nameAr}`
                         : `Welcome back to ${settings.nameEn} Dashboard`}
                     </h1>
                   </div>
-                  <p className="text-xs text-gray-500 font-bold leading-relaxed">
+                  <p className="text-sm text-gray-500 font-medium leading-relaxed">
                     {isAr
                       ? 'تتم مزامنة طلبات الكشك والنشاطات بشكل فوري ومستمر.'
                       : 'Kiosk orders and live analytics are synced in real-time.'}
                   </p>
 
                   {/* Status Badges */}
-                  <div className="flex flex-wrap items-center gap-3 pt-2 text-[10px] font-black text-[#3E2723]/60">
-                    <span className="flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-100 px-2 py-0.5 rounded-full">
+                  <div className="flex flex-wrap items-center gap-2.5 pt-1.5 text-xs font-bold text-gray-500">
+                    <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100/60 px-2.5 py-1 rounded-full">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       {settings.subscriptionPlan === 'FREE_TRIAL' || settings.subscriptionPlan === 'FREE' ? (
                         isAr ? 'الباقة التجريبية نشطة' : 'Trial Package Active'
@@ -1630,36 +1629,36 @@ export default function DashboardClient({
                     </span>
                     {(settings.subscriptionPlan === 'FREE_TRIAL' || settings.subscriptionPlan === 'FREE') && (
                       <>
-                        <span>•</span>
-                        <span className="flex items-center gap-1 bg-amber-50 text-amber-800 border border-amber-100 px-2 py-0.5 rounded-full">
-                          <Calendar className="h-3 w-3 text-amber-600" />
+                        <span className="text-gray-300">•</span>
+                        <span className="flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-100/60 px-2.5 py-1 rounded-full">
+                          <Calendar className="h-3.5 w-3.5 text-amber-600" />
                           {isAr ? `متبقي ${diffDays} يوم` : `${diffDays} days remaining`}
                         </span>
                       </>
                     )}
-                    <span>•</span>
-                    <span className="flex items-center gap-1 bg-blue-50 text-blue-800 border border-blue-100 px-2 py-0.5 rounded-full">
-                      <ShoppingBag className="h-3 w-3 text-blue-600" />
+                    <span className="text-gray-300">•</span>
+                    <span className="flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-100/60 px-2.5 py-1 rounded-full">
+                      <ShoppingBag className="h-3.5 w-3.5 text-blue-600" />
                       {isAr
                         ? `طلبات اليوم: ${todayOrders.length}`
                         : `Today's Orders: ${todayOrders.length}`}
                     </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-100 px-2 py-0.5 rounded-full">
-                      <DollarSign className="h-3 w-3 text-emerald-600" />
+                    <span className="text-gray-300">•</span>
+                    <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100/60 px-2.5 py-1 rounded-full">
+                      <DollarSign className="h-3.5 w-3.5 text-emerald-600" />
                       {isAr
                         ? `إيرادات اليوم: ${formatVal(todayRevenue)}`
                         : `Today's Revenue: ${formatVal(todayRevenue)}`}
                     </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1 bg-purple-50 text-purple-800 border border-purple-100 px-2 py-0.5 rounded-full">
-                      <Activity className="h-3 w-3 text-purple-600" />
+                    <span className="text-gray-300">•</span>
+                    <span className="flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-100/60 px-2.5 py-1 rounded-full">
+                      <Activity className="h-3.5 w-3.5 text-purple-600" />
                       {isAr ? `آخر نشاط: ${lastActivity}` : `Last Activity: ${lastActivity}`}
                     </span>
                   </div>
 
                   {/* Elegant Gemini API AI Status Ribbon */}
-                  <div className="flex flex-col gap-2 mt-3.5">
+                  <div className="flex flex-col gap-2 mt-2">
                     {(() => {
                       const isQuotaExhausted = limits.maxAnalyses !== 999999 && cycleAnalysesCount >= limits.maxAnalyses
                       const isNearLimit = limits.maxAnalyses !== 999999 && cycleAnalysesCount >= limits.maxAnalyses * 0.8 && cycleAnalysesCount < limits.maxAnalyses
@@ -1670,26 +1669,26 @@ export default function DashboardClient({
 
                       if (isQuotaExhausted) {
                         statusText = isAr ? 'انتهت حصة الذكاء الاصطناعي للدورة الحالية' : 'AI quota exhausted for the current cycle'
-                        badgeStyle = 'bg-rose-500/10 text-rose-800 border-rose-200'
+                        badgeStyle = 'bg-rose-50 text-rose-700 border-rose-100'
                         dotColor = 'bg-rose-500'
                       } else if (isNearLimit) {
                         statusText = isAr ? 'اقتربت من حد الاستهلاك' : 'Approaching plan limit'
-                        badgeStyle = 'bg-amber-50 text-amber-800 border-amber-200'
+                        badgeStyle = 'bg-amber-50 text-amber-700 border-amber-100'
                         dotColor = 'bg-amber-500 animate-bounce'
                       } else {
                         statusText = isAr ? 'مستشار الذكاء الاصطناعي: متاح' : 'AI Advisor: Operational'
-                        badgeStyle = 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                        dotColor = 'bg-emerald-500 animate-pulse'
+                        badgeStyle = 'bg-[#5B3A29]/5 text-[#5B3A29] border-[#5B3A29]/10'
+                        dotColor = 'bg-[#5B3A29] animate-pulse'
                       }
 
                       return (
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center gap-2">
-                            <span className={`inline-flex items-center gap-2 px-3 py-1 border rounded-full shadow-sm text-[10px] font-bold ${badgeStyle}`}>
+                            <span className={`inline-flex items-center gap-2 px-3 py-1 border rounded-full shadow-sm text-xs font-semibold ${badgeStyle}`}>
                               <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
-                              <span className="font-black">{statusText}</span>
+                              <span className="font-bold">{statusText}</span>
                               <span className="opacity-30">|</span>
-                              <span className="group relative inline-flex items-center gap-1 cursor-pointer text-gray-500 text-[9px] font-extrabold">
+                              <span className="group relative inline-flex items-center gap-1 cursor-pointer text-gray-500 text-[11px] font-bold">
                                 <span>
                                   {isAr 
                                     ? `تحليلات الدورة الحالية: ${cycleAnalysesCount} / ${limits.maxAnalyses === 999999 ? 'غير محدود' : `${limits.maxAnalyses} تحليلًا`} (المتبقي: ${limits.maxAnalyses === 999999 ? 'غير محدود' : `${Math.max(0, limits.maxAnalyses - cycleAnalysesCount)} تحليلًا`})` 
@@ -1697,7 +1696,7 @@ export default function DashboardClient({
                                 </span>
                                 
                                 {/* Interactive Tooltip */}
-                                <span className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#3E2723] border border-[#3E2723]/10 px-3 py-1.5 text-[9px] font-bold text-[#FAF8F5] opacity-0 transition-opacity duration-200 group-hover:opacity-100 shadow-xl z-50">
+                                <span className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-xl bg-[#5B3A29] border border-[#5B3A29]/10 px-3 py-1.5 text-[10px] font-bold text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 shadow-xl z-50">
                                   {isAr 
                                     ? 'يمثل هذا العدد التحليلات المنفذة داخل المنصة خلال الدورة الحالية وليس الحصة المتبقية من Gemini. يصفر تلقائياً عند التجديد.' 
                                     : 'This represents analyses processed in the platform during the current cycle, not the remaining Gemini API quota. Resets on renewal.'}
@@ -1717,21 +1716,21 @@ export default function DashboardClient({
                     href={`/${locale}/${settings.slug}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-[#3E2723]/15 hover:bg-gray-50 rounded-xl text-xs font-black text-[#3E2723] transition-all cursor-pointer shadow-sm active:scale-95"
+                    className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-[#E8E3DD] hover:bg-gray-50 rounded-xl text-xs font-bold text-[#5B3A29] transition-all cursor-pointer shadow-sm active:scale-95"
                   >
                     <span>{isAr ? 'رابط الكشك التفاعلي' : 'Live Kiosk Link'}</span>
-                    <ExternalLink className="h-3.5 w-3.5" />
+                    <ExternalLink className="h-4 w-4" />
                   </a>
 
                   {cafes.length > 1 && (
-                    <div className="flex items-center gap-2 bg-white border border-[#3E2723]/15 rounded-xl px-3 py-2 shadow-sm">
-                      <label className="text-[10px] font-black text-[#3E2723]/60 uppercase tracking-widest whitespace-nowrap">
+                    <div className="flex items-center gap-2 bg-white border border-[#E8E3DD] rounded-xl px-3 py-2 shadow-sm">
+                      <label className="text-[10px] font-bold text-[#5B3A29]/60 uppercase tracking-widest whitespace-nowrap">
                         {isAr ? 'المقاهي:' : 'Cafes:'}
                       </label>
                       <select
                         value={settings.id}
-                        onChange={handleCafeChange}
-                        className="bg-transparent text-xs font-black text-[#3E2723] focus:outline-none cursor-pointer"
+                        onChange={e => handleSwitchCafe(e.target.value)}
+                        className="bg-transparent text-xs font-bold text-[#5B3A29] focus:outline-none cursor-pointer"
                       >
                         {cafes.map(c => (
                           <option key={c.id} value={c.id}>
@@ -1745,8 +1744,8 @@ export default function DashboardClient({
               </div>
             </div>
 
-            {/* 2. Top Navigation Pill Tabs with smooth styling */}
-            <div className="flex bg-[#3E2723]/5 p-1 sm:p-1.5 rounded-2xl border border-[#3E2723]/10 mb-8 overflow-x-auto md:overflow-x-visible scrollbar-none gap-1 w-full max-w-4xl mx-auto sm:mx-0">
+            {/* 2. Top Navigation Pill Tabs with smooth SaaS styling */}
+            <div className="flex bg-[#5B3A29]/5 p-1 rounded-2xl border border-[#E8E3DD] mb-8 overflow-x-auto md:overflow-x-visible scrollbar-none gap-1 w-full max-w-4xl mx-auto sm:mx-0">
               {[
                 { id: 'orders', label: t('liveOrders'), icon: ShoppingBag },
                 { id: 'menu', label: t('menuManagement'), icon: Coffee },

@@ -114,17 +114,17 @@ export default function MenuTab({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch animate-in fade-in duration-200">
       {/* Form to add or edit */}
-      <div className="lg:col-span-4 bg-white p-6 rounded-2xl border border-[#3E2723]/10 shadow-sm h-fit space-y-5">
-        <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
-          <Plus className="h-4.5 w-4.5 text-[#3E2723]" />
-          <h3 className="text-base font-black text-[#2D2D2D]">
+      <div className="lg:col-span-4 bg-white p-6 rounded-2xl border border-[#E8E3DD] shadow-sm h-fit space-y-5">
+        <div className="flex items-center gap-2 border-b border-[#E8E3DD] pb-3">
+          <Plus className="h-5 w-5 text-[#5B3A29]" />
+          <h3 className="text-base font-bold text-[#2F2F2F]">
             {editingDrink ? (isAr ? 'تعديل المشروب' : 'Edit Drink') : t('addDrink')}
           </h3>
         </div>
 
         <form key={editingDrink?.id || 'new'} onSubmit={handleSaveDrink} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-[#2D2D2D] uppercase tracking-wider">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-[#2F2F2F] tracking-wide block">
               {t('nameAr')} *
             </label>
             <input
@@ -133,12 +133,12 @@ export default function MenuTab({
               name="nameAr"
               defaultValue={editingDrink?.nameAr || ''}
               placeholder="إسبريسو غني"
-              className="w-full p-2.5 rounded-xl border border-[#3E2723]/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#3E2723] bg-transparent"
+              className="w-full p-2.5 rounded-xl border border-[#E8E3DD] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#5B3A29] focus:border-[#5B3A29] bg-transparent"
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-[#2D2D2D] uppercase tracking-wider">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-[#2F2F2F] tracking-wide block">
               {t('nameEn')} *
             </label>
             <input
@@ -147,13 +147,13 @@ export default function MenuTab({
               name="nameEn"
               defaultValue={editingDrink?.nameEn || ''}
               placeholder="Rich Espresso"
-              className="w-full p-2.5 rounded-xl border border-[#3E2723]/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#3E2723] bg-transparent"
+              className="w-full p-2.5 rounded-xl border border-[#E8E3DD] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#5B3A29] focus:border-[#5B3A29] bg-transparent"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3.5">
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-[#2D2D2D] uppercase tracking-wider">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[#2F2F2F] tracking-wide block">
                 {t('price')} *
               </label>
               <input
@@ -162,12 +162,12 @@ export default function MenuTab({
                 name="price"
                 defaultValue={editingDrink?.price || ''}
                 placeholder="3000"
-                className="w-full p-2.5 rounded-xl border border-[#3E2723]/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#3E2723] bg-transparent"
+                className="w-full p-2.5 rounded-xl border border-[#E8E3DD] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#5B3A29] focus:border-[#5B3A29] bg-transparent"
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-[#2D2D2D] uppercase tracking-wider">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[#2F2F2F] tracking-wide block">
                 {t('category')} *
               </label>
               <select
@@ -331,22 +331,22 @@ export default function MenuTab({
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-[#2D2D2D] uppercase tracking-wider">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-[#2F2F2F] tracking-wide block">
               {isAr ? 'نوع التقديم' : 'Serving Type'}
             </label>
             <select
               name="isHot"
               defaultValue={editingDrink ? String(editingDrink.isHot) : 'true'}
-              className="w-full p-2.5 rounded-xl border border-[#3E2723]/10 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#3E2723] bg-transparent"
+              className="w-full p-2.5 rounded-xl border border-[#E8E3DD] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#5B3A29] focus:border-[#5B3A29] bg-transparent"
             >
               <option value="true">{isAr ? 'يقدم ساخناً' : 'Serves Hot'}</option>
               <option value="false">{isAr ? 'يقدم بارداً' : 'Serves Cold'}</option>
             </select>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-[#2D2D2D] uppercase tracking-wider">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-[#2F2F2F] tracking-wide block">
               {t('desc')} *
             </label>
             <textarea
@@ -355,7 +355,7 @@ export default function MenuTab({
               rows={2}
               defaultValue={editingDrink?.description || ''}
               placeholder="وصف المشروب"
-              className="w-full p-2.5 rounded-xl border border-[#3E2723]/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#3E2723] bg-transparent"
+              className="w-full p-2.5 rounded-xl border border-[#E8E3DD] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#5B3A29] focus:border-[#5B3A29] bg-transparent"
             />
           </div>
 
@@ -468,17 +468,17 @@ export default function MenuTab({
                   'info'
                 )
               }}
-              className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-[#3E2723]/10 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1 active:scale-95 hover:shadow-sm"
+              className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-[#E8E3DD] rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 active:scale-95 hover:shadow-sm"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-4 w-4" />
               <span>{isAr ? 'مشروب جديد' : 'New Drink'}</span>
             </button>
             <button
               type="submit"
               disabled={isSubmitting || isPending || (drinks.length >= limits.maxDrinks && !editingDrink)}
-              className={`flex-[2] py-2.5 rounded-xl text-xs font-black cursor-pointer shadow-sm transition-all active:scale-95 ${isSubmitting || isPending || (drinks.length >= limits.maxDrinks && !editingDrink)
+              className={`flex-[2] py-2.5 rounded-xl text-xs font-bold cursor-pointer shadow-sm transition-all active:scale-95 ${isSubmitting || isPending || (drinks.length >= limits.maxDrinks && !editingDrink)
                   ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
-                  : 'bg-[#3E2723] hover:bg-[#2D1B18] text-[#FAF8F5]'
+                  : 'bg-[#5B3A29] hover:bg-[#4A2F21] text-white'
                 }`}
             >
               {isSubmitting || isPending
@@ -492,20 +492,20 @@ export default function MenuTab({
       </div>
 
       {/* List */}
-      <div className="lg:col-span-8 bg-white p-6 rounded-2xl border border-[#3E2723]/10 shadow-sm space-y-4">
-        <h3 className="text-base font-black text-[#2D2D2D] border-b border-gray-100 pb-3">
+      <div className="lg:col-span-8 bg-white p-6 rounded-2xl border border-[#E8E3DD] shadow-sm space-y-4">
+        <h3 className="text-base font-bold text-[#2F2F2F] border-b border-[#E8E3DD] pb-3">
           {isAr ? 'قائمة مشروبات مقهاك' : 'Your Cafe Menu'}
         </h3>
 
         {drinks.length > 0 && (
           <div className="relative">
-            <Search className="absolute right-3.5 top-3 h-4 w-4 text-gray-400" />
+            <Search className="absolute right-3.5 top-3.5 h-4 w-4 text-gray-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder={isAr ? 'ابحث عن مشروب بالاسم أو الوصف...' : 'Search drink by name or description...'}
-              className="w-full pr-10 pl-3.5 py-2.5 rounded-xl border border-[#3E2723]/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#3E2723] bg-transparent"
+              className="w-full pr-10 pl-3.5 py-2.5 rounded-xl border border-[#E8E3DD] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#5B3A29] focus:border-[#5B3A29] bg-transparent"
             />
           </div>
         )}
