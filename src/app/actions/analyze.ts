@@ -173,43 +173,40 @@ export async function analyzeMood(formData: {
       return { id: analysis.id, aiResult: noDrinkResult };
     }
 
-    // Check if Gemini Quota has been marked as exceeded
-    const currentCafe = await (db.cafe.findUnique({
+    // Fetch cafe settings for plan limits
+    const currentCafe = await db.cafe.findUnique({
       where: { id: formData.cafeId },
-    }) as any)
-
-    if (currentCafe?.geminiQuotaExceeded) {
-      const limits = getPlanLimits(currentCafe.subscriptionPlan)
-      
-      // Fetch billing cycle start via raw SQL to bypass stale Prisma CafeSelect types
-      const billingRows = await db.$queryRaw<Array<{ currentBillingCycleStart: Date | null }>>`
-        SELECT "currentBillingCycleStart" FROM "Cafe" WHERE id = ${formData.cafeId}
-      `
-      const cycleStart = billingRows[0]?.currentBillingCycleStart
-        ? new Date(billingRows[0].currentBillingCycleStart)
-        : new Date(currentCafe.createdAt)
-
-      const analysesCount = await db.analysis.count({
-        where: {
-          cafeId: formData.cafeId,
-          createdAt: { gte: cycleStart },
-        },
-      })
-
-      if (limits.maxAnalyses !== 999999 && analysesCount >= limits.maxAnalyses) {
-        throw new Error(`GEMINI_QUOTA_EXCEEDED: ${currentCafe.geminiFailureReason || 'Gemini API limit reached / تم تجاوز حصة Gemini'}`)
-      } else {
-        // Safe reset: They have remaining quota. Clear the stale DB status and update the local currentCafe reference so it doesn't block downstream.
-        await (db.cafe.update as any)({
-          where: { id: formData.cafeId },
-          data: {
-            geminiQuotaExceeded: false,
-            geminiFailureReason: null
-          }
-        })
-        currentCafe.geminiQuotaExceeded = false
-        currentCafe.geminiFailureReason = null
+      select: {
+        subscriptionPlan: true,
+        createdAt: true
       }
+    })
+    if (!currentCafe) {
+      throw new Error('Cafe not found / المقهى غير موجود')
+    }
+
+    // Live subscription quota limit check.
+    // We completely bypass checking a cached geminiQuotaExceeded database column,
+    // ensuring the customer is only blocked if they actually exhaust their package limit.
+    const limits = getPlanLimits(currentCafe.subscriptionPlan)
+    
+    // Fetch billing cycle start via raw SQL to bypass stale Prisma CafeSelect types
+    const billingRows = await db.$queryRaw<Array<{ currentBillingCycleStart: Date | null }>>`
+      SELECT "currentBillingCycleStart" FROM "Cafe" WHERE id = ${formData.cafeId}
+    `
+    const cycleStart = billingRows[0]?.currentBillingCycleStart
+      ? new Date(billingRows[0].currentBillingCycleStart)
+      : new Date(currentCafe.createdAt)
+
+    const analysesCount = await db.analysis.count({
+      where: {
+        cafeId: formData.cafeId,
+        createdAt: { gte: cycleStart },
+      },
+    })
+
+    if (limits.maxAnalyses !== 999999 && analysesCount >= limits.maxAnalyses) {
+      throw new Error(`GEMINI_QUOTA_EXCEEDED: AI quota exhausted for the current cycle / انتهت حصة الذكاء الاصطناعي للدورة الحالية (${analysesCount}/${limits.maxAnalyses})`)
     }
 
     const apiKey = process.env.GEMINI_API_KEY
