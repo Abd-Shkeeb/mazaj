@@ -179,9 +179,6 @@ export async function analyzeMood(formData: {
     }) as any)
 
     if (currentCafe?.geminiQuotaExceeded) {
-      // Self-healing: if the admin cleared or renewed, or the database field is stale 
-      // but they still have cycleAnalysesCount remaining, we clear it and let it run.
-      // We only block if they actually ran out of plan limit.
       const limits = getPlanLimits(currentCafe.subscriptionPlan)
       
       // Fetch billing cycle start via raw SQL to bypass stale Prisma CafeSelect types
@@ -202,7 +199,7 @@ export async function analyzeMood(formData: {
       if (limits.maxAnalyses !== 999999 && analysesCount >= limits.maxAnalyses) {
         throw new Error(`GEMINI_QUOTA_EXCEEDED: ${currentCafe.geminiFailureReason || 'Gemini API limit reached / تم تجاوز حصة Gemini'}`)
       } else {
-        // Safe reset: They have remaining quota. Clear the stale DB status.
+        // Safe reset: They have remaining quota. Clear the stale DB status and update the local currentCafe reference so it doesn't block downstream.
         await (db.cafe.update as any)({
           where: { id: formData.cafeId },
           data: {
@@ -210,6 +207,8 @@ export async function analyzeMood(formData: {
             geminiFailureReason: null
           }
         })
+        currentCafe.geminiQuotaExceeded = false
+        currentCafe.geminiFailureReason = null
       }
     }
 
