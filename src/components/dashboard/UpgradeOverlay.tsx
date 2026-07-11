@@ -42,7 +42,7 @@ export default function UpgradeOverlay({
             if (el) el.scrollIntoView({ behavior: 'smooth' })
           }, 150)
         }}
-        className="px-5 py-2.5 bg-stone-900 hover:bg-stone-850 text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer border border-transparent"
+        className="px-5 py-2.5 bg-[#4A2E20] hover:bg-[#3B2419] text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer border border-transparent"
       >
         {isAr ? 'ترقية الباقة الآن 🚀' : 'Upgrade Plan Now 🚀'}
       </button>

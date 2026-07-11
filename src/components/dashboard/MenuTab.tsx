@@ -478,7 +478,7 @@ export default function MenuTab({
               disabled={isSubmitting || isPending || (drinks.length >= limits.maxDrinks && !editingDrink)}
               className={`flex-[2] py-2.5 rounded-xl text-xs font-bold cursor-pointer shadow-sm transition-all active:scale-95 ${isSubmitting || isPending || (drinks.length >= limits.maxDrinks && !editingDrink)
                   ? 'bg-stone-100 text-stone-400 cursor-not-allowed shadow-none border border-stone-200'
-                  : 'bg-stone-900 hover:bg-stone-850 text-white'
+                  : 'bg-[#4A2E20] hover:bg-[#3B2419] text-white'
                 }`}
             >
               {isSubmitting || isPending
