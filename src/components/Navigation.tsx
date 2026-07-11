@@ -67,7 +67,7 @@ export default function Navigation({
     <header
       className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ease-in-out ${
         isScrolled
-          ? 'bg-white/80 backdrop-blur-md border-b border-[#3E2723]/10 shadow-[0_4px_20px_rgba(62,39,37,0.05)]'
+          ? 'bg-white/80 backdrop-blur-md border-b border-stone-200/60 shadow-[0_1px_2px_rgba(0,0,0,0.02),0_8px_16px_rgba(0,0,0,0.01)]'
           : 'bg-transparent border-b border-transparent'
       }`}
     >
@@ -76,9 +76,9 @@ export default function Navigation({
           {/* Logo Section */}
           <div className="flex-shrink-0 flex items-center">
             <Link href="/" className="flex items-center gap-2 group animate-logo-hover">
-              <div className="p-2 rounded-xl bg-[#3E2723]/10 text-[#3E2723] group-hover:scale-110 transition-transform duration-300 shadow-sm border border-[#3E2723]/10 backdrop-blur-sm flex items-center justify-center">
+              <div className="p-2 rounded-xl bg-stone-100 text-stone-900 group-hover:scale-105 transition-transform duration-300 shadow-sm border border-stone-200/60 backdrop-blur-sm flex items-center justify-center">
                 <svg
-                  className="h-9 w-9 text-[#3E2723] transition-transform"
+                  className="h-8 w-8 text-stone-900 transition-transform"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -94,7 +94,7 @@ export default function Navigation({
                   />
                 </svg>
               </div>
-              <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#3E2723] to-[#5D4037] bg-clip-text text-transparent group-hover:opacity-90 transition-opacity">
+              <span className="text-lg sm:text-xl font-extrabold bg-gradient-to-r from-stone-900 to-stone-700 bg-clip-text text-transparent group-hover:opacity-90 transition-opacity">
                 {t('title')}
               </span>
             </Link>
@@ -106,30 +106,30 @@ export default function Navigation({
               (isDashboard ? (
                 <button
                   onClick={handleLogout}
-                  className="px-5 py-2.5 rounded-xl text-sm font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/50 shadow-sm transition-all cursor-pointer hover:shadow-md"
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/50 shadow-sm transition-all cursor-pointer hover:shadow-md"
                 >
                   {locale === 'ar' ? 'تسجيل الخروج' : 'Sign Out'}
                 </button>
               ) : setActiveForm ? (
                 <button
                   onClick={() => setActiveForm('login')}
-                  className="px-5 py-2.5 rounded-xl text-sm font-bold bg-[#3E2723] hover:bg-[#2D1B18] text-[#F5E6D3] shadow-sm hover-lift active:scale-95 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold bg-stone-900 hover:bg-stone-850 text-white shadow-sm hover-lift active:scale-95 cursor-pointer"
                 >
                   {locale === 'ar' ? 'تسجيل الدخول' : 'Sign In'}
                 </button>
               ) : (
                 <Link
                   href="/dashboard"
-                  className="px-5 py-2.5 rounded-xl text-sm font-bold bg-[#3E2723] hover:bg-[#2D1B18] text-[#F5E6D3] shadow-sm hover-lift active:scale-95"
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold bg-stone-900 hover:bg-stone-850 text-white shadow-sm hover-lift active:scale-95"
                 >
                   {locale === 'ar' ? 'تسجيل الدخول' : 'Sign In'}
                 </Link>
               ))}
             <button
               onClick={toggleLanguage}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-bold text-[#3E2723] border border-[#3E2723]/20 rounded-xl hover:bg-[#3E2723]/5 backdrop-blur-sm hover-lift active:scale-95 cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-stone-800 border border-stone-200/80 rounded-xl hover:bg-stone-50 backdrop-blur-sm hover-lift active:scale-95 cursor-pointer"
             >
-              <Globe className="h-4 w-4" />
+              <Globe className="h-4 w-4 text-stone-500" />
               <span>{locale === 'ar' ? t('english') : t('arabic')}</span>
             </button>
           </div>
@@ -138,15 +138,15 @@ export default function Navigation({
           <div className="flex md:hidden items-center gap-2">
             <button
               onClick={toggleLanguage}
-              className="p-2 text-[#3E2723] border border-[#3E2723]/15 rounded-lg hover:bg-[#3E2723]/5 backdrop-blur-sm transition-colors active:scale-90"
+              className="p-2 text-stone-800 border border-stone-250/60 rounded-lg hover:bg-stone-50 backdrop-blur-sm transition-colors active:scale-90"
               aria-label="Toggle language"
             >
-              <Globe className="h-5 w-5" />
+              <Globe className="h-5 w-5 text-stone-500" />
             </button>
             {!hideLogin && (
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-2 rounded-lg text-[#3E2723] hover:bg-[#3E2723]/5 backdrop-blur-sm transition-all duration-200 active:scale-90"
+                className="p-2 rounded-lg text-stone-800 hover:bg-stone-50 backdrop-blur-sm transition-all duration-200 active:scale-90"
               >
                 {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
@@ -157,12 +157,12 @@ export default function Navigation({
 
       {/* Mobile Drawer Menu */}
       {isOpen && (
-        <div className="md:hidden border-t border-[#3E2723]/10 bg-white/95 backdrop-blur-lg animate-in fade-in slide-in-from-top-4 duration-300 ease-out">
+        <div className="md:hidden border-t border-stone-200/80 bg-white/95 backdrop-blur-lg animate-in fade-in slide-in-from-top-4 duration-300 ease-out">
           <div className="px-2 pt-2 pb-4 space-y-1 sm:px-3 text-center">
             {isDashboard ? (
               <button
                 onClick={handleLogout}
-                className="block w-[90%] mx-auto my-2 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-center font-bold text-sm shadow-sm transition-transform active:scale-95 cursor-pointer"
+                className="block w-[90%] mx-auto my-2 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-center font-bold text-xs shadow-sm transition-transform active:scale-95 cursor-pointer"
               >
                 {locale === 'ar' ? 'تسجيل الخروج' : 'Sign Out'}
               </button>
@@ -172,7 +172,7 @@ export default function Navigation({
                   setActiveForm('login')
                   setIsOpen(false)
                 }}
-                className="block w-[90%] mx-auto my-2 px-4 py-2.5 rounded-xl bg-[#3E2723] hover:bg-[#2D1B18] text-[#F5E6D3] text-center font-bold text-sm shadow-sm transition-transform active:scale-95 cursor-pointer"
+                className="block w-[90%] mx-auto my-2 px-4 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-850 text-white text-center font-bold text-xs shadow-sm transition-transform active:scale-95 cursor-pointer"
               >
                 {locale === 'ar' ? 'تسجيل الدخول' : 'Sign In'}
               </button>
@@ -180,7 +180,7 @@ export default function Navigation({
               <Link
                 href="/dashboard"
                 onClick={() => setIsOpen(false)}
-                className="block mx-4 my-2 px-4 py-2.5 rounded-xl bg-[#3E2723] hover:bg-[#2D1B18] text-[#F5E6D3] text-center font-bold text-sm shadow-sm transition-transform active:scale-95"
+                className="block mx-4 my-2 px-4 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-850 text-white text-center font-bold text-xs shadow-sm transition-transform active:scale-95"
               >
                 {locale === 'ar' ? 'تسجيل الدخول' : 'Sign In'}
               </Link>

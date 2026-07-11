@@ -114,17 +114,17 @@ export default function MenuTab({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch animate-in fade-in duration-200">
       {/* Form to add or edit */}
-      <div className="lg:col-span-4 bg-white p-6 rounded-2xl border border-[#E8E3DD] shadow-sm h-fit space-y-5">
-        <div className="flex items-center gap-2 border-b border-[#E8E3DD] pb-3">
-          <Plus className="h-5 w-5 text-[#5B3A29]" />
-          <h3 className="text-base font-bold text-[#2F2F2F]">
+      <div className="lg:col-span-4 bg-white p-6 rounded-2xl border border-stone-200/80 shadow-sm h-fit space-y-5">
+        <div className="flex items-center gap-2 border-b border-stone-200/80 pb-3">
+          <Plus className="h-4.5 w-4.5 text-stone-900" />
+          <h3 className="text-sm font-bold text-stone-900">
             {editingDrink ? (isAr ? 'تعديل المشروب' : 'Edit Drink') : t('addDrink')}
           </h3>
         </div>
 
         <form key={editingDrink?.id || 'new'} onSubmit={handleSaveDrink} className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#2F2F2F] tracking-wide block">
+          <div className="space-y-1.5 text-right rtl:text-right ltr:text-left">
+            <label className="text-xs font-semibold text-stone-700 tracking-wide block">
               {t('nameAr')} *
             </label>
             <input
@@ -133,12 +133,12 @@ export default function MenuTab({
               name="nameAr"
               defaultValue={editingDrink?.nameAr || ''}
               placeholder="إسبريسو غني"
-              className="w-full p-2.5 rounded-xl border border-[#E8E3DD] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#5B3A29] focus:border-[#5B3A29] bg-transparent"
+              className="w-full p-2.5 rounded-xl border border-stone-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-stone-900 bg-transparent text-stone-900"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#2F2F2F] tracking-wide block">
+          <div className="space-y-1.5 text-right rtl:text-right ltr:text-left">
+            <label className="text-xs font-semibold text-stone-700 tracking-wide block">
               {t('nameEn')} *
             </label>
             <input
@@ -147,13 +147,13 @@ export default function MenuTab({
               name="nameEn"
               defaultValue={editingDrink?.nameEn || ''}
               placeholder="Rich Espresso"
-              className="w-full p-2.5 rounded-xl border border-[#E8E3DD] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#5B3A29] focus:border-[#5B3A29] bg-transparent"
+              className="w-full p-2.5 rounded-xl border border-stone-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-stone-900 bg-transparent text-stone-900"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3.5">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#2F2F2F] tracking-wide block">
+            <div className="space-y-1.5 text-right rtl:text-right ltr:text-left">
+              <label className="text-xs font-semibold text-stone-700 tracking-wide block">
                 {t('price')} *
               </label>
               <input
@@ -162,18 +162,18 @@ export default function MenuTab({
                 name="price"
                 defaultValue={editingDrink?.price || ''}
                 placeholder="3000"
-                className="w-full p-2.5 rounded-xl border border-[#E8E3DD] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#5B3A29] focus:border-[#5B3A29] bg-transparent"
+                className="w-full p-2.5 rounded-xl border border-stone-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-stone-900 bg-transparent text-stone-900"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#2F2F2F] tracking-wide block">
+            <div className="space-y-1.5 text-right rtl:text-right ltr:text-left">
+              <label className="text-xs font-semibold text-stone-700 tracking-wide block">
                 {t('category')} *
               </label>
               <select
                 name="category"
                 defaultValue={editingDrink?.category || 'Hot'}
-                className="w-full p-2.5 rounded-xl border border-[#3E2723]/10 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#3E2723] bg-transparent"
+                className="w-full p-2.5 rounded-xl border border-stone-200 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-stone-900 bg-transparent text-stone-900"
               >
                 <option value="Hot">{isAr ? 'حار - Hot' : 'Hot'}</option>
                 <option value="Cold">{isAr ? 'بارد - Cold' : 'Cold'}</option>
@@ -182,14 +182,14 @@ export default function MenuTab({
           </div>
 
           {/* ─── Premium Ingredient Attributes Sliders (1-5 scale) ─── */}
-          <div className="space-y-4 py-3 px-4 bg-gray-50/70 rounded-2xl border border-gray-100/60">
+          <div className="space-y-4 py-3.5 px-4 bg-stone-50/70 rounded-xl border border-stone-200/60">
             {/* Caffeine Level */}
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <span className="text-[10px] font-black text-[#3E2723] uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-stone-700 uppercase tracking-wider">
                   ⚡ {isAr ? 'مستوى الكافيين' : 'Caffeine Level'}
                 </span>
-                <span className="text-[9px] font-extrabold text-[#5D4037] bg-white px-2 py-0.5 rounded-md border border-gray-150 shadow-sm">
+                <span className="text-[9px] font-bold text-stone-800 bg-white px-2 py-0.5 rounded border border-stone-200 shadow-sm">
                   {editingDrink?.caffeine || 3} / 5
                 </span>
               </div>
@@ -216,10 +216,10 @@ export default function MenuTab({
                     stars.textContent = '⭐'.repeat(parseInt(val, 10)) + '☆'.repeat(5 - parseInt(val, 10));
                   }
                 }}
-                className="w-full accent-[#5D4037] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none"
+                className="w-full accent-stone-800 cursor-pointer h-1 bg-stone-200 rounded-lg appearance-none"
               />
-              <div className="flex justify-between items-center text-[10px] text-gray-500 font-bold">
-                <span id="caffeine-desc" className="text-[9px] text-[#8D6E63] italic">
+              <div className="flex justify-between items-center text-[10px] text-stone-500 font-semibold">
+                <span id="caffeine-desc" className="text-[9px] text-stone-500 italic">
                   {(editingDrink?.caffeine || 3) === 1 ? (isAr ? 'منخفض جدًا (بدون كافيين تقريباً)' : 'Very Low (Almost decaf)') :
                    (editingDrink?.caffeine || 3) === 2 ? (isAr ? 'منخفض (كافيين خفيف)' : 'Low (Mild caffeine)') :
                    (editingDrink?.caffeine || 3) === 3 ? (isAr ? 'متوسط (كافيين متوازن)' : 'Medium (Balanced caffeine)') :
@@ -235,10 +235,10 @@ export default function MenuTab({
             {/* Energy Level */}
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <span className="text-[10px] font-black text-[#3E2723] uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-stone-700 uppercase tracking-wider">
                   🔥 {isAr ? 'مستوى الطاقة والنشاط' : 'Energy Level'}
                 </span>
-                <span className="text-[9px] font-extrabold text-[#5D4037] bg-white px-2 py-0.5 rounded-md border border-gray-150 shadow-sm">
+                <span className="text-[9px] font-bold text-stone-800 bg-white px-2 py-0.5 rounded border border-stone-200 shadow-sm">
                   {editingDrink?.energy || 3} / 5
                 </span>
               </div>
@@ -265,10 +265,10 @@ export default function MenuTab({
                     stars.textContent = '⭐'.repeat(parseInt(val, 10)) + '☆'.repeat(5 - parseInt(val, 10));
                   }
                 }}
-                className="w-full accent-[#5D4037] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none"
+                className="w-full accent-stone-800 cursor-pointer h-1 bg-stone-200 rounded-lg appearance-none"
               />
-              <div className="flex justify-between items-center text-[10px] text-gray-500 font-bold">
-                <span id="energy-desc" className="text-[9px] text-[#8D6E63] italic">
+              <div className="flex justify-between items-center text-[10px] text-stone-500 font-semibold">
+                <span id="energy-desc" className="text-[9px] text-stone-500 italic">
                   {(editingDrink?.energy || 3) === 1 ? (isAr ? 'منخفض جدًا (هدوء واسترخاء)' : 'Very Low (Calming & relaxing)') :
                    (editingDrink?.energy || 3) === 2 ? (isAr ? 'منخفض (تأثير لطيف)' : 'Low (Gentle energy)') :
                    (editingDrink?.energy || 3) === 3 ? (isAr ? 'متوسط (حيوية طبيعية)' : 'Medium (Moderate vitality)') :
@@ -284,10 +284,10 @@ export default function MenuTab({
             {/* Sweetness Level */}
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <span className="text-[10px] font-black text-[#3E2723] uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-stone-700 uppercase tracking-wider">
                   🍯 {isAr ? 'مستوى الحلاوة' : 'Sweetness'}
                 </span>
-                <span className="text-[9px] font-extrabold text-[#5D4037] bg-white px-2 py-0.5 rounded-md border border-gray-150 shadow-sm">
+                <span className="text-[9px] font-bold text-stone-800 bg-white px-2 py-0.5 rounded border border-stone-200 shadow-sm">
                   {editingDrink?.sweetness || 3} / 5
                 </span>
               </div>
@@ -314,10 +314,10 @@ export default function MenuTab({
                     stars.textContent = '⭐'.repeat(parseInt(val, 10)) + '☆'.repeat(5 - parseInt(val, 10));
                   }
                 }}
-                className="w-full accent-[#5D4037] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none"
+                className="w-full accent-stone-800 cursor-pointer h-1 bg-stone-200 rounded-lg appearance-none"
               />
-              <div className="flex justify-between items-center text-[10px] text-gray-500 font-bold">
-                <span id="sweetness-desc" className="text-[9px] text-[#8D6E63] italic">
+              <div className="flex justify-between items-center text-[10px] text-stone-500 font-semibold">
+                <span id="sweetness-desc" className="text-[9px] text-stone-500 italic">
                   {(editingDrink?.sweetness || 3) === 1 ? (isAr ? 'منخفض جدًا (بدون سكر)' : 'Very Low (No added sugar)') :
                    (editingDrink?.sweetness || 3) === 2 ? (isAr ? 'منخفض (حلاوة خفيفة)' : 'Low (Slightly sweet)') :
                    (editingDrink?.sweetness || 3) === 3 ? (isAr ? 'متوسط (حلاوة متوازنة)' : 'Medium (Semi-sweet)') :
@@ -331,22 +331,22 @@ export default function MenuTab({
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#2F2F2F] tracking-wide block">
+          <div className="space-y-1.5 text-right rtl:text-right ltr:text-left">
+            <label className="text-xs font-semibold text-stone-700 tracking-wide block">
               {isAr ? 'نوع التقديم' : 'Serving Type'}
             </label>
             <select
               name="isHot"
               defaultValue={editingDrink ? String(editingDrink.isHot) : 'true'}
-              className="w-full p-2.5 rounded-xl border border-[#E8E3DD] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#5B3A29] focus:border-[#5B3A29] bg-transparent"
+              className="w-full p-2.5 rounded-xl border border-stone-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-stone-900 bg-transparent text-stone-900"
             >
               <option value="true">{isAr ? 'يقدم ساخناً' : 'Serves Hot'}</option>
               <option value="false">{isAr ? 'يقدم بارداً' : 'Serves Cold'}</option>
             </select>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#2F2F2F] tracking-wide block">
+          <div className="space-y-1.5 text-right rtl:text-right ltr:text-left">
+            <label className="text-xs font-semibold text-stone-700 tracking-wide block">
               {t('desc')} *
             </label>
             <textarea
@@ -355,17 +355,17 @@ export default function MenuTab({
               rows={2}
               defaultValue={editingDrink?.description || ''}
               placeholder="وصف المشروب"
-              className="w-full p-2.5 rounded-xl border border-[#E8E3DD] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#5B3A29] focus:border-[#5B3A29] bg-transparent"
+              className="w-full p-2.5 rounded-xl border border-stone-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-stone-900 bg-transparent text-stone-900"
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-[#2D2D2D] uppercase tracking-wider">
+          <div className="space-y-1 text-right rtl:text-right ltr:text-left">
+            <label className="text-[10px] font-bold text-stone-700 uppercase tracking-wider">
               {t('image')}
             </label>
             <div className="space-y-2">
               {drinkImgUrl && (
-                <div className="relative w-full h-28 rounded-xl overflow-hidden border border-gray-150 group">
+                <div className="relative w-full h-28 rounded-xl overflow-hidden border border-stone-200 group">
                   <img
                     src={drinkImgUrl}
                     alt="Preview"
@@ -378,27 +378,27 @@ export default function MenuTab({
                       setDrinkImgUrl(null)
                       await deleteFileFromStorage(oldUrl)
                     }}
-                    className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full cursor-pointer transition-colors shadow"
+                    className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full cursor-pointer transition-colors shadow-md"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
               )}
-              <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 hover:border-[#3E2723] rounded-xl p-4 cursor-pointer bg-gray-50/50 hover:bg-gray-50 transition-all">
+              <label className="flex flex-col items-center justify-center border border-dashed border-stone-300 hover:border-stone-400 rounded-xl p-4 cursor-pointer bg-stone-50/50 hover:bg-stone-50 transition-all">
                 {uploadingDrinkImg ? (
                   <div className="flex flex-col items-center gap-2">
-                    <span className="w-5 h-5 border-2 border-[#3E2723] border-t-transparent rounded-full animate-spin" />
-                    <span className="text-[10px] font-bold text-gray-500">
+                    <span className="w-5 h-5 border-2 border-stone-950 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-[10px] font-bold text-stone-500">
                       {isAr ? 'جاري الرفع...' : 'Uploading...'}
                     </span>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-1">
-                    <PlusCircle className="h-5 w-5 text-gray-400" />
-                    <span className="text-[10px] font-black text-gray-600">
+                    <PlusCircle className="h-5 w-5 text-stone-400" />
+                    <span className="text-[10px] font-bold text-stone-700">
                       {isAr ? 'اختر صورة المشروب' : 'Select Drink Image'}
                     </span>
-                    <span className="text-[8px] text-gray-400">
+                    <span className="text-[8px] text-stone-450">
                       {isAr ? 'اختياري - صيغة JPG أو PNG' : 'Optional - JPG or PNG'}
                     </span>
                   </div>
@@ -436,13 +436,13 @@ export default function MenuTab({
           </div>
 
           {drinks.length >= limits.maxDrinks && !editingDrink && (
-            <div className="flex gap-2.5 p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs">
+            <div className="flex gap-2.5 p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs text-right rtl:text-right ltr:text-left">
               <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-black">
+                <p className="font-bold">
                   {isAr ? 'وصلت للحد الأقصى للمشروبات!' : 'Reached maximum drink limit!'}
                 </p>
-                <p className="font-semibold text-gray-500 mt-0.5">
+                <p className="font-semibold text-stone-500 mt-0.5">
                   {isAr
                     ? `باقتك الحالية تسمح بـ ${limits.maxDrinks} مشروبات فقط. يرجى ترقية الباقة لزيادة الحد.`
                     : `Your current plan allows ${limits.maxDrinks} drinks. Please upgrade your plan.`}
@@ -468,7 +468,7 @@ export default function MenuTab({
                   'info'
                 )
               }}
-              className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-[#E8E3DD] rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 active:scale-95 hover:shadow-sm"
+              className="flex-1 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 active:scale-95 hover:shadow-sm"
             >
               <Plus className="h-4 w-4" />
               <span>{isAr ? 'مشروب جديد' : 'New Drink'}</span>
@@ -477,8 +477,8 @@ export default function MenuTab({
               type="submit"
               disabled={isSubmitting || isPending || (drinks.length >= limits.maxDrinks && !editingDrink)}
               className={`flex-[2] py-2.5 rounded-xl text-xs font-bold cursor-pointer shadow-sm transition-all active:scale-95 ${isSubmitting || isPending || (drinks.length >= limits.maxDrinks && !editingDrink)
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
-                  : 'bg-[#5B3A29] hover:bg-[#4A2F21] text-white'
+                  ? 'bg-stone-100 text-stone-400 cursor-not-allowed shadow-none border border-stone-200'
+                  : 'bg-stone-900 hover:bg-stone-850 text-white'
                 }`}
             >
               {isSubmitting || isPending
@@ -492,46 +492,46 @@ export default function MenuTab({
       </div>
 
       {/* List */}
-      <div className="lg:col-span-8 bg-white p-6 rounded-2xl border border-[#E8E3DD] shadow-sm space-y-4">
-        <h3 className="text-base font-bold text-[#2F2F2F] border-b border-[#E8E3DD] pb-3">
+      <div className="lg:col-span-8 bg-white p-6 rounded-2xl border border-stone-200/80 shadow-sm space-y-4">
+        <h3 className="text-sm font-bold text-stone-900 border-b border-stone-200/80 pb-3 text-right rtl:text-right ltr:text-left">
           {isAr ? 'قائمة مشروبات مقهاك' : 'Your Cafe Menu'}
         </h3>
 
         {drinks.length > 0 && (
           <div className="relative">
-            <Search className="absolute right-3.5 top-3.5 h-4 w-4 text-gray-400" />
+            <Search className="absolute right-3.5 top-3 h-4 w-4 text-stone-450" />
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder={isAr ? 'ابحث عن مشروب بالاسم أو الوصف...' : 'Search drink by name or description...'}
-              className="w-full pr-10 pl-3.5 py-2.5 rounded-xl border border-[#E8E3DD] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#5B3A29] focus:border-[#5B3A29] bg-transparent"
+              className="w-full pr-10 pl-3.5 py-2.5 rounded-xl border border-stone-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-stone-900 bg-transparent text-stone-900"
             />
           </div>
         )}
 
         {drinks.length === 0 ? (
-          <div className="py-12 text-center text-xs text-gray-400 font-bold">
+          <div className="py-12 text-center text-xs text-stone-400 font-bold">
             {isAr
               ? 'لا توجد مشروبات في قائمة مقهاك حالياً.'
               : 'No drinks in your menu yet.'}
           </div>
         ) : filteredDrinks.length === 0 ? (
-          <div className="py-12 text-center text-xs text-gray-400 font-bold">
+          <div className="py-12 text-center text-xs text-stone-400 font-bold">
             {isAr
               ? 'لا توجد مشروبات تطابق بحثك الحالي.'
               : 'No drinks match your current search.'}
           </div>
         ) : (
-          <div className="divide-y divide-gray-100 max-h-[600px] overflow-y-auto pr-1">
+          <div className="divide-y divide-stone-100 max-h-[600px] overflow-y-auto pr-1 scrollbar-none">
             {filteredDrinks.map(drink => (
               <div
                 key={drink.id}
-                className="py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-gray-50/50 transition-colors px-1 rounded-lg"
+                className="py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-stone-50/50 transition-colors px-1 rounded-lg"
               >
                 <div className="flex items-center gap-3">
                   {drink.image ? (
-                    <div className="relative w-12 h-12 overflow-hidden rounded-xl border border-gray-100 flex-shrink-0">
+                    <div className="relative w-12 h-12 overflow-hidden rounded-xl border border-stone-100 flex-shrink-0">
                       <NextImage
                         src={drink.image}
                         alt={drink.nameEn}
@@ -541,19 +541,19 @@ export default function MenuTab({
                       />
                     </div>
                   ) : (
-                    <div className="w-12 h-12 rounded-xl bg-[#3E2723]/5 flex items-center justify-center text-[#3E2723]/30 border border-[#3E2723]/10 flex-shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center text-stone-400 border border-stone-200/80 flex-shrink-0">
                       <Coffee className="h-5 w-5" />
                     </div>
                   )}
                   <div className="text-right rtl:text-right ltr:text-left">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="font-extrabold text-sm text-[#2D2D2D]">
+                      <h4 className="font-bold text-sm text-stone-900">
                         {isAr ? drink.nameAr : drink.nameEn}
                       </h4>
                       <span
-                        className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase ${drink.category === 'Hot'
-                          ? 'bg-orange-50 text-orange-700 border border-orange-100'
-                          : 'bg-blue-50 text-blue-700 border border-blue-100'
+                        className={`text-[8.5px] px-2 py-0.5 rounded font-bold uppercase border ${drink.category === 'Hot'
+                          ? 'bg-orange-50 text-orange-700 border-orange-200/40'
+                          : 'bg-blue-50 text-blue-700 border-blue-200/40'
                           }`}
                       >
                         {drink.category === 'Hot'
@@ -561,35 +561,35 @@ export default function MenuTab({
                           : (isAr ? 'بارد' : 'Cold')}
                       </span>
                     </div>
-                    <p className="text-[10.5px] text-gray-500 font-semibold mt-1 max-w-lg leading-relaxed">
+                    <p className="text-xs text-stone-500 font-medium mt-1 max-w-lg leading-relaxed">
                       {drink.description}
                     </p>
-                    <div className="flex gap-2 text-[9px] text-[#3E2723]/60 font-black mt-2">
+                    <div className="flex gap-2 text-[9px] text-stone-500 font-semibold mt-2">
                       <span>
                         {isAr
-                          ? `كافيين: ${drink.caffeine}/10`
-                          : `Caffeine: ${drink.caffeine}/10`}
+                          ? `كافيين: ${drink.caffeine}/5`
+                          : `Caffeine: ${drink.caffeine}/5`}
                       </span>
                       <span>|</span>
                       <span>
-                        {isAr ? `طاقة: ${drink.energy}/10` : `Energy: ${drink.energy}/10`}
+                        {isAr ? `طاقة: ${drink.energy}/5` : `Energy: ${drink.energy}/5`}
                       </span>
                       <span>|</span>
                       <span>
                         {isAr
-                          ? `حلاوة: ${drink.sweetness}/10`
-                          : `Sweetness: ${drink.sweetness}/10`}
+                          ? `حلاوة: ${drink.sweetness}/5`
+                          : `Sweetness: ${drink.sweetness}/5`}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0">
+                <div className="flex items-center gap-2.5 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-stone-100">
                   <button
                     onClick={() => handleToggleAvailability(drink)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black transition-all cursor-pointer border ${drink.isAvailable
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                      : 'bg-rose-50 text-rose-700 border-rose-200'
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer border ${drink.isAvailable
+                      ? 'bg-emerald-50/50 text-emerald-700 border-emerald-200/40'
+                      : 'bg-rose-50/50 text-rose-700 border-rose-200/40'
                       }`}
                   >
                     {drink.isAvailable ? (
@@ -604,18 +604,18 @@ export default function MenuTab({
                     </span>
                   </button>
 
-                  <div className="flex gap-1">
+                  <div className="flex gap-1.5">
                     <button
                       onClick={() => setEditingDrink(drink)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-blue-100"
+                      className="p-2 text-stone-500 hover:text-stone-900 hover:bg-stone-50 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-stone-200"
                     >
-                      <Edit2 className="h-3.8 w-3.8" />
+                      <Edit2 className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDeleteDrink(drink.id)}
-                      className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-rose-100"
+                      className="p-2 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-rose-100"
                     >
-                      <Trash2 className="h-3.8 w-3.8" />
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>

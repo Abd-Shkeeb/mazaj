@@ -1598,28 +1598,31 @@ export default function DashboardClient({
           /* REGULAR DASHBOARD TABS AND PAGES */
           <>
             {/* 1. Welcoming Header display with Premium Minimal styling */}
-            <div className="bg-white border border-[#E8E3DD] p-6 rounded-2xl mb-8 relative overflow-hidden shadow-sm">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl pointer-events-none select-none" />
+            {/* 1. Welcoming Header display with Premium Minimal styling */}
+            <div className="bg-white border border-stone-200/80 p-6 rounded-2xl mb-8 relative overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-amber-600/5 rounded-full blur-3xl pointer-events-none select-none" />
               
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
-                <div className="space-y-2 text-right rtl:text-right ltr:text-left">
-                  <div className="flex items-center gap-2">
-                    <span className="text-3xl">☕</span>
-                    <h1 className="text-2xl sm:text-3xl font-black text-[#5B3A29] tracking-tight">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative z-10">
+                <div className="space-y-3.5 text-right rtl:text-right ltr:text-left w-full lg:w-auto">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-amber-500/10 text-amber-900 border border-amber-500/10 flex items-center justify-center">
+                      <span className="text-2xl leading-none">☕</span>
+                    </div>
+                    <h1 className="text-xl sm:text-2xl font-extrabold text-stone-900 tracking-tight">
                       {isAr
                         ? `أهلاً بك مجدداً في لوحة تحكم ${settings.nameAr}`
                         : `Welcome back to ${settings.nameEn} Dashboard`}
                     </h1>
                   </div>
-                  <p className="text-sm text-gray-500 font-medium leading-relaxed">
+                  <p className="text-xs text-stone-500 font-medium leading-relaxed max-w-2xl">
                     {isAr
-                      ? 'تتم مزامنة طلبات الكشك والنشاطات بشكل فوري ومستمر.'
-                      : 'Kiosk orders and live analytics are synced in real-time.'}
+                      ? 'تتم مزامنة طلبات الكشك والنشاطات بشكل فوري ومستمر مع دعم تحليلات المزاج بالذكاء الاصطناعي.'
+                      : 'Kiosk orders and live analytics are synced in real-time with AI mood mapping.'}
                   </p>
 
                   {/* Status Badges */}
-                  <div className="flex flex-wrap items-center gap-2.5 pt-1.5 text-xs font-bold text-gray-500">
-                    <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100/60 px-2.5 py-1 rounded-full">
+                  <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-semibold text-stone-600">
+                    <span className="flex items-center gap-1.5 bg-emerald-50/60 text-emerald-800 border border-emerald-200/50 px-3 py-1 rounded-lg">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       {settings.subscriptionPlan === 'FREE_TRIAL' || settings.subscriptionPlan === 'FREE' ? (
                         isAr ? 'الباقة التجريبية نشطة' : 'Trial Package Active'
@@ -1628,37 +1631,31 @@ export default function DashboardClient({
                       )}
                     </span>
                     {(settings.subscriptionPlan === 'FREE_TRIAL' || settings.subscriptionPlan === 'FREE') && (
-                      <>
-                        <span className="text-gray-300">•</span>
-                        <span className="flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-100/60 px-2.5 py-1 rounded-full">
-                          <Calendar className="h-3.5 w-3.5 text-amber-600" />
-                          {isAr ? `متبقي ${diffDays} يوم` : `${diffDays} days remaining`}
-                        </span>
-                      </>
+                      <span className="flex items-center gap-1.5 bg-amber-50/60 text-amber-800 border border-amber-200/50 px-3 py-1 rounded-lg">
+                        <Calendar className="h-3.5 w-3.5 text-amber-700" />
+                        {isAr ? `متبقي ${diffDays} يوم` : `${diffDays} days remaining`}
+                      </span>
                     )}
-                    <span className="text-gray-300">•</span>
-                    <span className="flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-100/60 px-2.5 py-1 rounded-full">
-                      <ShoppingBag className="h-3.5 w-3.5 text-blue-600" />
+                    <span className="flex items-center gap-1.5 bg-stone-50 text-stone-800 border border-stone-200/60 px-3 py-1 rounded-lg">
+                      <ShoppingBag className="h-3.5 w-3.5 text-stone-600" />
                       {isAr
                         ? `طلبات اليوم: ${todayOrders.length}`
                         : `Today's Orders: ${todayOrders.length}`}
                     </span>
-                    <span className="text-gray-300">•</span>
-                    <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100/60 px-2.5 py-1 rounded-full">
-                      <DollarSign className="h-3.5 w-3.5 text-emerald-600" />
+                    <span className="flex items-center gap-1.5 bg-emerald-50/60 text-emerald-800 border border-emerald-200/50 px-3 py-1 rounded-lg">
+                      <DollarSign className="h-3.5 w-3.5 text-emerald-700" />
                       {isAr
                         ? `إيرادات اليوم: ${formatVal(todayRevenue)}`
                         : `Today's Revenue: ${formatVal(todayRevenue)}`}
                     </span>
-                    <span className="text-gray-300">•</span>
-                    <span className="flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-100/60 px-2.5 py-1 rounded-full">
-                      <Activity className="h-3.5 w-3.5 text-purple-600" />
+                    <span className="flex items-center gap-1.5 bg-purple-50 text-purple-800 border border-purple-200/50 px-3 py-1 rounded-lg">
+                      <Activity className="h-3.5 w-3.5 text-purple-700" />
                       {isAr ? `آخر نشاط: ${lastActivity}` : `Last Activity: ${lastActivity}`}
                     </span>
                   </div>
 
                   {/* Elegant Gemini API AI Status Ribbon */}
-                  <div className="flex flex-col gap-2 mt-2">
+                  <div className="flex flex-col gap-2 pt-0.5">
                     {(() => {
                       const isQuotaExhausted = limits.maxAnalyses !== 999999 && cycleAnalysesCount >= limits.maxAnalyses
                       const isNearLimit = limits.maxAnalyses !== 999999 && cycleAnalysesCount >= limits.maxAnalyses * 0.8 && cycleAnalysesCount < limits.maxAnalyses
@@ -1677,18 +1674,18 @@ export default function DashboardClient({
                         dotColor = 'bg-amber-500 animate-bounce'
                       } else {
                         statusText = isAr ? 'مستشار الذكاء الاصطناعي: متاح' : 'AI Advisor: Operational'
-                        badgeStyle = 'bg-[#5B3A29]/5 text-[#5B3A29] border-[#5B3A29]/10'
-                        dotColor = 'bg-[#5B3A29] animate-pulse'
+                        badgeStyle = 'bg-stone-50 text-stone-800 border-stone-200/60'
+                        dotColor = 'bg-amber-700 animate-pulse'
                       }
 
                       return (
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center gap-2">
-                            <span className={`inline-flex items-center gap-2 px-3 py-1 border rounded-full shadow-sm text-xs font-semibold ${badgeStyle}`}>
+                            <span className={`inline-flex items-center gap-2 px-3 py-1 border rounded-lg shadow-sm text-xs font-semibold ${badgeStyle}`}>
                               <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
                               <span className="font-bold">{statusText}</span>
                               <span className="opacity-30">|</span>
-                              <span className="group relative inline-flex items-center gap-1 cursor-pointer text-gray-500 text-[11px] font-bold">
+                              <span className="group relative inline-flex items-center gap-1 cursor-pointer text-stone-500 text-[11px] font-bold">
                                 <span>
                                   {isAr 
                                     ? `تحليلات الدورة الحالية: ${cycleAnalysesCount} / ${limits.maxAnalyses === 999999 ? 'غير محدود' : `${limits.maxAnalyses} تحليلًا`} (المتبقي: ${limits.maxAnalyses === 999999 ? 'غير محدود' : `${Math.max(0, limits.maxAnalyses - cycleAnalysesCount)} تحليلًا`})` 
@@ -1696,7 +1693,7 @@ export default function DashboardClient({
                                 </span>
                                 
                                 {/* Interactive Tooltip */}
-                                <span className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-xl bg-[#5B3A29] border border-[#5B3A29]/10 px-3 py-1.5 text-[10px] font-bold text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 shadow-xl z-50">
+                                <span className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-xl bg-stone-900 border border-stone-850 px-3 py-1.5 text-[10px] font-bold text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 shadow-xl z-50">
                                   {isAr 
                                     ? 'يمثل هذا العدد التحليلات المنفذة داخل المنصة خلال الدورة الحالية وليس الحصة المتبقية من Gemini. يصفر تلقائياً عند التجديد.' 
                                     : 'This represents analyses processed in the platform during the current cycle, not the remaining Gemini API quota. Resets on renewal.'}
@@ -1711,22 +1708,22 @@ export default function DashboardClient({
                 </div>
 
                 {/* Switcher & Live Link */}
-                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto self-stretch lg:self-auto justify-end">
                   <a
                     href={`/${locale}/${settings.slug}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-[#E8E3DD] hover:bg-gray-50 rounded-xl text-xs font-bold text-[#5B3A29] transition-all cursor-pointer shadow-sm active:scale-95"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-white border border-stone-200/80 hover:bg-stone-50 rounded-xl text-xs font-bold text-stone-855 transition-all cursor-pointer shadow-sm active:scale-95 hover:border-stone-300"
                   >
                     <span>{isAr ? 'رابط الكشك التفاعلي' : 'Live Kiosk Link'}</span>
-                    <ExternalLink className="h-4 w-4" />
+                    <ExternalLink className="h-4 w-4 text-stone-500" />
                   </a>
                 </div>
               </div>
             </div>
 
             {/* 2. Top Navigation Pill Tabs with smooth SaaS styling */}
-            <div className="flex bg-[#5B3A29]/5 p-1 rounded-2xl border border-[#E8E3DD] mb-8 overflow-x-auto md:overflow-x-visible scrollbar-none gap-1 w-full max-w-4xl mx-auto sm:mx-0">
+            <div className="flex bg-stone-100/80 p-1.5 rounded-2xl border border-stone-200/80 mb-8 overflow-x-auto md:overflow-x-visible scrollbar-none gap-1.5 w-full max-w-4xl mx-auto sm:mx-0 shadow-sm">
               {[
                 { id: 'orders', label: t('liveOrders'), icon: ShoppingBag },
                 { id: 'menu', label: t('menuManagement'), icon: Coffee },
@@ -1742,9 +1739,9 @@ export default function DashboardClient({
                     onClick={() =>
                       setActiveTab(tab.id as 'orders' | 'menu' | 'analytics' | 'users' | 'settings')
                     }
-                    className={`flex items-center justify-center gap-1.5 flex-1 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${isActive
-                      ? 'bg-[#3E2723] text-white shadow-md'
-                      : 'text-[#3E2723]/70 hover:bg-[#3E2723]/10 hover:text-[#3E2723]'
+                    className={`flex items-center justify-center gap-2 flex-1 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${isActive
+                      ? 'bg-white text-stone-900 border border-stone-200/50 shadow-sm'
+                      : 'text-stone-600 hover:bg-white/50 hover:text-stone-900'
                       }`}
                   >
                     <Icon className="h-4 w-4" />
@@ -1753,6 +1750,7 @@ export default function DashboardClient({
                 )
               })}
             </div>
+
 
             {/* TAB 1: LIVE ORDERS - OPERATIONAL DISPATCH SCREEN */}
             {activeTab === 'orders' && (

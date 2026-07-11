@@ -3,18 +3,18 @@
 @import 'tailwindcss';
 
 :root {
-  --primary: #5B3A29;
-  --primary-light: #8D6E63;
-  --primary-dark: #3E2723;
-  --secondary: #F5E6D3;
-  --secondary-light: #FFF8E7;
-  --background: #FAF8F5;
-  --card: #FFFFFF;
-  --success: #10B981;
-  --danger: #EF4444;
-  --text: #2F2F2F;
-  --text-muted: #6B7280;
-  --border: #E8E3DD;
+  --primary: #4A2E20;          /* Deep luxury espresso */
+  --primary-light: #704F37;    /* Warm medium roast */
+  --primary-dark: #2A170F;     /* Rich dark roast */
+  --secondary: #F4EFEA;        /* Warm light grey-cream (linen) */
+  --secondary-light: #FAF8F6;  /* Sleek clean backdrop */
+  --background: #F6F4F0;       /* Super premium background tone */
+  --card: #FFFFFF;             /* Pure white crisp surface */
+  --success: #10B981;          /* Active emerald */
+  --danger: #EF4444;           /* Warning / urgent actions */
+  --text: #1C1917;             /* Sleek off-black */
+  --text-muted: #57534E;       /* Muted stone grey */
+  --border: #E7E5E4;           /* Hairline light border */
 }
 
 @theme {
