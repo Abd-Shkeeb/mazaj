@@ -543,25 +543,55 @@ export default function MenuTab({
                   ) : (
                     <div className="relative w-12 h-12 overflow-hidden rounded-xl border border-stone-200/80 flex-shrink-0 shadow-inner">
                       <svg className="w-full h-full" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <style>{`
+                          @keyframes steamRise {
+                            0% { transform: translateY(2px) scaleY(0.7); opacity: 0; }
+                            50% { opacity: 0.55; }
+                            100% { transform: translateY(-6px) scaleY(1.3); opacity: 0; }
+                          }
+                          @keyframes cupFloat {
+                            0%, 100% { transform: translateY(0.5px); }
+                            50% { transform: translateY(-1.5px); }
+                          }
+                          .steam-line {
+                            animation: steamRise 2.5s infinite ease-in-out;
+                            transform-origin: center bottom;
+                          }
+                          .steam-s1 { animation-delay: 0s; }
+                          .steam-s2 { animation-delay: 0.8s; }
+                          .steam-s3 { animation-delay: 1.6s; }
+                          .cup-animated-group {
+                            animation: cupFloat 3.5s infinite ease-in-out;
+                            transform-origin: center;
+                          }
+                        `}</style>
                         {/* Rounded Peach/Warm Background */}
                         <rect width="64" height="64" rx="12" fill="#FDF3E7" />
                         
-                        {/* Saucer */}
-                        <ellipse cx="32" cy="45" rx="18" ry="5.5" fill="#EAE5F3" />
-                        <ellipse cx="32" cy="44" rx="16" ry="5" fill="#D3C9E3" />
-                        
-                        {/* Cup Handle */}
-                        <path d="M42 27.5C46.5 27.5 48.5 32 45.5 36C43.5 38 42 38 42 38" stroke="#9A8BBF" strokeWidth="3.2" strokeLinecap="round" />
-                        
-                        {/* Cup Body */}
-                        <path d="M20 24.5C20 35.5 23 41.5 32 41.5C41 41.5 44 35.5 44 24.5" fill="#D3C9E3" />
-                        <path d="M20 24.5C20 35.5 23 41.5 32 41.5C41 41.5 44 35.5 44 24.5" stroke="#9A8BBF" strokeWidth="2.2" strokeLinejoin="round" />
-                        
-                        {/* Cup Top Rim */}
-                        <ellipse cx="32" cy="24.5" rx="12" ry="3.5" fill="#D3C9E3" stroke="#9A8BBF" strokeWidth="2.2" />
-                        
-                        {/* Coffee Surface */}
-                        <ellipse cx="32" cy="24.5" rx="10" ry="2.8" fill="#5C4033" />
+                        {/* Rising Steam Lines */}
+                        <path d="M26 18C26 15 28 14 28 11" stroke="#9A8BBF" strokeWidth="1.6" strokeLinecap="round" className="steam-line steam-s1" />
+                        <path d="M32 17C32 13 34 12 34 9" stroke="#9A8BBF" strokeWidth="1.6" strokeLinecap="round" className="steam-line steam-s2" />
+                        <path d="M38 18C38 15 40 14 40 11" stroke="#9A8BBF" strokeWidth="1.6" strokeLinecap="round" className="steam-line steam-s3" />
+
+                        {/* Gently Floating Cup Group */}
+                        <g className="cup-animated-group">
+                          {/* Saucer */}
+                          <ellipse cx="32" cy="45" rx="18" ry="5.5" fill="#EAE5F3" />
+                          <ellipse cx="32" cy="44" rx="16" ry="5" fill="#D3C9E3" />
+                          
+                          {/* Cup Handle */}
+                          <path d="M42 27.5C46.5 27.5 48.5 32 45.5 36C43.5 38 42 38 42 38" stroke="#9A8BBF" strokeWidth="3.2" strokeLinecap="round" />
+                          
+                          {/* Cup Body */}
+                          <path d="M20 24.5C20 35.5 23 41.5 32 41.5C41 41.5 44 35.5 44 24.5" fill="#D3C9E3" />
+                          <path d="M20 24.5C20 35.5 23 41.5 32 41.5C41 41.5 44 35.5 44 24.5" stroke="#9A8BBF" strokeWidth="2.2" strokeLinejoin="round" />
+                          
+                          {/* Cup Top Rim */}
+                          <ellipse cx="32" cy="24.5" rx="12" ry="3.5" fill="#D3C9E3" stroke="#9A8BBF" strokeWidth="2.2" />
+                          
+                          {/* Coffee Surface */}
+                          <ellipse cx="32" cy="24.5" rx="10" ry="2.8" fill="#5C4033" />
+                        </g>
                       </svg>
                     </div>
                   )}
