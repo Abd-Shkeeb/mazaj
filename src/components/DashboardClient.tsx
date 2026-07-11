@@ -1657,16 +1657,10 @@ export default function DashboardClient({
                   </div>
 
                   {/* Elegant Gemini API AI Status Ribbon */}
-                  <div className="flex items-center gap-2 mt-3.5">
+                  <div className="flex flex-col gap-2 mt-3.5">
                     {(() => {
                       const isQuotaExhausted = limits.maxAnalyses !== 999999 && cycleAnalysesCount >= limits.maxAnalyses
                       const isNearLimit = limits.maxAnalyses !== 999999 && cycleAnalysesCount >= limits.maxAnalyses * 0.8 && cycleAnalysesCount < limits.maxAnalyses
-                      const hasGeminiError = settings.geminiQuotaExceeded || 
-                        settings.geminiFailureReason?.includes('429') || 
-                        settings.geminiFailureReason?.includes('401') || 
-                        settings.geminiFailureReason?.includes('403') || 
-                        settings.geminiFailureReason?.includes('500') ||
-                        settings.geminiFailureReason?.includes('Quota')
 
                       let statusText = ''
                       let badgeStyle = ''
@@ -1676,10 +1670,6 @@ export default function DashboardClient({
                         statusText = isAr ? 'انتهت حصة الذكاء الاصطناعي للدورة الحالية' : 'AI quota exhausted for the current cycle'
                         badgeStyle = 'bg-rose-500/10 text-rose-800 border-rose-200'
                         dotColor = 'bg-rose-500'
-                      } else if (hasGeminiError) {
-                        statusText = isAr ? 'خدمة Gemini غير متاحة مؤقتًا' : 'Gemini service is temporarily unavailable'
-                        badgeStyle = 'bg-rose-500/10 text-rose-800 border-rose-200'
-                        dotColor = 'bg-rose-500 animate-pulse'
                       } else if (isNearLimit) {
                         statusText = isAr ? 'اقتربت من حد الاستهلاك' : 'Approaching plan limit'
                         badgeStyle = 'bg-amber-50 text-amber-800 border-amber-200'
@@ -1690,26 +1680,55 @@ export default function DashboardClient({
                         dotColor = 'bg-emerald-500 animate-pulse'
                       }
 
+                      // Check for API errors separately
+                      const hasGeminiError = settings.geminiQuotaExceeded || 
+                        settings.geminiFailureReason?.includes('429') || 
+                        settings.geminiFailureReason?.includes('401') || 
+                        settings.geminiFailureReason?.includes('403') || 
+                        settings.geminiFailureReason?.includes('500') ||
+                        settings.geminiFailureReason?.includes('Quota')
+
                       return (
-                        <span className={`inline-flex items-center gap-2 px-3 py-1 border rounded-full shadow-sm text-[10px] font-bold ${badgeStyle}`}>
-                          <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
-                          <span className="font-black">{statusText}</span>
-                          <span className="opacity-30">|</span>
-                          <span className="group relative inline-flex items-center gap-1 cursor-pointer text-gray-500 text-[9px] font-extrabold">
-                            <span>
-                              {isAr 
-                                ? `تحليلات الدورة الحالية: ${cycleAnalysesCount} / ${limits.maxAnalyses === 999999 ? 'غير محدود' : `${limits.maxAnalyses} تحليلًا`} (المتبقي: ${limits.maxAnalyses === 999999 ? 'غير محدود' : `${Math.max(0, limits.maxAnalyses - cycleAnalysesCount)} تحليلًا`})` 
-                                : `Current cycle analyses: ${cycleAnalysesCount} / ${limits.maxAnalyses === 999999 ? 'Unlimited' : `${limits.maxAnalyses}`} (Remaining: ${limits.maxAnalyses === 999999 ? 'Unlimited' : `${Math.max(0, limits.maxAnalyses - cycleAnalysesCount)}`})`}
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className={`inline-flex items-center gap-2 px-3 py-1 border rounded-full shadow-sm text-[10px] font-bold ${badgeStyle}`}>
+                              <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
+                              <span className="font-black">{statusText}</span>
+                              <span className="opacity-30">|</span>
+                              <span className="group relative inline-flex items-center gap-1 cursor-pointer text-gray-500 text-[9px] font-extrabold">
+                                <span>
+                                  {isAr 
+                                    ? `تحليلات الدورة الحالية: ${cycleAnalysesCount} / ${limits.maxAnalyses === 999999 ? 'غير محدود' : `${limits.maxAnalyses} تحليلًا`} (المتبقي: ${limits.maxAnalyses === 999999 ? 'غير محدود' : `${Math.max(0, limits.maxAnalyses - cycleAnalysesCount)} تحليلًا`})` 
+                                    : `Current cycle analyses: ${cycleAnalysesCount} / ${limits.maxAnalyses === 999999 ? 'Unlimited' : `${limits.maxAnalyses}`} (Remaining: ${limits.maxAnalyses === 999999 ? 'Unlimited' : `${Math.max(0, limits.maxAnalyses - cycleAnalysesCount)}`})`}
+                                </span>
+                                
+                                {/* Interactive Tooltip */}
+                                <span className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#3E2723] border border-[#3E2723]/10 px-3 py-1.5 text-[9px] font-bold text-[#FAF8F5] opacity-0 transition-opacity duration-200 group-hover:opacity-100 shadow-xl z-50">
+                                  {isAr 
+                                    ? 'يمثل هذا العدد التحليلات المنفذة داخل المنصة خلال الدورة الحالية وليس الحصة المتبقية من Gemini. يصفر تلقائياً عند التجديد.' 
+                                    : 'This represents analyses processed in the platform during the current cycle, not the remaining Gemini API quota. Resets on renewal.'}
+                                </span>
+                              </span>
                             </span>
-                            
-                            {/* Interactive Tooltip */}
-                            <span className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#3E2723] border border-[#3E2723]/10 px-3 py-1.5 text-[9px] font-bold text-[#FAF8F5] opacity-0 transition-opacity duration-200 group-hover:opacity-100 shadow-xl z-50">
-                              {isAr 
-                                ? 'يمثل هذا العدد التحليلات المنفذة داخل المنصة خلال الدورة الحالية وليس الحصة المتبقية من Gemini. يصفر تلقائياً عند التجديد.' 
-                                : 'This represents analyses processed in the platform during the current cycle, not the remaining Gemini API quota. Resets on renewal.'}
-                            </span>
-                          </span>
-                        </span>
+                          </div>
+
+                          {/* Separate Card for Gemini API/Key errors */}
+                          {hasGeminiError && (
+                            <div className="flex items-center gap-2.5 px-3 py-2 bg-rose-50 border border-rose-100 text-rose-800 rounded-2xl text-[10px] font-bold animate-pulse max-w-lg">
+                              <AlertTriangle className="h-4.5 w-4.5 text-rose-600 flex-shrink-0" />
+                              <div className="flex flex-col">
+                                <span className="font-extrabold text-[10px] text-rose-900">
+                                  {isAr ? 'عطل أو خلل في خدمة Gemini الذكية' : 'Gemini AI Service Interrupted'}
+                                </span>
+                                <span className="text-[9px] font-normal text-rose-700 leading-tight">
+                                  {settings.geminiFailureReason?.includes('401') || settings.geminiFailureReason?.includes('403')
+                                    ? (isAr ? 'مشكلة في إعدادات المنصة: مفتاح API غير صالح أو غير مصرح به.' : 'Platform setup error: Invalid or unauthorized API key.')
+                                    : (isAr ? 'خدمة Gemini غير متاحة مؤقتًا أو تواجه ضغط طلبات حاليًا (429/500).' : 'Gemini service is temporarily offline or experiencing rate limits (429/500).')}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       )
                     })()}
                   </div>
