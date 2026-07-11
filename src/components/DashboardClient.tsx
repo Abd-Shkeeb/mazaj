@@ -1650,14 +1650,8 @@ export default function DashboardClient({
                         <span>|</span>
                         <span>
                           {isAr 
-                            ? `الاستهلاك التقديري اليوم: ${todayAnalyses.length}/1500 (تقديري)` 
-                            : `Est. usage: ${todayAnalyses.length}/1500 (est.)`}
-                        </span>
-                        <span className="w-12 h-1.5 bg-amber-200/50 rounded-full overflow-hidden inline-block border border-amber-300/20">
-                          <span 
-                            className="h-full bg-amber-600 rounded-full block transition-all duration-300"
-                            style={{ width: `${Math.min(100, (todayAnalyses.length / 1500) * 100)}%` }}
-                          />
+                            ? `تحليلات اليوم: ${todayAnalyses.length} (إحصائية استخدام داخلية)` 
+                            : `Analyses today: ${todayAnalyses.length} (internal usage stat)`}
                         </span>
                       </span>
                     </span>
