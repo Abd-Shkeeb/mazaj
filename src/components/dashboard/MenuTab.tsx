@@ -13,6 +13,7 @@ import {
   PlusCircle,
   AlertCircle,
   X,
+  Search,
 } from 'lucide-react'
 import { uploadFileToStorage, deleteFileFromStorage } from '@/lib/supabase'
 
@@ -96,6 +97,19 @@ export default function MenuTab({
   settings,
 }: MenuTabProps) {
   const t = useTranslations('admin')
+  const [searchQuery, setSearchQuery] = React.useState('')
+
+  const filteredDrinks = React.useMemo(() => {
+    const q = searchQuery.toLowerCase().trim()
+    if (!q) return drinks
+    return drinks.filter(
+      d =>
+        d.nameAr.toLowerCase().includes(q) ||
+        d.nameEn.toLowerCase().includes(q) ||
+        (d.description && d.description.toLowerCase().includes(q)) ||
+        (d.category && d.category.toLowerCase().includes(q))
+    )
+  }, [drinks, searchQuery])
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch animate-in fade-in duration-200">
@@ -483,15 +497,34 @@ export default function MenuTab({
           {isAr ? 'قائمة مشروبات مقهاك' : 'Your Cafe Menu'}
         </h3>
 
+        {drinks.length > 0 && (
+          <div className="relative">
+            <Search className="absolute right-3.5 top-3 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder={isAr ? 'ابحث عن مشروب بالاسم أو الوصف...' : 'Search drink by name or description...'}
+              className="w-full pr-10 pl-3.5 py-2.5 rounded-xl border border-[#3E2723]/10 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#3E2723] bg-transparent"
+            />
+          </div>
+        )}
+
         {drinks.length === 0 ? (
           <div className="py-12 text-center text-xs text-gray-400 font-bold">
             {isAr
-              ? 'لا توجد مشروبات في قائمة قائمة مقهاك حالياً.'
+              ? 'لا توجد مشروبات في قائمة مقهاك حالياً.'
               : 'No drinks in your menu yet.'}
+          </div>
+        ) : filteredDrinks.length === 0 ? (
+          <div className="py-12 text-center text-xs text-gray-400 font-bold">
+            {isAr
+              ? 'لا توجد مشروبات تطابق بحثك الحالي.'
+              : 'No drinks match your current search.'}
           </div>
         ) : (
           <div className="divide-y divide-gray-100 max-h-[600px] overflow-y-auto pr-1">
-            {drinks.map(drink => (
+            {filteredDrinks.map(drink => (
               <div
                 key={drink.id}
                 className="py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-gray-50/50 transition-colors px-1 rounded-lg"
