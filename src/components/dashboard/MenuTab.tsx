@@ -541,11 +541,27 @@ export default function MenuTab({
                       />
                     </div>
                   ) : (
-                    <div className="w-12 h-12 rounded-xl bg-stone-50 flex items-center justify-center text-stone-500 border border-stone-200/80 flex-shrink-0">
-                      <svg className="h-5.5 w-5.5 text-stone-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6 10H16C17.1046 10 18 10.8954 18 12V15C18 17.2091 16.2091 19 14 19H8C5.79086 19 4 17.2091 4 15V12C4 10.8954 4.89543 10 6 10Z" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
-                        <path d="M18 12H19C20.1046 12 21 12.8954 21 14C21 15.1046 20.1046 16 19 16H18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M6 6C6.3 4.5 7.2 4.5 7.5 6M10.5 6C10.8 4.5 11.7 4.5 12 6M15 6C15.3 4.5 16.2 4.5 16.5 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <div className="relative w-12 h-12 overflow-hidden rounded-xl border border-stone-200/80 flex-shrink-0 shadow-inner">
+                      <svg className="w-full h-full" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        {/* Rounded Peach/Warm Background */}
+                        <rect width="64" height="64" rx="12" fill="#FDF3E7" />
+                        
+                        {/* Saucer */}
+                        <ellipse cx="32" cy="45" rx="18" ry="5.5" fill="#EAE5F3" />
+                        <ellipse cx="32" cy="44" rx="16" ry="5" fill="#D3C9E3" />
+                        
+                        {/* Cup Handle */}
+                        <path d="M42 27.5C46.5 27.5 48.5 32 45.5 36C43.5 38 42 38 42 38" stroke="#9A8BBF" strokeWidth="3.2" strokeLinecap="round" />
+                        
+                        {/* Cup Body */}
+                        <path d="M20 24.5C20 35.5 23 41.5 32 41.5C41 41.5 44 35.5 44 24.5" fill="#D3C9E3" />
+                        <path d="M20 24.5C20 35.5 23 41.5 32 41.5C41 41.5 44 35.5 44 24.5" stroke="#9A8BBF" strokeWidth="2.2" strokeLinejoin="round" />
+                        
+                        {/* Cup Top Rim */}
+                        <ellipse cx="32" cy="24.5" rx="12" ry="3.5" fill="#D3C9E3" stroke="#9A8BBF" strokeWidth="2.2" />
+                        
+                        {/* Coffee Surface */}
+                        <ellipse cx="32" cy="24.5" rx="10" ry="2.8" fill="#5C4033" />
                       </svg>
                     </div>
                   )}
