@@ -492,7 +492,7 @@ export default function MenuTab({
       </div>
 
       {/* List */}
-      <div className="lg:col-span-8 bg-white p-6 rounded-2xl border border-stone-200/80 shadow-sm flex flex-col space-y-4 max-h-[900px]">
+      <div className="lg:col-span-8 bg-white p-6 rounded-2xl border border-stone-200/80 shadow-sm flex flex-col space-y-4 max-h-[950px]">
         <h3 className="text-sm font-bold text-stone-900 border-b border-stone-200/80 pb-3 text-right rtl:text-right ltr:text-left">
           {isAr ? 'قائمة مشروبات مقهاك' : 'Your Cafe Menu'}
         </h3>
