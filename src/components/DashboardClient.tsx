@@ -1730,6 +1730,7 @@ export default function DashboardClient({
                   </div>
                 </div>
               )}
+            </div>
             {/* System Health Status Panel */}
             <SystemHealthPanel 
               isAr={isAr} 
