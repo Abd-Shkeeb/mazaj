@@ -428,8 +428,10 @@ export async function getSuperAdminStats(searchQuery: string = '') {
       modelName,
       popularMoods,
       popularDrinks,
-      recentGeminiFailureReason: allCafes.find(c => c.geminiFailureReason !== null)?.geminiFailureReason || null,
-      recentGeminiQuotaExceeded: allCafes.some(c => c.geminiQuotaExceeded),
+      recentGeminiFailureReason: (await db.$queryRaw<Array<{ geminiFailureReason: string | null }>>`
+        SELECT "geminiFailureReason" FROM "Cafe" WHERE "geminiFailureReason" IS NOT NULL LIMIT 1
+      `)[0]?.geminiFailureReason || null,
+      recentGeminiQuotaExceeded: (await db.cafe.count({ where: { geminiQuotaExceeded: true } })) > 0,
     },
     retention: {
       newSubscriptions,
