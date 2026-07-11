@@ -20,6 +20,7 @@ import dynamic from 'next/dynamic'
 import OrdersTab from '@/components/dashboard/OrdersTab'
 import MenuTab from '@/components/dashboard/MenuTab'
 import SettingsTab from '@/components/dashboard/SettingsTab'
+import UsersTab from '@/components/dashboard/UsersTab'
 
 const AnalyticsTab = dynamic(() => import('@/components/dashboard/AnalyticsTab'), {
   loading: () => <div className="text-center py-12 text-xs font-bold text-[#3E2723]/60">Loading Analytics...</div>,
@@ -31,6 +32,7 @@ import {
   ShoppingBag,
   BarChart3,
   Settings,
+  Users,
   CheckCircle2,
   Clock,
   Trash2,
@@ -292,7 +294,7 @@ export default function DashboardClient({
   )
 
   // Tab & Loading State
-  const [activeTab, setActiveTab] = useState<'orders' | 'menu' | 'analytics' | 'settings'>('orders')
+  const [activeTab, setActiveTab] = useState<'orders' | 'menu' | 'analytics' | 'users' | 'settings'>('orders')
   const [activeAnalyticsSubTab, setActiveAnalyticsSubTab] = useState<
     'kiosk' | 'sales' | 'reports' | 'beta_analytics' | 'beta_reports'
   >('kiosk')
@@ -1749,6 +1751,7 @@ export default function DashboardClient({
                 { id: 'orders', label: t('liveOrders'), icon: ShoppingBag },
                 { id: 'menu', label: t('menuManagement'), icon: Coffee },
                 { id: 'analytics', label: t('stats'), icon: BarChart3 },
+                { id: 'users', label: isAr ? '👥 إدارة الموظفين' : 'Staff Users', icon: Users },
                 { id: 'settings', label: t('cafeSettings'), icon: Settings },
               ].map(tab => {
                 const Icon = tab.icon
@@ -1757,7 +1760,7 @@ export default function DashboardClient({
                   <button
                     key={tab.id}
                     onClick={() =>
-                      setActiveTab(tab.id as 'orders' | 'menu' | 'analytics' | 'settings')
+                      setActiveTab(tab.id as 'orders' | 'menu' | 'analytics' | 'users' | 'settings')
                     }
                     className={`flex items-center justify-center gap-1.5 flex-1 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${isActive
                       ? 'bg-[#3E2723] text-white shadow-md'
@@ -1844,7 +1847,17 @@ export default function DashboardClient({
               />
             )}
 
-            {/* TAB 4: CAFE SETTINGS */}
+            {/* TAB 4: STAFF MANAGEMENT */}
+            {activeTab === 'users' && (
+              <UsersTab
+                isAr={isAr}
+                cafeId={settings.id}
+                limits={limits}
+                addToast={addToast}
+              />
+            )}
+
+            {/* TAB 5: CAFE SETTINGS */}
             {activeTab === 'settings' && (
               <SettingsTab
                 isAr={isAr}
