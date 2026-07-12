@@ -73,13 +73,20 @@ export default function SettingsTab({
 }: SettingsTabProps) {
   const t = useTranslations('admin')
 
-  // Calculate remaining subscription days
-  const daysLeft = Math.max(
-    0,
-    Math.ceil(
-      (new Date(settings.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+  // Avoid hydration mismatch by computing date differences on mount
+  const [daysLeft, setDaysLeft] = React.useState<number>(0)
+  const [mounted, setMounted] = React.useState<boolean>(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+    const diff = Math.max(
+      0,
+      Math.ceil(
+        (new Date(settings.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+      )
     )
-  )
+    setDaysLeft(diff)
+  }, [settings.trialEndsAt])
 
   return (
     <div className={`bg-white p-6 rounded-2xl border border-stone-200/80 shadow-sm mx-auto space-y-5 animate-in fade-in duration-200 ${settingsSubTab === 'general' ? 'max-w-2xl' : 'max-w-5xl'}`}>
@@ -437,7 +444,7 @@ export default function SettingsTab({
                 {isAr ? 'تاريخ الانتهاء' : 'Expiry Date'}
               </span>
               <span className="block text-xs font-bold text-stone-900 mt-1">
-                {new Date(settings.trialEndsAt).toLocaleDateString(isAr ? 'ar-IQ' : 'en-US')}
+                {mounted ? new Date(settings.trialEndsAt).toLocaleDateString(isAr ? 'ar-IQ' : 'en-US') : ''}
               </span>
             </div>
             <div>
@@ -445,7 +452,7 @@ export default function SettingsTab({
                 {isAr ? 'الأيام المتبقية' : 'Days Left'}
               </span>
               <span className="block text-xs font-bold text-amber-700 mt-1">
-                {daysLeft} {isAr ? 'يوم' : 'days'}
+                {mounted ? `${daysLeft} ${isAr ? 'يوم' : 'days'}` : ''}
               </span>
             </div>
           </div>
