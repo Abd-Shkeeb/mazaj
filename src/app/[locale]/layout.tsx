@@ -2,7 +2,24 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import { routing } from '@/i18n/routing'
 import { notFound } from 'next/navigation'
+import { Cairo, Outfit } from 'next/font/google'
 import '@/app/globals.css'
+
+const cairo = Cairo({
+  subsets: ['arabic', 'latin'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+  variable: '--font-cairo',
+  display: 'swap',
+  preload: true,
+})
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+  variable: '--font-outfit',
+  display: 'swap',
+  preload: true,
+})
 
 export const metadata = {
   title: 'مزاج - Mazaj | مزاجك يختار مشروبك ☕',
@@ -45,7 +62,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       dir={direction}
-      className="scroll-smooth"
+      className={`scroll-smooth ${cairo.variable} ${outfit.variable}`}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >

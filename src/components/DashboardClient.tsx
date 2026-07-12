@@ -11,9 +11,6 @@ import {
   deleteDrinkAction,
   updateDrinkAction,
   updateCafeSettingsAction,
-  retryGeminiConnectionAction,
-  clearHealthLogsAction,
-  checkSystemHealthAction,
 } from '@/app/actions/dashboard'
 import { uploadFileToStorage, deleteFileFromStorage } from '@/lib/supabase'
 import dynamic from 'next/dynamic'
@@ -50,32 +47,19 @@ import {
   Trash2,
   Plus,
   Edit2,
-  ToggleLeft,
-  ToggleRight,
   DollarSign,
-  Heart,
-  AlertCircle,
   ShieldAlert,
-  TrendingUp,
-  Sparkles,
-  PlusCircle,
   ArrowUpRight,
   ExternalLink,
   Calendar,
   Info,
   QrCode,
   ClipboardList,
-  ShieldCheck,
   X,
   Check,
   Activity,
-  ArrowUp,
-  Zap,
-  HelpCircle,
   Volume2,
   VolumeX,
-  Play,
-  CheckCircle,
 } from 'lucide-react'
 
 interface Order {
@@ -360,13 +344,10 @@ export default function DashboardClient({
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [timeTicker, setTimeTicker] = useState(0)
 
-  // Simulation loading delay for Stripe-like feel
+  // Set mounted synchronously so hydration-guarded values show immediately
   useEffect(() => {
     setMounted(true)
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 800)
-    return () => clearTimeout(timer)
+    setIsLoading(false)
   }, [])
 
   // Update relative time tickers every 30 seconds

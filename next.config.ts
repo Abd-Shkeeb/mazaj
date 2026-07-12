@@ -6,6 +6,11 @@ const withNextIntl = createNextIntlPlugin()
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
+  // Tree-shake large icon/component libraries on the server
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'framer-motion'],
+  },
+
   images: {
     remotePatterns: [
       {
@@ -17,6 +22,8 @@ const nextConfig: NextConfig = {
         hostname: '**',
       },
     ],
+    // Enable modern formats for smaller payloads
+    formats: ['image/avif', 'image/webp'],
   },
 }
 

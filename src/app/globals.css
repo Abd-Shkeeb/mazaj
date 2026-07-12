@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+/* Google Fonts loaded via next/font in layout.tsx for optimal performance */
 
 @import 'tailwindcss';
 
@@ -158,14 +158,17 @@ body {
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+  will-change: transform;
 }
 
 .animate-float-delayed {
   animation: float-delayed 8s ease-in-out infinite;
+  will-change: transform;
 }
 
 .animate-scan {
   animation: scan 2s linear infinite;
+  will-change: top, opacity;
 }
 
 .animate-pulse-glow {
@@ -277,6 +280,7 @@ body {
   animation: shimmer-sweep 3s ease-in-out infinite;
   pointer-events: none;
   border-radius: inherit;
+  will-change: transform;
 }
 
 /* Soft pulsing glow for selected elements */
@@ -297,6 +301,7 @@ body {
 
 .animate-gentle-float {
   animation: gentle-float 4s ease-in-out infinite;
+  will-change: transform;
 }
 
 /* Typewriter cursor blink for loader text */
@@ -403,4 +408,20 @@ body {
   background-image: radial-gradient(circle, rgba(245, 158, 11, 0.12) 1px, transparent 1px);
   background-size: 20px 20px;
   animation: bg-dots-move 4s linear infinite;
+}
+
+/* ═══════════════════════════════════════════
+   ACCESSIBILITY & PERFORMANCE
+   ═══════════════════════════════════════════ */
+
+/* Respect user motion preferences — reduces long tasks on Lighthouse audit */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
