@@ -67,6 +67,7 @@ interface AnalyticsTabProps {
   last7DaysSales: Array<{ day: string; sales: number; orders: number; analyses: number }>
   last30DaysSales: Array<{ day: string; sales: number }>
   setActiveTab: (tab: 'orders' | 'menu' | 'analytics' | 'settings') => void
+  setSettingsSubTab?: (subTab: 'general' | 'subscription') => void
 }
 
 export default function AnalyticsTab({
@@ -94,6 +95,7 @@ export default function AnalyticsTab({
   last7DaysSales,
   last30DaysSales,
   setActiveTab,
+  setSettingsSubTab,
 }: AnalyticsTabProps) {
   const [activeChartMetric, setActiveChartMetric] = useState<'sales' | 'orders' | 'analyses'>('sales')
 
@@ -207,6 +209,7 @@ export default function AnalyticsTab({
           <UpgradeOverlay
             isAr={isAr}
             setActiveTab={setActiveTab}
+            setSettingsSubTab={setSettingsSubTab}
             titleAr="تقارير المبيعات المتقدمة"
             titleEn="Advanced Sales Analytics"
             requiredPlan="ستاندرد (Standard)"
@@ -291,6 +294,7 @@ export default function AnalyticsTab({
           <UpgradeOverlay
             isAr={isAr}
             setActiveTab={setActiveTab}
+            setSettingsSubTab={setSettingsSubTab}
             titleAr="تقارير بيانية تفاعلية"
             titleEn="Interactive Visual Reports"
             requiredPlan="ستاندرد (Standard)"
@@ -645,6 +649,7 @@ export default function AnalyticsTab({
           <UpgradeOverlay
             isAr={isAr}
             setActiveTab={setActiveTab}
+            setSettingsSubTab={setSettingsSubTab}
             titleAr="تحليلات البيتا المتقدمة"
             titleEn="Advanced Beta Analytics"
             requiredPlan="برو (Pro)"
@@ -860,6 +865,7 @@ export default function AnalyticsTab({
           <UpgradeOverlay
             isAr={isAr}
             setActiveTab={setActiveTab}
+            setSettingsSubTab={setSettingsSubTab}
             titleAr="تقارير البيتا المتقدمة"
             titleEn="Advanced Beta Reports"
             requiredPlan="برو (Pro)"

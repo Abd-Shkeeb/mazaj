@@ -9,6 +9,7 @@ interface UpgradeOverlayProps {
   titleEn: string
   requiredPlan: string
   setActiveTab: (tab: 'orders' | 'menu' | 'analytics' | 'settings') => void
+  setSettingsSubTab?: (subTab: 'general' | 'subscription') => void
 }
 
 export default function UpgradeOverlay({
@@ -17,6 +18,7 @@ export default function UpgradeOverlay({
   titleEn,
   requiredPlan,
   setActiveTab,
+  setSettingsSubTab,
 }: UpgradeOverlayProps) {
   return (
     <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-stone-200 shadow-sm p-10 text-center flex flex-col items-center justify-center gap-5 min-h-[350px] w-full animate-in fade-in duration-300">
@@ -37,6 +39,9 @@ export default function UpgradeOverlay({
       <button
         onClick={() => {
           setActiveTab('settings')
+          if (setSettingsSubTab) {
+            setSettingsSubTab('subscription')
+          }
           setTimeout(() => {
             const el = document.getElementById('pricing-plans-section')
             if (el) el.scrollIntoView({ behavior: 'smooth' })

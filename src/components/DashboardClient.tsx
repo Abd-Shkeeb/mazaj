@@ -263,16 +263,16 @@ export default function DashboardClient({
     titleEn: string
     requiredPlan: string
   }) => (
-    <div className="bg-white/90 backdrop-blur-md rounded-3xl border border-amber-600/10 p-10 text-center flex flex-col items-center justify-center gap-5 shadow-lg min-h-[350px] w-full animate-in fade-in duration-300">
-      <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 border border-amber-100 shadow-inner">
-        <ShieldAlert className="h-8 w-8 text-amber-600" />
+    <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-stone-200 shadow-sm p-10 text-center flex flex-col items-center justify-center gap-5 min-h-[350px] w-full animate-in fade-in duration-300">
+      <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 border border-amber-200/40">
+        <ShieldAlert className="h-6 w-6 text-amber-600" />
       </div>
       <div className="space-y-1">
-        <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest bg-amber-50 border border-amber-100 px-3 py-1 rounded-full">
+        <span className="text-[9px] font-bold text-amber-700 uppercase tracking-wider bg-amber-50 border border-amber-200/40 px-3 py-1 rounded-full">
           {isAr ? 'ميزة مقفلة' : 'Locked Feature'}
         </span>
-        <h3 className="text-base font-black text-[#2D2D2D] mt-2">{isAr ? titleAr : titleEn}</h3>
-        <p className="text-xs text-gray-500 font-semibold max-w-md leading-relaxed">
+        <h3 className="text-sm font-bold text-stone-900 mt-2">{isAr ? titleAr : titleEn}</h3>
+        <p className="text-xs text-stone-500 font-semibold max-w-md leading-relaxed">
           {isAr
             ? `تتطلب هذه الميزة الاشتراك في باقة ${requiredPlan} لتفعيلها واستخدامها في مقهاك.`
             : `This feature requires upgrading to the ${requiredPlan} plan.`}
@@ -281,12 +281,13 @@ export default function DashboardClient({
       <button
         onClick={() => {
           setActiveTab('settings')
+          setSettingsSubTab('subscription')
           setTimeout(() => {
             const el = document.getElementById('pricing-plans-section')
             if (el) el.scrollIntoView({ behavior: 'smooth' })
           }, 150)
         }}
-        className="px-6 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-[#3E2723] rounded-xl text-xs font-black transition-all shadow-md active:scale-95 cursor-pointer"
+        className="px-5 py-2.5 bg-[#4A2E20] hover:bg-[#3B2419] text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer border border-transparent"
       >
         {isAr ? 'ترقية الباقة الآن 🚀' : 'Upgrade Plan Now 🚀'}
       </button>
@@ -295,6 +296,7 @@ export default function DashboardClient({
 
   // Tab & Loading State
   const [activeTab, setActiveTab] = useState<'orders' | 'menu' | 'analytics' | 'users' | 'settings'>('orders')
+  const [settingsSubTab, setSettingsSubTab] = useState<'general' | 'subscription'>('general')
   const [activeAnalyticsSubTab, setActiveAnalyticsSubTab] = useState<
     'kiosk' | 'sales' | 'reports' | 'beta_analytics' | 'beta_reports'
   >('kiosk')
@@ -1854,6 +1856,8 @@ export default function DashboardClient({
                 setUploadingCover={setUploadingCover}
                 handleSaveSettings={handleSaveSettings}
                 addToast={addToast}
+                settingsSubTab={settingsSubTab}
+                setSettingsSubTab={setSettingsSubTab}
               />
             )}
           </>
