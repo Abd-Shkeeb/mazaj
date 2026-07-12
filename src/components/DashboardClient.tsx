@@ -1824,6 +1824,7 @@ export default function DashboardClient({
                 last7DaysSales={last7DaysSales}
                 last30DaysSales={last30DaysSales}
                 setActiveTab={setActiveTab}
+                setSettingsSubTab={setSettingsSubTab}
               />
             )}
 
