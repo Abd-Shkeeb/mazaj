@@ -1403,22 +1403,6 @@ export default function DashboardClient({
     'sales',
   )
 
-  if (!mounted) {
-    return (
-      <>
-        <Navigation isDashboard={true} />
-        <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-12 w-full bg-[#FAF8F5]">
-          <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-            <span className="w-10 h-10 border-4 border-[#4A2E20] border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs text-stone-500 font-bold animate-pulse">
-              {isAr ? 'جاري تحميل لوحة التحكم...' : 'Loading Dashboard...'}
-            </p>
-          </div>
-        </main>
-      </>
-    )
-  }
-
   return (
     <>
       <Navigation isDashboard={true} />
@@ -1675,14 +1659,14 @@ export default function DashboardClient({
                     <span className="flex items-center gap-1.5 bg-stone-50 text-stone-800 border border-stone-200/60 px-3 py-1 rounded-lg">
                       <ShoppingBag className="h-3.5 w-3.5 text-stone-600" />
                       {isAr
-                        ? `طلبات اليوم: ${todayOrders.length}`
-                        : `Today's Orders: ${todayOrders.length}`}
+                        ? `طلبات اليوم: ${mounted ? todayOrders.length : 0}`
+                        : `Today's Orders: ${mounted ? todayOrders.length : 0}`}
                     </span>
                     <span className="flex items-center gap-1.5 bg-emerald-50/60 text-emerald-800 border border-emerald-200/50 px-3 py-1 rounded-lg">
                       <DollarSign className="h-3.5 w-3.5 text-emerald-700" />
                       {isAr
-                        ? `إيرادات اليوم: ${formatVal(todayRevenue)}`
-                        : `Today's Revenue: ${formatVal(todayRevenue)}`}
+                        ? `إيرادات اليوم: ${mounted ? formatVal(todayRevenue) : formatVal(0)}`
+                        : `Today's Revenue: ${mounted ? formatVal(todayRevenue) : formatVal(0)}`}
                     </span>
                     {mounted && (
                       <span className="flex items-center gap-1.5 bg-purple-50 text-purple-800 border border-purple-200/50 px-3 py-1 rounded-lg">
