@@ -503,6 +503,10 @@ export default function DashboardClient({
   // Subscription check
   const isTrial = settings.subscriptionPlan === 'FREE_TRIAL' || settings.subscriptionPlan === 'FREE'
   const endDate = useMemo(() => {
+    // Avoid dynamic new Date() during SSR to prevent mismatch
+    if (typeof window === 'undefined') {
+      return new Date(settings.trialEndsAt || '2026-01-01')
+    }
     return isTrial
       ? new Date(settings.trialEndsAt)
       : settings.subscriptionEndsAt
@@ -513,9 +517,8 @@ export default function DashboardClient({
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
     days: 30,
     hours: 0,
-    minutes: 0,
-    seconds: 0,
-  })
+    disabled: true,
+  } as any)
   const [isExpired, setIsExpired] = useState<boolean>(false)
 
   useEffect(() => {
@@ -1973,12 +1976,12 @@ export default function DashboardClient({
                     </h3>
                   </div>
                   <p className="text-[11px] text-[#FAF8F5]/80 font-bold">
-                    {new Date().toLocaleDateString(isAr ? 'ar-IQ' : 'en-US', {
+                    {mounted ? new Date().toLocaleDateString(isAr ? 'ar-IQ' : 'en-US', {
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric',
-                    })}
+                    }) : ''}
                   </p>
                 </div>
               </div>
