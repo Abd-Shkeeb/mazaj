@@ -135,6 +135,7 @@
     "popularMoods": "Most Active Moods",
     "phone": "Cafe Phone",
     "logo": "Cafe Logo URL",
+    "coverImage": "Cafe Cover Image URL",
     "addressAr": "Address (Arabic)",
     "addressEn": "Address (English)",
     "kioskSessionMinutes": "Kiosk Session Duration (minutes)"
