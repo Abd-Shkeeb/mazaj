@@ -96,11 +96,10 @@ export default function SettingsTab({
           <button
             type="button"
             onClick={() => setSettingsSubTab('general')}
-            className={`px-3 py-1.5 font-bold rounded-lg transition-all cursor-pointer ${
-              settingsSubTab === 'general'
+            className={`px-3 py-1.5 font-bold rounded-lg transition-all cursor-pointer ${settingsSubTab === 'general'
                 ? 'bg-white text-stone-900 shadow-sm border border-stone-200/40'
                 : 'text-stone-500 hover:text-stone-900'
-            }`}
+              }`}
           >
             {isAr ? '⚙️ الإعدادات العامة' : '⚙️ General Settings'}
           </button>
@@ -108,11 +107,10 @@ export default function SettingsTab({
             type="button"
             id="pricing-plans-section"
             onClick={() => setSettingsSubTab('subscription')}
-            className={`px-3 py-1.5 font-bold rounded-lg transition-all cursor-pointer ${
-              settingsSubTab === 'subscription'
+            className={`px-3 py-1.5 font-bold rounded-lg transition-all cursor-pointer ${settingsSubTab === 'subscription'
                 ? 'bg-white text-stone-900 shadow-sm border border-stone-200/40'
                 : 'text-stone-500 hover:text-stone-900'
-            }`}
+              }`}
           >
             {isAr ? '💳 الباقات والاشتراك' : '💳 Plans & Subscription'}
           </button>
@@ -455,9 +453,8 @@ export default function SettingsTab({
           {/* Pricing Plans Comparison Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
             {/* Lite */}
-            <div className={`p-5.5 rounded-2xl border flex flex-col justify-between shadow-sm transition-all bg-white hover:border-stone-300 ${
-              settings.subscriptionPlan === 'LITE' ? 'border-[#4A2E20]/40 ring-1 ring-[#4A2E20]/20' : 'border-stone-200'
-            }`}>
+            <div className={`p-5.5 rounded-2xl border flex flex-col justify-between shadow-sm transition-all bg-white hover:border-stone-300 ${settings.subscriptionPlan === 'LITE' ? 'border-[#4A2E20]/40 ring-1 ring-[#4A2E20]/20' : 'border-stone-200'
+              }`}>
               <div>
                 <span className="text-[10px] font-bold uppercase text-stone-700 bg-stone-100 px-3 py-1 rounded-full">
                   {isAr ? '🌱 لايت' : '🌱 Lite'}
@@ -480,25 +477,23 @@ export default function SettingsTab({
               <button
                 type="button"
                 disabled={settings.subscriptionPlan === 'LITE'}
-                onClick={() => addToast(isAr ? 'بوابة الدفع غير متصلة حالياً' : 'Payment gateway not connected', 'info')}
-                className={`w-full mt-6 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${
-                  settings.subscriptionPlan === 'LITE'
+                onClick={() => window.open('https://wa.me/9647714289802', '_blank')}
+                className={`w-full mt-6 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${settings.subscriptionPlan === 'LITE'
                     ? 'bg-stone-50 text-stone-400 border border-stone-200 cursor-default'
                     : 'bg-[#4A2E20] hover:bg-[#3B2419] text-white'
-                }`}
+                  }`}
               >
                 {settings.subscriptionPlan === 'LITE'
                   ? (isAr ? 'باقاتك الحالية' : 'Current Plan')
-                  : (isAr ? 'ترقية الآن' : 'Upgrade Now')}
+                  : (isAr ? 'تواصل معنا' : 'Contact Us')}
               </button>
             </div>
 
             {/* Standard (Featured) */}
-            <div className={`p-5.5 rounded-2xl border flex flex-col justify-between shadow-md transition-all relative ${
-              settings.subscriptionPlan === 'STANDARD'
+            <div className={`p-5.5 rounded-2xl border flex flex-col justify-between shadow-md transition-all relative ${settings.subscriptionPlan === 'STANDARD'
                 ? 'bg-[#4A2E20] text-white border-[#4A2E20] ring-2 ring-[#4A2E20]/20'
                 : 'bg-[#4A2E20] text-white border-[#4A2E20]'
-            }`}>
+              }`}>
               <div className="absolute -top-2.5 right-4 bg-amber-400 text-[#4A2E20] text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
                 {isAr ? 'الأكثر اختياراً' : 'Most Popular'}
               </div>
@@ -526,23 +521,21 @@ export default function SettingsTab({
               <button
                 type="button"
                 disabled={settings.subscriptionPlan === 'STANDARD'}
-                onClick={() => addToast(isAr ? 'بوابة الدفع غير متصلة حالياً' : 'Payment gateway not connected', 'info')}
-                className={`w-full mt-6 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${
-                  settings.subscriptionPlan === 'STANDARD'
+                onClick={() => window.open('https://wa.me/9647714289802', '_blank')}
+                className={`w-full mt-6 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${settings.subscriptionPlan === 'STANDARD'
                     ? 'bg-[#4A2E20]/30 text-stone-300 border border-white/20 cursor-default'
                     : 'bg-amber-400 hover:bg-amber-350 text-[#4A2E20]'
-                }`}
+                  }`}
               >
                 {settings.subscriptionPlan === 'STANDARD'
                   ? (isAr ? 'باقاتك الحالية' : 'Current Plan')
-                  : (isAr ? 'ترقية الآن' : 'Upgrade Now')}
+                  : (isAr ? 'تواصل معنا' : 'Contact Us')}
               </button>
             </div>
 
             {/* Pro */}
-            <div className={`p-5.5 rounded-2xl border flex flex-col justify-between shadow-sm transition-all bg-white hover:border-stone-300 ${
-              settings.subscriptionPlan === 'PRO' ? 'border-[#4A2E20]/40 ring-1 ring-[#4A2E20]/20' : 'border-stone-200'
-            }`}>
+            <div className={`p-5.5 rounded-2xl border flex flex-col justify-between shadow-sm transition-all bg-white hover:border-stone-300 ${settings.subscriptionPlan === 'PRO' ? 'border-[#4A2E20]/40 ring-1 ring-[#4A2E20]/20' : 'border-stone-200'
+              }`}>
               <div>
                 <span className="text-[10px] font-bold uppercase text-stone-700 bg-stone-100 px-3 py-1 rounded-full">
                   {isAr ? '🚀 برو' : '🚀 Pro'}
@@ -565,16 +558,15 @@ export default function SettingsTab({
               <button
                 type="button"
                 disabled={settings.subscriptionPlan === 'PRO'}
-                onClick={() => addToast(isAr ? 'بوابة الدفع غير متصلة حالياً' : 'Payment gateway not connected', 'info')}
-                className={`w-full mt-6 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${
-                  settings.subscriptionPlan === 'PRO'
+                onClick={() => window.open('https://wa.me/9647714289802', '_blank')}
+                className={`w-full mt-6 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${settings.subscriptionPlan === 'PRO'
                     ? 'bg-stone-50 text-stone-400 border border-stone-200 cursor-default'
                     : 'bg-[#4A2E20] hover:bg-[#3B2419] text-white'
-                }`}
+                  }`}
               >
                 {settings.subscriptionPlan === 'PRO'
                   ? (isAr ? 'باقاتك الحالية' : 'Current Plan')
-                  : (isAr ? 'ترقية الآن' : 'Upgrade Now')}
+                  : (isAr ? 'تواصل معنا' : 'Contact Us')}
               </button>
             </div>
 
@@ -598,10 +590,10 @@ export default function SettingsTab({
               </div>
               <button
                 type="button"
-                onClick={() => addToast(isAr ? 'نظام تواصل المبيعات غير متاح حالياً' : 'Sales contact system not connected', 'info')}
+                onClick={() => window.open('https://wa.me/9647714289802', '_blank')}
                 className="w-full mt-6 py-2 bg-[#4A2E20] hover:bg-[#3B2419] text-white rounded-xl text-xs font-bold transition-all cursor-pointer text-center"
               >
-                {isAr ? 'اتصل بنا' : 'Contact Us'}
+                {isAr ? 'تواصل معنا' : 'Contact Us'}
               </button>
             </div>
           </div>
