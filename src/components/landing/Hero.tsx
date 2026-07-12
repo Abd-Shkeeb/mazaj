@@ -535,9 +535,9 @@ export default function Hero({
                             <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-1 rounded-full uppercase tracking-wider">
                               {isAr ? 'الخطوة ١: اختيار المزاج' : 'Step 1: Choose Mood'}
                             </span>
-                            <h4 className="text-xs font-black text-gray-500">
+                            <h3 className="text-xs font-black text-gray-500">
                               {isAr ? 'كيف تشعر اليوم?' : 'How do you feel today?'}
-                            </h4>
+                            </h3>
                             <div className="grid grid-cols-2 gap-2 max-w-[240px] mx-auto">
                               {['😊 سعيد', '😌 هادئ', '😴 متعب', '🤩 متحمس'].map((mood, idx) => {
                                 const isHappy = mood.includes('سعيد')
@@ -607,9 +607,9 @@ export default function Hero({
                             <div className="w-14 h-14 rounded-full bg-emerald-500 text-white flex items-center justify-center text-2xl shadow-lg animate-bounce">
                               ✓
                             </div>
-                            <h4 className="text-sm font-black text-emerald-600">
+                            <h3 className="text-sm font-black text-emerald-600">
                               {isAr ? 'تم إرسال الطلب بنجاح! 🎉' : 'Order Sent Successfully! 🎉'}
-                            </h4>
+                            </h3>
                             <p className="text-[10px] text-gray-500 font-bold max-w-[240px]">
                               {isAr
                                 ? 'تم إرسال الطلب إلى لوحة تحكم الكاشير مباشرة.'

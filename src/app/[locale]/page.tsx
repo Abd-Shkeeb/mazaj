@@ -12,15 +12,15 @@ import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
 
 import Hero from '@/components/landing/Hero'
-import SocialProof from '@/components/landing/SocialProof'
-import Demo from '@/components/landing/Demo'
-import Features from '@/components/landing/Features'
-import OwnerJourney from '@/components/landing/OwnerJourney'
-import SuitableForWhom from '@/components/landing/SuitableForWhom'
-import Pricing from '@/components/landing/Pricing'
-import FAQ from '@/components/landing/FAQ'
-import CTA from '@/components/landing/CTA'
-import AboutUs from '@/components/landing/AboutUs'
+const SocialProof = dynamic(() => import('@/components/landing/SocialProof'))
+const Demo = dynamic(() => import('@/components/landing/Demo'), { ssr: false })
+const Features = dynamic(() => import('@/components/landing/Features'), { ssr: false })
+const OwnerJourney = dynamic(() => import('@/components/landing/OwnerJourney'))
+const SuitableForWhom = dynamic(() => import('@/components/landing/SuitableForWhom'))
+const Pricing = dynamic(() => import('@/components/landing/Pricing'))
+const FAQ = dynamic(() => import('@/components/landing/FAQ'))
+const CTA = dynamic(() => import('@/components/landing/CTA'))
+const AboutUs = dynamic(() => import('@/components/landing/AboutUs'))
 
 // SideRays uses WebGL, keep it dynamic (client-side only)
 const SideRays = dynamic(() => import('@/components/SideRays'), { ssr: false })

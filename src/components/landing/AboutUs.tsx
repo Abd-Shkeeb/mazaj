@@ -36,9 +36,9 @@ export default function AboutUs() {
               <Coffee className="h-3.5 w-3.5" />
               <span>{isAr ? 'من نحن؟' : 'About Us'}</span>
             </div>
-            <h3 className="text-2xl sm:text-3xl font-black text-[#3E2723] leading-tight">
+            <h2 className="text-2xl sm:text-3xl font-black text-[#3E2723] leading-tight">
               {isAr ? 'مزاج لمستقبل المقاهي الذكية' : 'Mazaj for the Future of Smart Cafes'}
-            </h3>
+            </h2>
             <p className="text-xs sm:text-sm text-[#5D4037]/90 font-bold leading-relaxed">
               {isAr
                 ? 'مزاج منصة عراقية متخصصة في تقديم تجارب ذكية وتفاعلية للمقاهي باستخدام الذكاء الاصطناعي، لمساعدة الزبائن على اختيار المشروبات المناسبة وتحسين تجربة العملاء وزيادة المبيعات.'

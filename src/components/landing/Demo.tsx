@@ -174,9 +174,9 @@ export default function Demo() {
           </div>
 
           <div className="flex-grow space-y-3 relative z-10">
-            <h4 className="text-[10px] font-black text-amber-300 uppercase tracking-widest">
+            <h3 className="text-[10px] font-black text-amber-300 uppercase tracking-widest">
               {isAr ? 'طلبات الكشك الواردة مباشرة' : 'Live Kiosk Incoming Orders Feed'}
-            </h4>
+            </h3>
 
             <div className="space-y-2 max-h-[200px] overflow-hidden">
               <AnimatePresence initial={false}>
@@ -246,9 +246,9 @@ export default function Demo() {
 
             <div className="flex-grow py-6 flex flex-col justify-center space-y-4">
               <div className="text-center space-y-1">
-                <h4 className="text-base font-black text-[#3E2723]">
+                <h3 className="text-base font-black text-[#3E2723]">
                   {isAr ? 'كيف تشعر الآن؟' : 'How do you feel today?'}
-                </h4>
+                </h3>
                 <p className="text-[10px] text-gray-500 font-bold">
                   {isAr
                     ? 'اضغط لتجربة الاقتراح الفوري وإرسال الطلب'

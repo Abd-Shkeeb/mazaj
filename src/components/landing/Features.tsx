@@ -318,9 +318,9 @@ export default function Features() {
             </div>
 
             <div className="flex-grow space-y-3 relative z-10">
-              <h4 className="text-[9px] font-black text-amber-300 uppercase tracking-widest">
+              <h3 className="text-[9px] font-black text-amber-300 uppercase tracking-widest">
                 {isAr ? 'نشاط المقهى المباشر' : 'Live Activity Feed'}
-              </h4>
+              </h3>
               <div className="space-y-2">
                 <AnimatePresence initial={false}>
                   {featActivities.map(act => (
