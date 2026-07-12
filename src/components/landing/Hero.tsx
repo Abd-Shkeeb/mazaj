@@ -208,6 +208,7 @@ export default function Hero({
             </button>
             <a
               href="#simulator"
+              aria-label={isAr ? 'شاهد محاكاة حية لكيفية عمل النظام' : 'See live interactive simulation of how the platform works'}
               className="px-8 py-4 bg-white/80 border border-[#3E2723]/10 hover:bg-[#FAF8F5] text-[#3E2723] rounded-2xl font-black text-sm sm:text-base transition-all shadow-sm hover-lift cursor-pointer text-center"
             >
               🔍 {isAr ? 'شاهد كيف يعمل' : 'See How it Works'}

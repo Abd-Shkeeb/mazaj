@@ -113,6 +113,9 @@ export default function FAQ() {
             >
               <button
                 type="button"
+                id={`faq-btn-${idx}`}
+                aria-expanded={isOpen}
+                aria-controls={`faq-panel-${idx}`}
                 onClick={() => setActiveFaq(isOpen ? null : idx)}
                 className="w-full p-6 text-right rtl:text-right ltr:text-left flex justify-between items-center font-black text-[#3E2723] hover:bg-[#FAF9F6]/50 cursor-pointer"
               >
@@ -127,6 +130,9 @@ export default function FAQ() {
                 </span>
               </button>
               <motion.div
+                id={`faq-panel-${idx}`}
+                role="region"
+                aria-labelledby={`faq-btn-${idx}`}
                 initial={false}
                 animate={{ height: isOpen ? 'auto' : 0 }}
                 transition={{ duration: 0.25, ease: 'easeInOut' }}
