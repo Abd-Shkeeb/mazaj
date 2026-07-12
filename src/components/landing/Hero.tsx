@@ -544,11 +544,10 @@ export default function Hero({
                                 return (
                                   <div
                                     key={idx}
-                                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all duration-300 ${
-                                      isHappy
+                                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all duration-300 ${isHappy
                                         ? 'bg-amber-500 text-white border-amber-500 scale-105 shadow-md ring-2 ring-amber-500/30'
                                         : 'bg-white text-gray-400 border-gray-100'
-                                    }`}
+                                      }`}
                                   >
                                     {isHappy && isAr ? '😊 سعيد (مختار)' : mood}
                                   </div>

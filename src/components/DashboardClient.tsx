@@ -1610,7 +1610,7 @@ export default function DashboardClient({
                 <div className="space-y-3.5 text-right rtl:text-right ltr:text-left w-full lg:w-auto">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-xl bg-amber-500/10 text-amber-900 border border-amber-500/10 flex items-center justify-center">
-                      <span className="text-2xl leading-none">☕</span>
+                      <Coffee className="h-6 w-6 text-[#4A2E20]" />
                     </div>
                     <h1 className="text-xl sm:text-2xl font-extrabold text-stone-900 tracking-tight">
                       {isAr
