@@ -151,7 +151,7 @@ export default function Hero({
             }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#3E2723]/5 border border-[#3E2723]/10 text-[#3E2723] text-xs font-black uppercase tracking-widest backdrop-blur-md"
           >
-            <Sparkles className="h-4 w-4 text-amber-500 animate-spin" />
+            <Sparkles className="h-4 w-4 text-amber-500" />
             <span>{isAr ? 'منصة ذكاء اصطناعي تفاعلية للمقاهي' : 'AI Cafe Assistant SaaS'}</span>
           </motion.div>
 
@@ -516,7 +516,7 @@ export default function Hero({
 
                 <div className="pt-2">
                   <h3 className="text-sm font-black text-[#3E2723] mb-5 flex items-center gap-2 border-b border-[#3E2723]/5 pb-3 justify-center">
-                    <Sparkles className="h-4.5 w-4.5 text-amber-500 animate-pulse" />
+                    <Sparkles className="h-4.5 w-4.5 text-amber-500" />
                     <span>{isAr ? 'عرض تجريبي تفاعلي تلقائي' : 'Auto Play Interactive Demo'}</span>
                   </h3>
 
