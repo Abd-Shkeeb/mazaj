@@ -146,6 +146,7 @@ export default function Navigation({
             {!hideLogin && (
               <button
                 onClick={() => setIsOpen(!isOpen)}
+                aria-label={locale === 'ar' ? 'تبديل القائمة' : 'Toggle navigation menu'}
                 className="p-2 rounded-lg text-stone-800 hover:bg-stone-50 backdrop-blur-sm transition-all duration-200 active:scale-90"
               >
                 {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
