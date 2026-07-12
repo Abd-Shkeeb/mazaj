@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react'
 import { useLocale } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, Check, X, Eye, EyeOff } from 'lucide-react'
-import SideRays from '@/components/SideRays'
+import dynamic from 'next/dynamic'
+
+const SideRays = dynamic(() => import('@/components/SideRays'), { ssr: false })
 
 const demoStates = [
   {

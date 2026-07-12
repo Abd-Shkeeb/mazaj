@@ -18,12 +18,24 @@ import {
 import { uploadFileToStorage, deleteFileFromStorage } from '@/lib/supabase'
 import dynamic from 'next/dynamic'
 import OrdersTab from '@/components/dashboard/OrdersTab'
-import MenuTab from '@/components/dashboard/MenuTab'
-import SettingsTab from '@/components/dashboard/SettingsTab'
-import UsersTab from '@/components/dashboard/UsersTab'
+
+const MenuTab = dynamic(() => import('@/components/dashboard/MenuTab'), {
+  loading: () => <div className="text-center py-12 text-xs font-bold text-stone-500 animate-pulse">Loading Menu...</div>,
+  ssr: false,
+})
+
+const SettingsTab = dynamic(() => import('@/components/dashboard/SettingsTab'), {
+  loading: () => <div className="text-center py-12 text-xs font-bold text-stone-500 animate-pulse">Loading Settings...</div>,
+  ssr: false,
+})
+
+const UsersTab = dynamic(() => import('@/components/dashboard/UsersTab'), {
+  loading: () => <div className="text-center py-12 text-xs font-bold text-stone-500 animate-pulse">Loading Users...</div>,
+  ssr: false,
+})
 
 const AnalyticsTab = dynamic(() => import('@/components/dashboard/AnalyticsTab'), {
-  loading: () => <div className="text-center py-12 text-xs font-bold text-[#3E2723]/60">Loading Analytics...</div>,
+  loading: () => <div className="text-center py-12 text-xs font-bold text-stone-500 animate-pulse">Loading Analytics...</div>,
   ssr: false,
 })
 

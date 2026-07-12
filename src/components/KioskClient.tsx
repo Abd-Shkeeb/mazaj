@@ -5,7 +5,9 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useRouter, usePathname } from '@/i18n/routing'
 import { useSearchParams } from 'next/navigation'
 import Navigation from '@/components/Navigation'
-import SideRays from '@/components/SideRays'
+import dynamic from 'next/dynamic'
+
+const SideRays = dynamic(() => import('@/components/SideRays'), { ssr: false })
 import { analyzeMood, saveFeedbackAction, trackEventAction } from '@/app/actions/analyze'
 import { createOrderAction } from '@/app/actions/orders'
 import {
