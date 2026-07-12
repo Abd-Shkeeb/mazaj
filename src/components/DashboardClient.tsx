@@ -1391,6 +1391,22 @@ export default function DashboardClient({
     'sales',
   )
 
+  if (!mounted) {
+    return (
+      <>
+        <Navigation isDashboard={true} />
+        <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-12 w-full bg-[#FAF8F5]">
+          <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+            <span className="w-10 h-10 border-4 border-[#4A2E20] border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs text-stone-500 font-bold animate-pulse">
+              {isAr ? 'جاري تحميل لوحة التحكم...' : 'Loading Dashboard...'}
+            </p>
+          </div>
+        </main>
+      </>
+    )
+  }
+
   return (
     <>
       <Navigation isDashboard={true} />
