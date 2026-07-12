@@ -302,6 +302,7 @@ export default function DashboardClient({
   >('kiosk')
   const [isPending, startTransition] = useTransition()
   const [isLoading, setIsLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
 
   // File Uploading states
   const [uploadingDrinkImg, setUploadingDrinkImg] = useState(false)
@@ -349,6 +350,7 @@ export default function DashboardClient({
 
   // Simulation loading delay for Stripe-like feel
   useEffect(() => {
+    setMounted(true)
     const timer = setTimeout(() => {
       setIsLoading(false)
     }, 800)
@@ -563,7 +565,11 @@ export default function DashboardClient({
     setDrinkImgUrl(editingDrink ? editingDrink.image : null)
   }
 
-  const [mountTime] = useState(() => Date.now())
+  const [mountTime, setMountTime] = useState(0)
+
+  useEffect(() => {
+    setMountTime(Date.now())
+  }, [])
 
   // Cache busting helper to prevent browser caching of newly uploaded images
   const getCacheBustedUrl = (url: string | null) => {
@@ -1632,7 +1638,7 @@ export default function DashboardClient({
                         isAr ? `الباقة نشطة: ${settings.subscriptionPlan}` : `Active Plan: ${settings.subscriptionPlan}`
                       )}
                     </span>
-                    {(settings.subscriptionPlan === 'FREE_TRIAL' || settings.subscriptionPlan === 'FREE') && (
+                    {mounted && (settings.subscriptionPlan === 'FREE_TRIAL' || settings.subscriptionPlan === 'FREE') && (
                       <span className="flex items-center gap-1.5 bg-amber-50/60 text-amber-800 border border-amber-200/50 px-3 py-1 rounded-lg">
                         <Calendar className="h-3.5 w-3.5 text-amber-700" />
                         {isAr ? `متبقي ${diffDays} يوم` : `${diffDays} days remaining`}
@@ -1650,10 +1656,12 @@ export default function DashboardClient({
                         ? `إيرادات اليوم: ${formatVal(todayRevenue)}`
                         : `Today's Revenue: ${formatVal(todayRevenue)}`}
                     </span>
-                    <span className="flex items-center gap-1.5 bg-purple-50 text-purple-800 border border-purple-200/50 px-3 py-1 rounded-lg">
-                      <Activity className="h-3.5 w-3.5 text-purple-700" />
-                      {isAr ? `آخر نشاط: ${lastActivity}` : `Last Activity: ${lastActivity}`}
-                    </span>
+                    {mounted && (
+                      <span className="flex items-center gap-1.5 bg-purple-50 text-purple-800 border border-purple-200/50 px-3 py-1 rounded-lg">
+                        <Activity className="h-3.5 w-3.5 text-purple-700" />
+                        {isAr ? `آخر نشاط: ${lastActivity}` : `Last Activity: ${lastActivity}`}
+                      </span>
+                    )}
                   </div>
 
                   {/* Elegant Gemini API AI Status Ribbon */}
